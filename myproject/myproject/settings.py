@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import environ
 from pathlib import Path
+from datetime import timedelta
+
 
 # Initialize environment variables
 env = environ.Env(
@@ -80,6 +82,17 @@ TEMPLATES = [
 WSGI_APPLICATION = 'myproject.wsgi.application'
 
 AUTH_USER_MODEL = "accounts.User"
+REST_FRAMEWORK = {
+    
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
