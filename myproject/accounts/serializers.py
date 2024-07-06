@@ -8,7 +8,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import smart_str, smart_bytes
 from django.urls import reverse
 from .utils import send_normal_email
-from rest_framework.simplejwt.tokens import RefreshToken, Token
+from rest_framework_simplejwt.tokens import RefreshToken, Token
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=68, min_length=6, write_only=True)
