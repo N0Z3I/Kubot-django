@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.generics import GenericAPIView
-from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUseSerializer
+from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -25,7 +25,7 @@ class RegisterUserView(GenericAPIView):
             print(user)
             return Response({
                 'data':user,
-                'message':f'hi thanks for signing up a passcode has be sent to'
+                'message':f'hi thanks for signing up a passcode has be sent to verify your email'
             }, status = status.HTTP_201_CREATED)
         return Response(serializer.errors, status = status.HTTP_400_BAD_REQUEST)
 
@@ -51,7 +51,7 @@ class VerifyUserEmail(GenericAPIView):
 class LoginUserView(GenericAPIView):
     serializer_class = LoginUserSerializer
     def post(self, request):
-        serializer = self.serializer_class(data = request.data, context = {'reequest':request})
+        serializer = self.serializer_class(data = request.data, context = {'request':request})
         serializer.is_valid(raise_exception = True)
         return Response(serializer.data, status = status.HTTP_200_OK)
 
@@ -91,7 +91,7 @@ class SetNewPassword(GenericAPIView):
         return Response({'message':'password reset successful'}, status=status.HTTP_200_OK)
 
 class LogoutUserView(GenericAPIView):
-    serializer_class = LogoutUseSerializer
+    serializer_class = LogoutUserSerializer
     permission_classes = [IsAuthenticated]
     
     def post(self, request):

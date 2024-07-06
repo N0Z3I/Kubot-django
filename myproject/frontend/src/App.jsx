@@ -8,6 +8,8 @@ import {
   VerifyEmail,
   ForgetPassword,
 } from "./components";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -15,6 +17,7 @@ function App() {
   return (
     <>
       <Router>
+        <ToastContainer />
         <Routes>
           <Route path="/" element={<Signup />} />
           <Route path="/login" element={<Login />} />
