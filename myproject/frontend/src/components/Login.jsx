@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Login = () => {
@@ -74,6 +74,9 @@ const Login = () => {
               />
             </div>
             <input type="submit" value="Login" className="submitButton" />
+            <p className="pass-link">
+              <Link to={"/forget_password"}>forgot password?</Link>
+            </p>
           </form>
         </div>
       </div>
