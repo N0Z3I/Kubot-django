@@ -16,7 +16,7 @@ function App() {
   const [count, setCount] = useState(0);
 
   return (
-    <>
+    <div>
       <Router>
         <ToastContainer />
         <Routes>
@@ -31,7 +31,7 @@ function App() {
           />
         </Routes>
       </Router>
-    </>
+    </div>
   );
 }
 

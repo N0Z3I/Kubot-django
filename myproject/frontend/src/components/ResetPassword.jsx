@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { useNavigation, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
 
 const ResetPassword = () => {
-  const navigate = useNavigation();
+  const navigate = useNavigate();
   const { uid, token } = useParams();
   const [newPasswords, setNewPasswords] = useState({
     password: "",
@@ -23,12 +23,13 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await axiosInstance.patch("/auth/set-new-password", data);
+    const response = await axiosInstance.patch("/auth/set-new-password/", data);
     const result = response.data;
     if (response.status === 200) {
       navigate("/login");
       toast.success(result.message);
     }
+    console.log(response);
   };
 
   return (

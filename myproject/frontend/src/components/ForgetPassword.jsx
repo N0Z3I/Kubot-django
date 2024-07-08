@@ -3,17 +3,15 @@ import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
 
 const ForgetPassword = () => {
-  const [email, setEmail] = useState(" ");
+  const [email, setEmail] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (email) {
-      const res = await axiosInstance.post("/auth/password-reset", {
+      const res = await axiosInstance.post("/auth/password-reset/", {
         email: email,
       });
       if (res.status === 200) {
-        console.log(res);
-
         toast.success("a link to reset password has to be sent to your email");
       }
       console.log(res);
