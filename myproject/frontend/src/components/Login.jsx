@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const Login = () => {
@@ -40,8 +40,12 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(user));
         localStorage.setItem("access", JSON.stringify(response.access_token));
         localStorage.setItem("refresh", JSON.stringify(response.refresh_token));
-        navigate("/dashboard");
+        // navigate("/dashboard");
         toast.success("login successful");
+        setTimeout(() => {
+          navigate("/dashboard");
+          window.location.reload(); // Refresh the page after navigating
+        }, 1000);
       }
     }
   };
@@ -74,6 +78,9 @@ const Login = () => {
               />
             </div>
             <input type="submit" value="Login" className="submitButton" />
+            <p className="pass-link">
+              <Link to={"/forget_password"}>forgot password?</Link>
+            </p>
           </form>
         </div>
       </div>
