@@ -1,20 +1,17 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import dayjs from "dayjs";
+import Cookies from "js-cookie";
 
-const token = localStorage.getItem("access")
-  ? JSON.parse(localStorage.getItem("access"))
-  : "";
-const refresh_token = localStorage.getItem("refresh")
-  ? JSON.parse(localStorage.getItem("refresh"))
-  : "";
+const token = Cookies.get("access") ? Cookies.get("access") : "";
+const refresh_token = Cookies.get("refresh") ? Cookies.get("refresh") : "";
 
 const baseUrl = "http://localhost:8000/api/v1";
 const axiosInstance = axios.create({
   baseURL: baseUrl,
   "Content-type": "application/json",
   headers: {
-    Authorization: localStorage.getItem("access") ? `Bearer ${token}` : null,
+    Authorization: token ? `Bearer ${token}` : null,
   },
 });
 
@@ -26,28 +23,30 @@ axiosInstance.interceptors.request.use(async (req) => {
     if (!isExpired) {
       return req;
     } else {
-      const res = await axios.post(`${baseUrl}/auth/token/refresh/`, {
-        refresh: refresh_token,
-      });
-      console.log(res.data);
-      if (res.status === 200) {
-        localStorage.setItem("access", JSON.stringify(res.data.access));
-        req.headers.Authorization = `Bearer ${res.data.access}`;
-        return req;
-      } else {
-        const res = await axios.post(`${baseUrl}/auth/logout/`, {
-          refresh_token: refresh,
+      try {
+        const res = await axios.post(`${baseUrl}/auth/token/refresh/`, {
+          refresh: refresh_token,
         });
         if (res.status === 200) {
-          localStorage.removeItem("access");
-          localStorage.removeItem("refresh");
-          localStorage.removeItem("user");
+          Cookies.set("access", res.data.access);
+          req.headers.Authorization = `Bearer ${res.data.access}`;
+          return req;
+        } else {
+          const logoutRes = await axios.post(`${baseUrl}/auth/logout/`, {
+            refresh_token: refresh_token,
+          });
+          if (logoutRes.status === 200) {
+            Cookies.remove("access");
+            Cookies.remove("refresh");
+            Cookies.remove("user");
+          }
         }
+      } catch (error) {
+        console.error("Error refreshing token", error);
       }
     }
   }
   return req;
 });
 
-console.log("axiosInstance: ");
 export default axiosInstance;
