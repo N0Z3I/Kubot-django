@@ -1,12 +1,11 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import dayjs from "dayjs";
+import Cookies from "js-cookie";
 
-const token = localStorage.getItem("access")
-  ? JSON.parse(localStorage.getItem("access"))
-  : "";
-const refresh_token = localStorage.getItem("refresh")
-  ? JSON.parse(localStorage.getItem("refresh"))
+const token = Cookies.get("access") ? JSON.parse(Cookies.get("access")) : "";
+const refresh_token = Cookies.get("refresh")
+  ? JSON.parse(Cookies.get("refresh"))
   : "";
 
 const baseUrl = "http://localhost:8000/api/v1";
@@ -14,7 +13,7 @@ const axiosInstance = axios.create({
   baseURL: baseUrl,
   "Content-type": "application/json",
   headers: {
-    Authorization: localStorage.getItem("access") ? `Bearer ${token}` : null,
+    Authorization: Cookies.get("access") ? `Bearer ${token}` : null,
   },
 });
 
@@ -31,7 +30,7 @@ axiosInstance.interceptors.request.use(async (req) => {
       });
       console.log(res.data);
       if (res.status === 200) {
-        localStorage.setItem("access", JSON.stringify(res.data.access));
+        Cookies.set("access", JSON.stringify(res.data.access));
         req.headers.Authorization = `Bearer ${res.data.access}`;
         return req;
       } else {
@@ -39,9 +38,9 @@ axiosInstance.interceptors.request.use(async (req) => {
           refresh_token: refresh,
         });
         if (res.status === 200) {
-          localStorage.removeItem("access");
-          localStorage.removeItem("refresh");
-          localStorage.removeItem("user");
+          Cookies.remove("access");
+          Cookies.remove("refresh");
+          Cookies.remove("user");
         }
       }
     }

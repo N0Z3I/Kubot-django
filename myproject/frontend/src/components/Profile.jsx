@@ -2,21 +2,22 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("user"));
-  const jwt_access = localStorage.getItem("access");
+  const user = JSON.parse(Cookies.get("user"));
+  const jwt_access = Cookies.get("access");
 
   useEffect(() => {
-    if (jwt_access === null && !user) {
+    if (!jwt_access || !user) {
       navigate("/login");
     } else {
       getSomeData();
     }
   }, [jwt_access, user]);
 
-  const refresh = JSON.parse(localStorage.getItem("refresh"));
+  const refresh = Cookies.get("refresh");
 
   const getSomeData = async () => {
     const resp = await axiosInstance.get("/auth/profile/");
@@ -30,9 +31,9 @@ const Profile = () => {
       refresh_token: refresh,
     });
     if (res.status === 200) {
-      localStorage.removeItem("access");
-      localStorage.removeItem("refresh");
-      localStorage.removeItem("user");
+      Cookies.remove("access");
+      Cookies.remove("refresh");
+      Cookies.remove("user");
       navigate("/login");
       toast.success("logout successful");
     }

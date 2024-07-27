@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const Login = () => {
   const [logindata, setLoginData] = useState({
@@ -37,9 +38,9 @@ const Login = () => {
       };
 
       if (res.status === 200) {
-        localStorage.setItem("user", JSON.stringify(user));
-        localStorage.setItem("access", JSON.stringify(response.access_token));
-        localStorage.setItem("refresh", JSON.stringify(response.refresh_token));
+        Cookies.set("user", JSON.stringify(user));
+        Cookies.set("access", JSON.stringify(response.access_token));
+        Cookies.set("refresh", JSON.stringify(response.refresh_token));
         // navigate("/dashboard");
         toast.success("login successful");
         setTimeout(() => {
