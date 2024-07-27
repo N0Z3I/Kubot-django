@@ -20,29 +20,38 @@ const Profile = () => {
   const refresh = Cookies.get("refresh");
 
   const getSomeData = async () => {
-    const resp = await axiosInstance.get("/auth/profile/");
-    if (resp.status === 200) {
-      console.log(resp.data);
+    try {
+      const resp = await axiosInstance.get("/auth/profile/");
+      if (resp.status === 200) {
+        console.log(resp.data);
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
   const handleLogout = async () => {
-    const res = await axiosInstance.post("/auth/logout/", {
-      refresh_token: refresh,
-    });
-    if (res.status === 200) {
-      Cookies.remove("access");
-      Cookies.remove("refresh");
-      Cookies.remove("user");
-      navigate("/login");
-      toast.success("logout successful");
+    try {
+      const res = await axiosInstance.post("/auth/logout/", {
+        refresh_token: refresh,
+      });
+      if (res.status === 200) {
+        Cookies.remove("access");
+        Cookies.remove("refresh");
+        Cookies.remove("user");
+        navigate("/login");
+        toast.success("Logout successful");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Logout failed. Please try again.");
     }
   };
 
   return (
     <div className="container">
-      <h2>hi {user && user.names}</h2>
-      <p style={{ textAlign: "center" }}>welcome to your profile</p>
+      <h2>Hi {user && user.names}</h2>
+      <p style={{ textAlign: "center" }}>Welcome to your profile</p>
       <button onClick={handleLogout} className="logout-btn">
         Logout
       </button>

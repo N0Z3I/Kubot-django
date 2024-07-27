@@ -21,32 +21,37 @@ const Login = () => {
     e.preventDefault();
     const { email, password } = logindata;
     if (!email || !password) {
-      setError("email and password are required");
+      setError("Email and password are required");
     } else {
       setIsLoading(true);
-      const res = await axios.post(
-        "http://localhost:8000/api/v1/auth/login/",
-        logindata
-      );
-      const response = res.data;
-      console.log(response);
-      setIsLoading(false);
+      try {
+        const res = await axios.post(
+          "http://localhost:8000/api/v1/auth/login/",
+          logindata
+        );
+        const response = res.data;
+        console.log(response);
+        setIsLoading(false);
 
-      const user = {
-        email: response.email,
-        names: response.full_name,
-      };
+        const user = {
+          email: response.email,
+          names: response.full_name,
+        };
 
-      if (res.status === 200) {
-        Cookies.set("user", JSON.stringify(user));
-        Cookies.set("access", JSON.stringify(response.access_token));
-        Cookies.set("refresh", JSON.stringify(response.refresh_token));
-        // navigate("/dashboard");
-        toast.success("login successful");
-        setTimeout(() => {
-          navigate("/dashboard");
-          window.location.reload(); // Refresh the page after navigating
-        }, 1000);
+        if (res.status === 200) {
+          Cookies.set("user", JSON.stringify(user));
+          Cookies.set("access", response.access_token);
+          Cookies.set("refresh", response.refresh_token);
+          toast.success("Login successful");
+          setTimeout(() => {
+            navigate("/dashboard");
+            window.location.reload(); // Refresh the page after navigating
+          }, 1000);
+        }
+      } catch (error) {
+        setIsLoading(false);
+        setError("Login failed. Please try again.");
+        toast.error("Login failed. Please try again.");
       }
     }
   };
@@ -59,7 +64,7 @@ const Login = () => {
           <form onSubmit={handleSubmit}>
             {isLoading && <p>Loading...</p>}
             <div className="form-group">
-              <label htmlFor="">Email address</label>
+              <label>Email address</label>
               <input
                 type="text"
                 className="email-form"
@@ -69,7 +74,7 @@ const Login = () => {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="">Password</label>
+              <label>Password</label>
               <input
                 type="password"
                 className="email-form"
@@ -80,7 +85,7 @@ const Login = () => {
             </div>
             <input type="submit" value="Login" className="submitButton" />
             <p className="pass-link">
-              <Link to={"/forget_password"}>forgot password?</Link>
+              <Link to={"/forget_password"}>Forgot password?</Link>
             </p>
           </form>
         </div>

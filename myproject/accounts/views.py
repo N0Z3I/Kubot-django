@@ -1,5 +1,3 @@
-# views.py
-
 from django.shortcuts import render
 from rest_framework.generics import GenericAPIView
 from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer
