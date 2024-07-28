@@ -58,8 +58,10 @@ h2 {
   width: 100%;
   display: flex;
   justify-content: center;
-  flex-direction: column;
   align-items: center;
+  text-align: center;
+  height: 100dvh;
+  min-height: 500px;
 }
 
 input {
@@ -71,7 +73,7 @@ input {
   outline: none;
 }
 input:focus {
-  border-color: #848fdf;
+  border-color: #3d3d3d;
   border-width: 1px;
 }
 
@@ -84,33 +86,108 @@ label {
   margin-bottom: 5px;
 }
 .submitButton {
-  background-color: #6976d9;
-  color: white;
+  background-color: #0a6765;
+  color: #ebeefd;
   font-family: sans-serif;
+  font-weight: bold;
   font-size: 14px;
   margin: 20px 0px;
+  cursor: pointer;
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
 }
+
 .vbtn {
   padding: 10px 22px;
   outline: none;
   font-size: 14px;
   font-weight: 600;
-  background-color: #6976d9;
+  background-color: #0a6765;
   border: none;
-  color: #fff;
+  color: #ebeefd;
   border-radius: 5px;
+  cursor: pointer;
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
 }
+
 h3 {
-  margin: 0;
+  font-family: "Rubik", sans-serif;
+  font-size: 48px;
+  color: #2c2c2c;
 }
+
 .logout-btn {
   padding: 10px 22px;
   outline: none;
-  width: 164px;
-  font-size: 14px;
-  font-weight: 600;
+  width: 120px;
+  height: 50px;
+  font-size: 20px;
+  font-weight: bold;
   background-color: #e7461e;
+  margin: 1rem;
   border: none;
-  color: #fff;
-  border-radius: 5px;
+  color: #ebeefd;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.logout-btn:hover {
+  transform: scale(1.05);
+}
+
+h2,
+h1 {
+  text-transform: uppercase;
+  font-family: "Rubik", sans-serif;
+  font-size: 48px;
+  color: #2c2c2c;
+}
+
+.hover {
+  cursor: pointer;
+  background-color: #0a6765;
+  color: #ebeefd;
+  border: none;
+  border-radius: 10px;
+  padding: auto;
+  width: 200px;
+  height: 50px;
+  font-size: 20px;
+  font-weight: bold;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.hover:hover {
+  transform: scale(1.05);
+}
+
+p {
+  font-size: 20px;
+  font-weight: 300;
+  color: #2c2c2c;
+  font-family: "Roboto Mono", monospace;
+  text-transform: none;
+}
+
+img {
+  max-width: 410px;
+  margin: -2rem;
+  margin-left: 70px;
+}
+
+footer {
+  width: 100%;
+  text-align: center;
+}
+
+#addbot {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 15dvh;
+  min-height: 500px;
 }
