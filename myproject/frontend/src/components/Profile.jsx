@@ -57,7 +57,10 @@ const Profile = () => {
             <br />
             you'll ever need!
             <p>KuBot is the easiest way to organize your studies.</p>
-            <a href="https://discord.com/oauth2/authorize?client_id=1245512193500381205&permissions=8&scope=bot">
+            <a
+              href="https://discord.com/oauth2/authorize?client_id=1245512193500381205&permissions=8&scope=bot"
+              target="_blank"
+            >
               <button className="hover">Add to discord</button>
             </a>
             <button onClick={handleLogout} className="logout-btn">

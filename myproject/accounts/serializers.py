@@ -79,8 +79,8 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             request = self.context.get('request')
-            site_domain = get_current_site(request).domain
-            relative_link = reverse('password-reset-confirm', kwargs={'uidb64':uidb64, 'token':token})
+            site_domain = 'localhost:5173'
+            relative_link = f'/password-reset-confirm/{uidb64}/{token}/'
             abslink = f"http://{site_domain}{relative_link}"
             email_body = f"Hi use the link below to reset your password \n{abslink}"
             data = {
