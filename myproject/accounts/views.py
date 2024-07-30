@@ -15,6 +15,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from pymyku import Client
 import json
+from django.utils.decorators import method_decorator
+from django.views import View
 
 class RegisterUserView(GenericAPIView):
     serializer_class = UserRegisterSerializer
@@ -118,9 +120,9 @@ class LogoutUserView(GenericAPIView):
         response.delete_cookie('access')
         return response
 
-@csrf_exempt
-def login(request):
-    if request.method == 'POST':
+@method_decorator(csrf_exempt, name='dispatch')
+class LoginView(View):
+    def post(self, request):
         data = json.loads(request.body)
         username = data.get('username')
         password = data.get('password')
@@ -147,4 +149,6 @@ def login(request):
             except Exception as e:
                 return JsonResponse({'error': str(e)}, status=500)
         return JsonResponse({'error': 'Invalid data'}, status=400)
-    return JsonResponse({'error': 'Only POST method allowed'}, status=405)
+    
+    def get(self, request):
+        return JsonResponse({'error': 'Only POST method allowed'}, status=405)
