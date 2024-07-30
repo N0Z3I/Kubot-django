@@ -11,6 +11,11 @@ from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from pymyku import Client
+import json
+
 class RegisterUserView(GenericAPIView):
     serializer_class = UserRegisterSerializer
 
@@ -112,3 +117,34 @@ class LogoutUserView(GenericAPIView):
         response.delete_cookie('refresh')
         response.delete_cookie('access')
         return response
+
+@csrf_exempt
+def login(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        
+        if username and password:
+            try:
+                client = Client(username=username, password=password)
+                login_response = client.login_response
+                access_token = client.access_token
+                student_data = client.student_data
+                schedule = client.fetch_schedule()
+                grades = client.get_grades()
+                gpax = client.get_gpax()
+
+                response_data = {
+                    'loginResponse': login_response,
+                    'accessToken': access_token,
+                    'studentData': student_data,
+                    'schedule': schedule,
+                    'grades': grades,
+                    'gpax': gpax
+                }
+                return JsonResponse(response_data)
+            except Exception as e:
+                return JsonResponse({'error': str(e)}, status=500)
+        return JsonResponse({'error': 'Invalid data'}, status=400)
+    return JsonResponse({'error': 'Only POST method allowed'}, status=405)

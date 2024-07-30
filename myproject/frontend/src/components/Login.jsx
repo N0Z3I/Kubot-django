@@ -90,6 +90,9 @@ const Login = () => {
             <p className="pass-link">
               <Link to={"/signup"}>Create account</Link>
             </p>
+            <p className="pass-link">
+              <Link to={"/login"}>myKU</Link>
+            </p>
           </form>
         </div>
       </div>

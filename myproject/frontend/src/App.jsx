@@ -11,6 +11,7 @@ import {
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ResetPassword from "./components/ResetPassword";
+import KuLogin from "./components/KuLogin";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -21,7 +22,8 @@ function App() {
         <ToastContainer />
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<KuLogin />} />
+          {/* <Route path="/login" element={<Login />} /> */}
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Profile />} />
           <Route path="/otp/verify" element={<VerifyEmail />} />
