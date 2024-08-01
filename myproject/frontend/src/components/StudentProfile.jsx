@@ -11,7 +11,7 @@ const StudentProfile = () => {
   }, []);
 
   if (!studentData) {
-    return <div>Loading...</div>;
+    return <div>Loading...5555</div>;
   }
 
   return (

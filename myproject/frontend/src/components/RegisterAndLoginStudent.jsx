@@ -1,50 +1,113 @@
-import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const RegisterAndLoginStudent = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
+  const [isRegistering, setIsRegistering] = useState(true); // Toggle between register and login
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleRegisterAndLogin = async (e) => {
+  const handleOnChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post(
-        "http://localhost:8000/api/v1/auth/register-and-login-student/",
-        {
-          username,
-          password,
+    const { username, password } = formData;
+    if (!username || !password) {
+      setError("Username and password are required");
+    } else {
+      setIsLoading(true);
+      try {
+        const url = isRegistering
+          ? "http://localhost:8000/api/v1/auth/register-and-login-student/"
+          : "http://localhost:8000/api/v1/auth/login/";
+        const res = await axios.post(url, formData);
+        const response = res.data;
+        console.log(response);
+        setIsLoading(false);
+
+        if (res.status === 200 || res.status === 201) {
+          const user = {
+            email: response.email,
+            names: response.full_name,
+          };
+
+          Cookies.set("user", JSON.stringify(user));
+          Cookies.set("access", response.access_token);
+          Cookies.set("refresh", response.refresh_token);
+          toast.success("Operation successful");
+
+          setTimeout(() => {
+            navigate("/student_dashboard");
+            window.location.reload(); // Refresh the page after navigating
+          }, 1000);
         }
-      );
-      if (response.data.access_token) {
-        // Save the access token in localStorage or any state management library
-        localStorage.setItem("access_token", response.data.access_token);
-        navigate("/student_dashboard"); // Navigate to StudentProfile page
+      } catch (error) {
+        setIsLoading(false);
+        setError("Operation failed. Please try again.");
+        toast.error("Operation failed. Please try again.");
       }
-    } catch (error) {
-      setError("Registration or login failed. Please try again.");
     }
   };
 
   return (
-    <form onSubmit={handleRegisterAndLogin}>
-      <input
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="Username"
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-      />
-      <button type="submit">Register and Login</button>
-      {error && <p>{error}</p>}
-    </form>
+    <div>
+      <div className="form-container">
+        <div style={{ width: "30%" }} name="wrapper">
+          <h2>{isRegistering ? "myKu Login" : "Login"}</h2>
+          <form onSubmit={handleSubmit}>
+            {isLoading && <p>Loading...</p>}
+            {error && <p className="error-message">{error}</p>}
+            <div className="form-group">
+              <label>Username</label>
+              <input
+                type="text"
+                className="email-form"
+                name="username"
+                value={formData.username}
+                onChange={handleOnChange}
+              />
+            </div>
+            <div className="form-group">
+              <label>Password</label>
+              <input
+                type="password"
+                className="email-form"
+                name="password"
+                value={formData.password}
+                onChange={handleOnChange}
+              />
+            </div>
+            <input
+              type="submit"
+              value={isRegistering ? "Register" : "Login"}
+              className="submitButton"
+            />
+            <p className="pass-link">
+              <Link to={"/forget_password"}>Forgot password?</Link>
+            </p>
+            <p className="pass-link">
+              <Link to={isRegistering ? "/login" : "/signup"}>
+                {isRegistering
+                  ? "Already have an account? Login"
+                  : "Create account"}
+              </Link>
+            </p>
+            <p className="pass-link">
+              <Link to={"/ku_signup"}>myKU</Link>
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 
