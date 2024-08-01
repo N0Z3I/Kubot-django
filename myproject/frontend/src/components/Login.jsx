@@ -45,7 +45,7 @@ const Login = () => {
           toast.success("Login successful");
           setTimeout(() => {
             navigate("/dashboard");
-            window.location.reload(); // Refresh the page after navigating
+            // window.location.reload(); // Refresh the page after navigating
           }, 1000);
         }
       } catch (error) {

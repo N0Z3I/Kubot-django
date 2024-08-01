@@ -47,7 +47,7 @@ const RegisterAndLoginStudent = () => {
 
           setTimeout(() => {
             navigate("/student_dashboard");
-            window.location.reload(); // Refresh the page after navigating
+            // window.location.reload(); // Refresh the page after navigating
           }, 1000);
         }
       } catch (error) {
@@ -88,7 +88,7 @@ const RegisterAndLoginStudent = () => {
             </div>
             <input
               type="submit"
-              value={isRegistering ? "Register" : "Login"}
+              value={isRegistering ? "Login" : "Login"}
               className="submitButton"
             />
             <p className="pass-link">
