@@ -101,9 +101,6 @@ const RegisterAndLoginStudent = () => {
                   : "Create account"}
               </Link>
             </p>
-            <p className="pass-link">
-              <Link to={"/ku_signup"}>myKU</Link>
-            </p>
           </form>
         </div>
       </div>
