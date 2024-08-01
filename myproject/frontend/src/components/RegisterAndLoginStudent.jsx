@@ -29,7 +29,10 @@ const RegisterAndLoginStudent = () => {
         const url = isRegistering
           ? "http://localhost:8000/api/v1/auth/register-and-login-student/"
           : "http://localhost:8000/api/v1/auth/login/";
-        const res = await axios.post(url, formData);
+        const res = await axios.post(url, {
+          username: formData.username,
+          password: formData.password,
+        });
         const response = res.data;
         console.log(response);
         setIsLoading(false);
@@ -47,7 +50,7 @@ const RegisterAndLoginStudent = () => {
 
           setTimeout(() => {
             navigate("/student_dashboard");
-            // window.location.reload(); // Refresh the page after navigating
+            window.location.reload(); // Refresh the page after navigating
           }, 1000);
         }
       } catch (error) {

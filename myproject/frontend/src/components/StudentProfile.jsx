@@ -32,13 +32,12 @@ const StudentProfile = () => {
         Cookies.remove("refresh");
         Cookies.remove("user");
         localStorage.removeItem("studentData");
-        navigate("/login");
+        navigate("/ku_signup");
         toast.success("Logout successful");
       }
     } catch (error) {
       console.error(error);
       toast.error("Logout failed. Please try again.");
-      navigate("/login");
     }
   };
 

@@ -14,18 +14,23 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterAndLoginStudentView(GenericAPIView):
     serializer_class = RegisterAndLoginStudentSerializer
 
     def post(self, request):
+        logger.debug("Received data: %s", request.data)
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        logger.error("Validation failed: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class RegisterUserView(GenericAPIView):

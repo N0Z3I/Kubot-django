@@ -9,29 +9,43 @@ from django.utils.encoding import smart_str, smart_bytes
 from django.urls import reverse
 from .utils import send_normal_email
 from rest_framework_simplejwt.tokens import RefreshToken, Token
-from pymyku import Client
+from pymyku import Client, requests
 
 class RegisterAndLoginStudentSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=255, write_only=True)
     access_token = serializers.CharField(max_length=255, read_only=True)
+    refresh_token = serializers.CharField(max_length=255, read_only=True)
     student_code = serializers.CharField(max_length=255, read_only=True)
 
     class Meta:
-        fields = ['username', 'password', 'access_token', 'student_code']
+        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code']
 
     def validate(self, attrs):
         username = attrs.get('username')
         password = attrs.get('password')
 
         try:
-            client = Client(username, password)
-            student_data = {
-                'login_response': client.login_response,
-                'access_token': client.access_token,
-                'student_code': client.std_code
-            }
-            attrs['student_data'] = student_data
+            # Perform login and get response object
+            response = requests.login(username, password)
+            
+            # Check if the response is successful
+            if response.status_code != 200:
+                raise ValidationError("Login failed with status code: {}".format(response.status_code))
+
+            # Extract tokens from the response
+            response_data = response.json()  # Convert response to JSON
+            access_token = response_data.get('accesstoken')  # Change according to the actual key in the response
+            refresh_token = response_data.get('renewtoken')  # Change according to the actual key in the response
+            student_code = response_data.get('student_code')  # If applicable
+            
+            if not access_token or not refresh_token:
+                raise ValidationError("Failed to retrieve tokens from login response.")
+            
+            attrs['access_token'] = access_token
+            attrs['refresh_token'] = refresh_token
+            attrs['student_code'] = student_code
+
         except Exception as e:
             raise ValidationError({'error': str(e)})
 
@@ -40,8 +54,11 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
     def create(self, validated_data):
         username = validated_data['username']
         password = validated_data['password']
-        student_data = validated_data['student_data']
+        access_token = validated_data['access_token']
+        refresh_token = validated_data['refresh_token']
+        student_code = validated_data['student_code']
 
+        # Logic to create or update user in the database
         user, created = User.objects.get_or_create(
             email=username,
             defaults={
@@ -54,10 +71,8 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
         user.set_password(password)
         user.save()
 
-        validated_data['access_token'] = student_data['access_token']
-        validated_data['student_code'] = student_data['student_code']
-
         return validated_data
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=68, min_length=6, write_only=True)
