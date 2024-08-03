@@ -42,7 +42,7 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
             response_data = response.json()  # Convert response to JSON
             access_token = response_data.get('accesstoken')  # Change according to the actual key in the response
             refresh_token = response_data.get('renewtoken')  # Change according to the actual key in the response
-            student_code = response_data.get('student_code')  # If applicable
+            student_code = response_data.get('user', {}).get('idCode')  # If applicable
             
             if not access_token or not refresh_token:
                 raise ValidationError("Failed to retrieve tokens from login response.")

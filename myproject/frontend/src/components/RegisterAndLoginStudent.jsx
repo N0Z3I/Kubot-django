@@ -39,8 +39,8 @@ const RegisterAndLoginStudent = () => {
 
         if (res.status === 200 || res.status === 201) {
           const user = {
-            email: response.email,
-            names: response.full_name,
+            username: response.username,
+            id: response.student_code,
           };
 
           Cookies.set("user", JSON.stringify(user));
@@ -50,7 +50,7 @@ const RegisterAndLoginStudent = () => {
 
           setTimeout(() => {
             navigate("/student_dashboard");
-            window.location.reload(); // Refresh the page after navigating
+            // window.location.reload(); // Refresh the page after navigating
           }, 1000);
         }
       } catch (error) {
