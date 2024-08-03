@@ -60,9 +60,9 @@ const StudentProfile = () => {
           <div>
             <h2>Basic Information</h2>
             <p>Username: {responseData.user.username}</p>
-            <p>ID: {responseData.user.idCode}</p>
+            <p>ID: {responseData.user.id}</p>
+            <p>Full Name: {responseData.user.full_name}</p>
             <p>Email: {responseData.user.email}</p>
-            <p>Full Name: {responseData.user.fullName}</p>
             <h2>Full Response Data</h2>
             <pre>{JSON.stringify(responseData, null, 2)}</pre>
           </div>

@@ -12,6 +12,15 @@ from rest_framework_simplejwt.tokens import RefreshToken, Token
 from pymyku import Client, requests
 import json
 
+def decode_unicode(obj):
+    if isinstance(obj, str):
+        return obj.encode().decode('unicode_escape')
+    elif isinstance(obj, dict):
+        return {k: decode_unicode(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [decode_unicode(i) for i in obj]
+    return obj
+
 
 class RegisterAndLoginStudentSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
@@ -19,9 +28,11 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
     access_token = serializers.CharField(max_length=255, read_only=True)
     refresh_token = serializers.CharField(max_length=255, read_only=True)
     student_code = serializers.CharField(max_length=255, read_only=True)
+    first_name_th = serializers.CharField(max_length=255, read_only=True)
+    last_name_th = serializers.CharField(max_length=255, read_only=True)
 
     class Meta:
-        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code']
+        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code', 'first_name_th', 'last_name_th',]
 
     def validate(self, attrs):
         username = attrs.get('username')
@@ -30,10 +41,10 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
         try:
             # Perform login and get response object
             response = requests.login(username, password)
-            # print("Login response: /////", response)
+            print("Login response: ///666//", response)
             response_data = response.json()  # Convert response to JSON
-            # print("Response data: ", json.dumps(response_data, indent=4))  # Debug print
-            
+            print("Response data: ", json.dumps(response_data, indent=4, ensure_ascii=False))  # Debug print
+            # response_data = decode_unicode(response_data)
             # Check if the response is successful
             if response.status_code != 200:
                 raise ValidationError("Login failed with status code: {}".format(response.status_code))
@@ -43,6 +54,8 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
             access_token = response_data.get('accesstoken')  # Change according to the actual key in the response
             refresh_token = response_data.get('renewtoken')  # Change according to the actual key in the response
             student_code = response_data.get('user', {}).get('idCode')  # If applicable
+            first_name_th = response_data.get('user', {}).get('firstNameTh')  # Add first name in Thai
+            last_name_th = response_data.get('user', {}).get('lastNameTh')  # Add last name in Thai
             
             if not access_token or not refresh_token:
                 raise ValidationError("Failed to retrieve tokens from login response.")
@@ -50,6 +63,8 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
             attrs['access_token'] = access_token
             attrs['refresh_token'] = refresh_token
             attrs['student_code'] = student_code
+            attrs['first_name_th'] = first_name_th
+            attrs['last_name_th'] = last_name_th
 
         except Exception as e:
             raise ValidationError({'error': str(e)})
@@ -62,6 +77,8 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
         access_token = validated_data['access_token']
         refresh_token = validated_data['refresh_token']
         student_code = validated_data['student_code']
+        first_name_th = validated_data['first_name_th']
+        last_name_th = validated_data['last_name_th']
 
         # Logic to create or update user in the database
         user, created = User.objects.get_or_create(
@@ -71,6 +88,7 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
                 'last_name': 'Last',
                 'is_active': True,
                 'is_verified': True,
+                'student_code': student_code,
             }
         )
         user.set_password(password)

@@ -42,7 +42,7 @@ const RegisterAndLoginStudent = () => {
             username: response.username,
             id: response.student_code,
             email: response.email,
-            full_name: response.full_name,
+            full_name: response.first_name_th + " " + response.last_name_th,
           };
 
           Cookies.set("user", JSON.stringify(user));
