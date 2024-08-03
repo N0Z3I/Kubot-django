@@ -30,9 +30,9 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
         try:
             # Perform login and get response object
             response = requests.login(username, password)
-            print("Login response: /////", response)
+            # print("Login response: /////", response)
             response_data = response.json()  # Convert response to JSON
-            print("Response data: ", json.dumps(response_data, indent=4))  # Debug print
+            # print("Response data: ", json.dumps(response_data, indent=4))  # Debug print
             
             # Check if the response is successful
             if response.status_code != 200:

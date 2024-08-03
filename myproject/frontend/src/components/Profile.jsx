@@ -67,7 +67,6 @@ const Profile = () => {
               Logout
             </button>
           </h1>
-          <img src="/favicon.png" alt="" />
         </div>
       </section>
 

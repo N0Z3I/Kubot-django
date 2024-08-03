@@ -41,6 +41,8 @@ const RegisterAndLoginStudent = () => {
           const user = {
             username: response.username,
             id: response.student_code,
+            email: response.email,
+            full_name: response.full_name,
           };
 
           Cookies.set("user", JSON.stringify(user));
@@ -49,9 +51,8 @@ const RegisterAndLoginStudent = () => {
           toast.success("Operation successful");
 
           setTimeout(() => {
-            navigate("/student_dashboard");
-            // window.location.reload(); // Refresh the page after navigating
-          }, 1000);
+            navigate("/student_dashboard", { state: { user } }); // Pass user data to student_dashboard
+          });
         }
       } catch (error) {
         setIsLoading(false);
