@@ -10,6 +10,8 @@ from django.urls import reverse
 from .utils import send_normal_email
 from rest_framework_simplejwt.tokens import RefreshToken, Token
 from pymyku import Client, requests
+import json
+
 
 class RegisterAndLoginStudentSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
@@ -28,6 +30,9 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
         try:
             # Perform login and get response object
             response = requests.login(username, password)
+            print("Login response: /////", response)
+            response_data = response.json()  # Convert response to JSON
+            print("Response data: ", json.dumps(response_data, indent=4))  # Debug print
             
             # Check if the response is successful
             if response.status_code != 200:
