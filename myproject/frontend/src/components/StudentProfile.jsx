@@ -69,7 +69,13 @@ const StudentProfile = () => {
           <h1>Schedule</h1>
           <div>
             {responseData.user.schedule ? (
-              <pre>{JSON.stringify(responseData.user.schedule, null, 2)}</pre>
+              responseData.user.schedule.results.map((item, index) => (
+                <div key={index} className="schedule-item">
+                  <h3>
+                    Semester {item.semester}, Academic Year {item.academicYr}
+                  </h3>
+                </div>
+              ))
             ) : (
               <p>No schedule available</p>
             )}
@@ -109,8 +115,6 @@ const StudentProfile = () => {
 
       <footer>
         <p>Copyright © 2024 KU BOT. All rights reserved.</p>
-        {/* <h2>Full Response Data</h2>
-            <pre>{JSON.stringify(responseData, null, 2)}</pre> */}
       </footer>
     </div>
   );
