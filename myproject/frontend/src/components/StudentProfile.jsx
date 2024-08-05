@@ -66,6 +66,28 @@ const StudentProfile = () => {
         </div>
       </section>
 
+      {/* <section id="schedule">
+        <div className="container">
+          <h1>Schedule</h1>
+          <div>
+            {responseData.user.schedule ? (
+              <pre>{JSON.stringify(responseData.user.schedule, null, 2)}</pre>
+            ) : (
+              <p>No schedule available</p>
+            )}
+          </div>
+          <div>
+            {responseData.user.group_course ? (
+              <pre>
+                {JSON.stringify(responseData.user.group_course, null, 2)}
+              </pre>
+            ) : (
+              <p>No course available</p>
+            )}
+          </div>
+        </div>
+      </section> */}
+
       <section id="schedule">
         <div className="container">
           <h1>Schedule</h1>
