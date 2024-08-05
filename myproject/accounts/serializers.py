@@ -23,9 +23,10 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
     first_name_th = serializers.CharField(max_length=255, read_only=True)
     last_name_th = serializers.CharField(max_length=255, read_only=True)
     schedule = serializers.JSONField(read_only=True)
+    group_course = serializers.JSONField(read_only=True)
 
     class Meta:
-        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code', 'first_name_th', 'last_name_th', 'schedule']
+        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code', 'first_name_th', 'last_name_th', 'schedule', 'group_course']
 
     def validate(self, attrs):
         username = attrs.get('username')
@@ -80,12 +81,32 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
             schedule_data = schedule_response.json()
             print("Schedule data: ", json.dumps(schedule_data, indent=4, ensure_ascii=False))  # Debug print
 
+            std_id = student_data.get('stdId')
+            academic_year = schedule_data.get('academicYr'),
+            semester = schedule_data.get('semester'),
+            
+            group_course_response = pymyku.requests.get_group_course(
+                access_token=access_token,
+                std_id=std_id,
+                academic_year=academic_year,
+                semester=semester,
+                login_response=response_data,
+                schedule_response=schedule_response
+            )
+
+            if group_course_response.status_code != 200:
+                raise ValidationError("Failed to retrieve group course with status code: {}".format(group_course_response.status_code))
+
+            group_course_data = group_course_response.json()
+            print("Courses data: ", json.dumps(group_course_data, indent=4, ensure_ascii=False))  # Debug print
+            
             attrs['access_token'] = access_token
             attrs['refresh_token'] = refresh_token
             attrs['student_code'] = student_code
             attrs['first_name_th'] = first_name_th
             attrs['last_name_th'] = last_name_th
             attrs['schedule'] = schedule_data
+            attrs['group_course'] = group_course_data
 
         except Exception as e:
             print("Exception during validation:", str(e))  # Debug print
@@ -111,7 +132,6 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
                 'last_name': 'Last',
                 'is_active': True,
                 'is_verified': True,
-                'student_code': student_code,
             }
         )
         user.set_password(password)

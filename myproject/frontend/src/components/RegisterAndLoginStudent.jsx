@@ -44,6 +44,7 @@ const RegisterAndLoginStudent = () => {
             email: response.email,
             full_name: response.first_name_th + " " + response.last_name_th,
             schedule: response.schedule, // Add schedule data here
+            group_course: response.group_course,
           };
 
           Cookies.set("user", JSON.stringify(user));
