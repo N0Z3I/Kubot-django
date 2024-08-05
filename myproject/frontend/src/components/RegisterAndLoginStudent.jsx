@@ -43,6 +43,7 @@ const RegisterAndLoginStudent = () => {
             id: response.student_code,
             email: response.email,
             full_name: response.first_name_th + " " + response.last_name_th,
+            schedule: response.schedule, // Add schedule data here
           };
 
           Cookies.set("user", JSON.stringify(user));

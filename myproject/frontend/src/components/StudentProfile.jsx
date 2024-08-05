@@ -57,14 +57,22 @@ const StudentProfile = () => {
       <section id="profile-information">
         <div className="container">
           <h1>Profile Information</h1>
+          <p>Username: {responseData.user.username}</p>
+          <p>ID: {responseData.user.id}</p>
+          <p>Full Name: {responseData.user.full_name}</p>
+          <p>Email: {responseData.user.email}</p>
+        </div>
+      </section>
+
+      <section id="schedule">
+        <div className="container">
+          <h1>Schedule</h1>
           <div>
-            <h2>Basic Information</h2>
-            <p>Username: {responseData.user.username}</p>
-            <p>ID: {responseData.user.id}</p>
-            <p>Full Name: {responseData.user.full_name}</p>
-            <p>Email: {responseData.user.email}</p>
-            <h2>Full Response Data</h2>
-            <pre>{JSON.stringify(responseData, null, 2)}</pre>
+            {responseData.user.schedule ? (
+              <pre>{JSON.stringify(responseData.user.schedule, null, 2)}</pre>
+            ) : (
+              <p>No schedule available</p>
+            )}
           </div>
         </div>
       </section>
@@ -101,6 +109,8 @@ const StudentProfile = () => {
 
       <footer>
         <p>Copyright © 2024 KU BOT. All rights reserved.</p>
+        {/* <h2>Full Response Data</h2>
+            <pre>{JSON.stringify(responseData, null, 2)}</pre> */}
       </footer>
     </div>
   );

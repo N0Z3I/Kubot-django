@@ -11,15 +11,7 @@ from .utils import send_normal_email
 from rest_framework_simplejwt.tokens import RefreshToken, Token
 from pymyku import Client, requests
 import json
-
-def decode_unicode(obj):
-    if isinstance(obj, str):
-        return obj.encode().decode('unicode_escape')
-    elif isinstance(obj, dict):
-        return {k: decode_unicode(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [decode_unicode(i) for i in obj]
-    return obj
+import pymyku
 
 
 class RegisterAndLoginStudentSerializer(serializers.Serializer):
@@ -30,43 +22,73 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
     student_code = serializers.CharField(max_length=255, read_only=True)
     first_name_th = serializers.CharField(max_length=255, read_only=True)
     last_name_th = serializers.CharField(max_length=255, read_only=True)
+    schedule = serializers.JSONField(read_only=True)
 
     class Meta:
-        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code', 'first_name_th', 'last_name_th',]
+        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code', 'first_name_th', 'last_name_th', 'schedule']
 
     def validate(self, attrs):
         username = attrs.get('username')
         password = attrs.get('password')
 
+        print("Received username:", username)  # Debug print
+        print("Received password:", password)  # Debug print
+
         try:
             # Perform login and get response object
-            response = requests.login(username, password)
+            response = pymyku.requests.login(username, password)
             print("Login response: ///666//", response)
             response_data = response.json()  # Convert response to JSON
             print("Response data: ", json.dumps(response_data, indent=4, ensure_ascii=False))  # Debug print
-            # response_data = decode_unicode(response_data)
+
             # Check if the response is successful
             if response.status_code != 200:
                 raise ValidationError("Login failed with status code: {}".format(response.status_code))
 
-            # Extract tokens from the response
-            response_data = response.json()  # Convert response to JSON
-            access_token = response_data.get('accesstoken')  # Change according to the actual key in the response
-            refresh_token = response_data.get('renewtoken')  # Change according to the actual key in the response
-            student_code = response_data.get('user', {}).get('idCode')  # If applicable
-            first_name_th = response_data.get('user', {}).get('firstNameTh')  # Add first name in Thai
-            last_name_th = response_data.get('user', {}).get('lastNameTh')  # Add last name in Thai
-            
+            # Extract tokens and other necessary fields from the response
+            access_token = response_data.get('accesstoken')
+            refresh_token = response_data.get('renewtoken')
+            user_data = response_data.get('user', {})
+            student_data = user_data.get('student', {})
+
+            student_code = user_data.get('idCode')
+            first_name_th = user_data.get('firstNameTh')
+            last_name_th = user_data.get('lastNameTh')
+            user_type = user_data.get('userType')
+            campus_code = student_data.get('campusCode')
+            faculty_code = student_data.get('facultyCode')
+            major_code = student_data.get('majorCode')
+            student_status_code = student_data.get('studentStatusCode')
+
             if not access_token or not refresh_token:
                 raise ValidationError("Failed to retrieve tokens from login response.")
-            
+
+            # Fetch the schedule using pymyku
+            schedule_response = pymyku.requests.get_schedule(
+                access_token=access_token,
+                user_type=user_type,
+                campus_code=campus_code,
+                faculty_code=faculty_code,
+                major_code=major_code,
+                student_status_code=student_status_code,
+                login_response=response_data
+            )
+
+            if schedule_response.status_code != 200:
+                raise ValidationError("Failed to retrieve schedule with status code: {}".format(schedule_response.status_code))
+
+            schedule_data = schedule_response.json()
+            print("Schedule data: ", json.dumps(schedule_data, indent=4, ensure_ascii=False))  # Debug print
+
             attrs['access_token'] = access_token
             attrs['refresh_token'] = refresh_token
             attrs['student_code'] = student_code
             attrs['first_name_th'] = first_name_th
             attrs['last_name_th'] = last_name_th
+            attrs['schedule'] = schedule_data
 
         except Exception as e:
+            print("Exception during validation:", str(e))  # Debug print
             raise ValidationError({'error': str(e)})
 
         return attrs
@@ -79,6 +101,7 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
         student_code = validated_data['student_code']
         first_name_th = validated_data['first_name_th']
         last_name_th = validated_data['last_name_th']
+        schedule = validated_data['schedule']
 
         # Logic to create or update user in the database
         user, created = User.objects.get_or_create(
@@ -95,6 +118,7 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
         user.save()
 
         return validated_data
+
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):

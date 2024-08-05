@@ -23,9 +23,6 @@ logger = logging.getLogger(__name__)
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterAndLoginStudentView(GenericAPIView):
     serializer_class = RegisterAndLoginStudentSerializer
-    
-    # def perform_create(self, serializer):
-    #     serializer.save()
 
     def post(self, request):
         logger.debug("Received data: %s", request.data)
