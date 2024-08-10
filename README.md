@@ -45,5 +45,6 @@ Additional Notes
 If you install new packages while working on the project, make sure to update the requirements.txt file by running:
 ```bash
 pip freeze > requirements.txt
-Make sure not to include your virtual environment (myenv/ or similar) in the repository. It should be excluded by adding it to the .gitignore file.
 ```
+Make sure not to include your virtual environment (myenv/ or similar) in the repository. It should be excluded by adding it to the .gitignore file.
+
