@@ -191,3 +191,17 @@ footer {
   height: 15dvh;
   min-height: 500px;
 }
+
+.schedule-item {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.schedule-item h3 {
+  margin: 0 0 10px 0;
+}
+
+.schedule-item p {
+  margin: 5px 0;
+}

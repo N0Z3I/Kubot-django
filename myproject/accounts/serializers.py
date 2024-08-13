@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import User
 from django.contrib.auth import authenticate
-from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.sites.shortcuts import get_current_site
@@ -9,6 +9,137 @@ from django.utils.encoding import smart_str, smart_bytes
 from django.urls import reverse
 from .utils import send_normal_email
 from rest_framework_simplejwt.tokens import RefreshToken, Token
+from pymyku import Client, requests
+import json
+import pymyku
+
+
+class RegisterAndLoginStudentSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=255, write_only=True)
+    access_token = serializers.CharField(max_length=255, read_only=True)
+    refresh_token = serializers.CharField(max_length=255, read_only=True)
+    student_code = serializers.CharField(max_length=255, read_only=True)
+    first_name_th = serializers.CharField(max_length=255, read_only=True)
+    last_name_th = serializers.CharField(max_length=255, read_only=True)
+    schedule = serializers.JSONField(read_only=True)
+    group_course = serializers.JSONField(read_only=True)
+
+    class Meta:
+        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code', 'first_name_th', 'last_name_th', 'schedule', 'group_course']
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        print("Received username:", username)  # Debug print
+        print("Received password:", password)  # Debug print
+
+        try:
+            # Perform login and get response object
+            response = pymyku.requests.login(username, password)
+            print("Login response: ///666//", response)
+            response_data = response.json()  # Convert response to JSON
+            print("Response data: ", json.dumps(response_data, indent=4, ensure_ascii=False))  # Debug print
+
+            # Check if the response is successful
+            if response.status_code != 200:
+                raise ValidationError("Login failed with status code: {}".format(response.status_code))
+
+            # Extract tokens and other necessary fields from the response
+            access_token = response_data.get('accesstoken')
+            refresh_token = response_data.get('renewtoken')
+            user_data = response_data.get('user', {})
+            student_data = user_data.get('student', {})
+
+            student_code = user_data.get('idCode')
+            first_name_th = user_data.get('firstNameTh')
+            last_name_th = user_data.get('lastNameTh')
+            user_type = user_data.get('userType')
+            campus_code = student_data.get('campusCode')
+            faculty_code = student_data.get('facultyCode')
+            major_code = student_data.get('majorCode')
+            student_status_code = student_data.get('studentStatusCode')
+
+            if not access_token or not refresh_token:
+                raise ValidationError("Failed to retrieve tokens from login response.")
+
+            # Fetch the schedule using pymyku
+            schedule_response = pymyku.requests.get_schedule(
+                access_token=access_token,
+                user_type=user_type,
+                campus_code=campus_code,
+                faculty_code=faculty_code,
+                major_code=major_code,
+                student_status_code=student_status_code,
+                login_response=response_data
+            )
+
+            if schedule_response.status_code != 200:
+                raise ValidationError("Failed to retrieve schedule with status code: {}".format(schedule_response.status_code))
+
+            schedule_data = schedule_response.json()
+            print("Schedule data: ", json.dumps(schedule_data, indent=4, ensure_ascii=False))  # Debug print
+
+            std_id = student_data.get('stdId')
+            academic_year = schedule_data.get('academicYr'),
+            semester = schedule_data.get('semester'),
+            
+            group_course_response = pymyku.requests.get_group_course(
+                access_token=access_token,
+                std_id=std_id,
+                academic_year=academic_year,
+                semester=semester,
+                login_response=response_data,
+                schedule_response=schedule_response
+            )
+
+            if group_course_response.status_code != 200:
+                raise ValidationError("Failed to retrieve group course with status code: {}".format(group_course_response.status_code))
+
+            group_course_data = group_course_response.json()
+            print("Courses data: ", json.dumps(group_course_data, indent=4, ensure_ascii=False))  # Debug print
+            
+            attrs['access_token'] = access_token
+            attrs['refresh_token'] = refresh_token
+            attrs['student_code'] = student_code
+            attrs['first_name_th'] = first_name_th
+            attrs['last_name_th'] = last_name_th
+            attrs['schedule'] = schedule_data
+            attrs['group_course'] = group_course_data
+
+        except Exception as e:
+            print("Exception during validation:", str(e))  # Debug print
+            raise ValidationError({'error': str(e)})
+
+        return attrs
+
+    def create(self, validated_data):
+        username = validated_data['username']
+        password = validated_data['password']
+        access_token = validated_data['access_token']
+        refresh_token = validated_data['refresh_token']
+        student_code = validated_data['student_code']
+        first_name_th = validated_data['first_name_th']
+        last_name_th = validated_data['last_name_th']
+        schedule = validated_data['schedule']
+
+        # Logic to create or update user in the database
+        user, created = User.objects.get_or_create(
+            email=username,
+            defaults={
+                'first_name': 'First',  # Replace with actual data if available
+                'last_name': 'Last',
+                'is_active': True,
+                'is_verified': True,
+            }
+        )
+        user.set_password(password)
+        user.save()
+
+        return validated_data
+
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=68, min_length=6, write_only=True)
@@ -79,8 +210,8 @@ class PasswordResetRequestSerializer(serializers.Serializer):
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
             request = self.context.get('request')
-            site_domain = get_current_site(request).domain
-            relative_link = reverse('password-reset-confirm', kwargs={'uidb64':uidb64, 'token':token})
+            site_domain = 'localhost:5173'
+            relative_link = f'/password-reset-confirm/{uidb64}/{token}/'
             abslink = f"http://{site_domain}{relative_link}"
             email_body = f"Hi use the link below to reset your password \n{abslink}"
             data = {

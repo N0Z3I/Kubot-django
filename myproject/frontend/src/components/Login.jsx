@@ -87,6 +87,12 @@ const Login = () => {
             <p className="pass-link">
               <Link to={"/forget_password"}>Forgot password?</Link>
             </p>
+            <p className="pass-link">
+              <Link to={"/signup"}>Create account</Link>
+            </p>
+            <p className="pass-link">
+              <Link to={"/ku_signup"}>myKU</Link>
+            </p>
           </form>
         </div>
       </div>
