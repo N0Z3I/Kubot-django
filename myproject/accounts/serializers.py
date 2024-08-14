@@ -60,6 +60,9 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
             faculty_code = student_data.get('facultyCode')
             major_code = student_data.get('majorCode')
             student_status_code = student_data.get('studentStatusCode')
+            
+            first_name_en = user_data.get('firstNameEn')
+            last_name_en = user_data.get('lastNameEn')
 
             if not access_token or not refresh_token:
                 raise ValidationError("Failed to retrieve tokens from login response.")
@@ -103,8 +106,8 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
             attrs['access_token'] = access_token
             attrs['refresh_token'] = refresh_token
             attrs['student_code'] = student_code
-            attrs['first_name_th'] = first_name_th
-            attrs['last_name_th'] = last_name_th
+            attrs['first_name_en'] = first_name_en
+            attrs['last_name_en'] = last_name_en
             attrs['schedule'] = schedule_data
             attrs['group_course'] = group_course_data
 
@@ -120,16 +123,16 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
         access_token = validated_data['access_token']
         refresh_token = validated_data['refresh_token']
         student_code = validated_data['student_code']
-        first_name_th = validated_data['first_name_th']
-        last_name_th = validated_data['last_name_th']
+        first_name_en = validated_data['first_name_en']
+        last_name_en = validated_data['last_name_en']
         schedule = validated_data['schedule']
 
         # Logic to create or update user in the database
         user, created = User.objects.get_or_create(
             email=username,
             defaults={
-                'first_name': 'First',  # Replace with actual data if available
-                'last_name': 'Last',
+                'first_name': first_name_en,  # Replace with actual data if available
+                'last_name': last_name_en,
                 'is_active': True,
                 'is_verified': True,
             }
