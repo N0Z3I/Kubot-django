@@ -50,6 +50,17 @@ const Profile = () => {
 
   return (
     <div>
+      <header>
+        <h5 className="logo"></h5>
+        <nav className="navigation">
+        <a href="/ku_signup">
+        <button className="loginmyku-btn">Sign in with nontri account</button>
+          </a> 
+          <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
+        </nav>
+      </header>
       <section id="hero">
         <div className="container">
           <h1>
@@ -63,9 +74,6 @@ const Profile = () => {
             >
               <button className="hover">Add to discord</button>
             </a>
-            <button onClick={handleLogout} className="logout-btn">
-              Logout
-            </button>
           </h1>
           <img src="/favicon.png" alt="" />
         </div>
@@ -77,7 +85,7 @@ const Profile = () => {
         </div>
       </section>
 
-      <section id="about">
+      <section id="commands">
         <div className="container">
           <h1>Commands</h1>
         </div>
