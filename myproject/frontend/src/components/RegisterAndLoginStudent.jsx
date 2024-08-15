@@ -97,8 +97,8 @@ const RegisterAndLoginStudent = () => {
               value={isRegistering ? "Login" : "Login"}
               className="submitButton"
             />
-                       <p1 className="pass-link">
-              Already have an account? <Link to={"/login"}>Login here</Link>
+            <p1 className="pass-link">
+            Sign in with email account <Link to={"/login"}>Login here</Link>
             </p1>
           </form>
         </div>
