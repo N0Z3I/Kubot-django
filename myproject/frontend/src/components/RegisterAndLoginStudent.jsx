@@ -68,13 +68,13 @@ const RegisterAndLoginStudent = () => {
     <div>
       <div className="form-container">
         <div style={{ width: "30%" }} name="wrapper">
-          <h2>{isRegistering ? "myKu Login" : "Login"}</h2>
           <form onSubmit={handleSubmit}>
             {isLoading && <p>Loading...</p>}
             {error && <p className="error-message">{error}</p>}
             <div className="form-group">
-              <label>Username</label>
+            <h4>{isRegistering ? "MyKu Login" : "Login"}</h4>
               <input
+                placeholder="Username"
                 type="text"
                 className="email-form"
                 name="username"
@@ -83,8 +83,8 @@ const RegisterAndLoginStudent = () => {
               />
             </div>
             <div className="form-group">
-              <label>Password</label>
               <input
+                placeholder="Password"
                 type="password"
                 className="email-form"
                 name="password"
@@ -97,16 +97,6 @@ const RegisterAndLoginStudent = () => {
               value={isRegistering ? "Login" : "Login"}
               className="submitButton"
             />
-            <p className="pass-link">
-              <Link to={"/forget_password"}>Forgot password?</Link>
-            </p>
-            <p className="pass-link">
-              <Link to={isRegistering ? "/login" : "/signup"}>
-                {isRegistering
-                  ? "Already have an account? Login"
-                  : "Create account"}
-              </Link>
-            </p>
           </form>
         </div>
       </div>

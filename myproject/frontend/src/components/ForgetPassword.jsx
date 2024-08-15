@@ -25,15 +25,15 @@ const ForgetPassword = () => {
 
   return (
     <div>
-      <h2>Enter your registered email</h2>
-      <div className="wrapper">
+      <div className="form-container">
         {message ? (
           <div>{message}</div>
         ) : (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="email">Email Address:</label>
+            <h4>Enter your registered email</h4>
               <input
+                placeholder="Email Address"
                 type="text"
                 className="email-form"
                 name="email"
