@@ -36,11 +36,11 @@ const ResetPassword = () => {
     <div>
       <div className="form-container">
         <div className="wrapper" style={{ width: "100%" }}>
-          <h2>Enter your New Password</h2>
           <form action="" onSubmit={handleSubmit}>
             <div className="form-group">
-              <label htmlFor="">New Password:</label>
+              <h4>Enter your New Password</h4>
               <input
+                placeholder="New Password"
                 type="text"
                 className="email-form"
                 name="password"
@@ -49,8 +49,8 @@ const ResetPassword = () => {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="">Confirm Password</label>
               <input
+                placeholder="Confirm Password"
                 type="text"
                 className="email-form"
                 name="confirm_password"

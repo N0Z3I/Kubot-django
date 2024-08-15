@@ -60,12 +60,12 @@ const Login = () => {
     <div>
       <div className="form-container">
         <div style={{ width: "30%" }} name="wrapper">
-          <h2>Login</h2>
           <form onSubmit={handleSubmit}>
             {isLoading && <p>Loading...</p>}
             <div className="form-group">
-              <label>Email address</label>
+              <h4>Login</h4>
               <input
+                placeholder="Email"
                 type="text"
                 className="email-form"
                 name="email"
@@ -74,8 +74,8 @@ const Login = () => {
               />
             </div>
             <div className="form-group">
-              <label>Password</label>
               <input
+                placeholder="Password"
                 type="password"
                 className="email-form"
                 name="password"
@@ -84,15 +84,17 @@ const Login = () => {
               />
             </div>
             <input type="submit" value="Login" className="submitButton" />
-            <p className="pass-link">
+            <p1 className="pass-link">
               <Link to={"/forget_password"}>Forgot password?</Link>
-            </p>
-            <p className="pass-link">
-              <Link to={"/signup"}>Create account</Link>
-            </p>
-            <p className="pass-link">
-              <Link to={"/ku_signup"}>myKU</Link>
-            </p>
+            </p1>
+            <br />
+            <p1 className="pass-link">
+              Don't have an account? <Link to={"/signup"}>Register</Link>
+            </p1>
+            <br />
+            <p1 className="pass-link">
+              Sign in with nontri account <Link to={"/ku_signup"}>myKU</Link>
+            </p1>
           </form>
         </div>
       </div>

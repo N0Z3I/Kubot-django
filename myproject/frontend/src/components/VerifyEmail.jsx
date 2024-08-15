@@ -26,8 +26,8 @@ const VerifyEmail = () => {
       <div className="form-container">
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="">Enter your OTP code:</label>
             <input
+              placeholder="Enter your OTP code"
               type="text"
               className="email-form"
               name="otp"
