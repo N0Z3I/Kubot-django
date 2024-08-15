@@ -33,6 +33,14 @@ const StudentProfile = () => {
 
   return (
     <div>
+      <header>
+        <h5 className="logo"></h5>
+        <nav className="navigation">
+          <button onClick={handleLogout} className="logout-btn">
+              Logout
+            </button>
+        </nav>
+      </header>
       <section id="hero">
         <div className="container">
           <h1>
@@ -47,10 +55,8 @@ const StudentProfile = () => {
             >
               <button className="hover">Add to discord</button>
             </a>
-            <button onClick={handleLogout} className="logout-btn">
-              Logout
-            </button>
           </h1>
+          <img src="/favicon.png" alt="" />
         </div>
       </section>
 
