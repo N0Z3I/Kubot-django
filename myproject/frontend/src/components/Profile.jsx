@@ -78,34 +78,6 @@ const Profile = () => {
           <img src="/favicon.png" alt="" />
         </div>
       </section>
-
-      <section id="features">
-        <div className="container">
-          <h1>Features</h1>
-        </div>
-      </section>
-
-      <section id="commands">
-        <div className="container">
-          <h1>Commands</h1>
-        </div>
-      </section>
-
-      <section id="addbot">
-        <div className="container">
-          <h3>
-            Add KuBot
-            <p>Start upgrading your Discord server today!</p>
-            <a href="https://discord.com/oauth2/authorize?client_id=1245512193500381205&permissions=8&scope=bot">
-              <button className="hover">Add to discord</button>
-            </a>
-          </h3>
-        </div>
-      </section>
-
-      <footer>
-        <p>Copyright © 2024 KU BOT. All rights reserved.</p>
-      </footer>
     </div>
   );
 };

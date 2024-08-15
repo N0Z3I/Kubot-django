@@ -41,24 +41,6 @@ const StudentProfile = () => {
             </button>
         </nav>
       </header>
-      <section id="hero">
-        <div className="container">
-          <h1>
-            The only Discord app
-            <br />
-            you'll ever need!
-            <p>KuBot is the easiest way to organize your studies.</p>
-            <a
-              href="https://discord.com/oauth2/authorize?client_id=1245512193500381205&permissions=8&scope=bot"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button className="hover">Add to discord</button>
-            </a>
-          </h1>
-          <img src="/favicon.png" alt="" />
-        </div>
-      </section>
 
       <section id="profile-information">
         <div className="container">
@@ -160,41 +142,7 @@ const StudentProfile = () => {
             )}
           </div>
         </div>
-      </section>
-
-      <section id="features">
-        <div className="container">
-          <h1>Features</h1>
-          <div></div>
-        </div>
-      </section>
-
-      <section id="about">
-        <div className="container">
-          <h1>Commands</h1>
-          <div></div>
-        </div>
-      </section>
-
-      <section id="addbot">
-        <div className="container">
-          <h3>
-            Add KuBot
-            <p>Start upgrading your Discord server today!</p>
-            <a
-              href="https://discord.com/oauth2/authorize?client_id=1245512193500381205&permissions=8&scope=bot"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button className="hover">Add to discord</button>
-            </a>
-          </h3>
-        </div>
-      </section>
-
-      <footer>
-        <p>Copyright © 2024 KU BOT. All rights reserved.</p>
-      </footer>
+      </section>s
     </div>
   );
 };
