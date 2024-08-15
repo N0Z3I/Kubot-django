@@ -50,6 +50,19 @@ const Profile = () => {
 
   return (
     <div>
+      <header>
+        <h5 className="logo"></h5>
+        <nav className="navigation">
+          <a href="/ku_signup">
+            <button className="loginmyku-btn">
+              Sign in with nontri account
+            </button>
+          </a>
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </nav>
+      </header>
       <section id="hero">
         <div className="container">
           <h1>
@@ -63,41 +76,10 @@ const Profile = () => {
             >
               <button className="hover">Add to discord</button>
             </a>
-            <button onClick={handleLogout} className="logout-btn">
-              Logout
-            </button>
           </h1>
           <img src="/favicon.png" alt="" />
         </div>
       </section>
-
-      <section id="features">
-        <div className="container">
-          <h1>Features</h1>
-        </div>
-      </section>
-
-      <section id="about">
-        <div className="container">
-          <h1>Commands</h1>
-        </div>
-      </section>
-
-      <section id="addbot">
-        <div className="container">
-          <h3>
-            Add KuBot
-            <p>Start upgrading your Discord server today!</p>
-            <a href="https://discord.com/oauth2/authorize?client_id=1245512193500381205&permissions=8&scope=bot">
-              <button className="hover">Add to discord</button>
-            </a>
-          </h3>
-        </div>
-      </section>
-
-      <footer>
-        <p>Copyright © 2024 KU BOT. All rights reserved.</p>
-      </footer>
     </div>
   );
 };

@@ -119,6 +119,27 @@ label {
   transform: scale(1.05);
 }
 
+.loginmyku-btn {
+  padding: 10px 22px;
+  outline: none;
+  width: 350spx;
+  height: 50px;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #0a6765;
+  margin: 1rem;
+  border: none;
+  color: #ebeefd;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.loginmyku-btn:hover {
+  transform: scale(1.05);
+}
+
 .vbtn {
   padding: 10px 22px;
   outline: none;
@@ -141,27 +162,6 @@ h3 {
   font-family: "Rubik", sans-serif;
   font-size: 48px;
   color: #2c2c2c;
-}
-
-.logout-btn {
-  padding: 10px 22px;
-  outline: none;
-  width: 120px;
-  height: 50px;
-  font-size: 20px;
-  font-weight: bold;
-  background-color: #e7461e;
-  margin: 1rem;
-  border: none;
-  color: #ebeefd;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
-  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
-}
-
-.logout-btn:hover {
-  transform: scale(1.05);
 }
 
 h2,
@@ -242,6 +242,46 @@ p1 {
   color: #2c2c2c;
   text-transform: none;
 }
+
+header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 90%;
+  padding: 20px 100px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 99;
+}
+
+.logo {
+  font-size: 2em;
+  color: #0a6765;
+  font-family: "Poppins", sans-serif;
+}
+
+.navigation .logout-btn {
+  padding: 10px 22px;
+  outline: none;
+  width: 140px;
+  height: 50px;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #e7461e;
+  margin: 1rem;
+  border: none;
+  color: #ebeefd;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.navigation .logout-btn:hover {
+  transform: scale(1.05);
+}
+
 body {
   margin: auto;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;

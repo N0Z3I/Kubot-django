@@ -33,27 +33,14 @@ const StudentProfile = () => {
 
   return (
     <div>
-      <section id="hero">
-        <div className="container">
-          <h1>
-            The only Discord app
-            <br />
-            you'll ever need!
-            <p>KuBot is the easiest way to organize your studies.</p>
-            <a
-              href="https://discord.com/oauth2/authorize?client_id=1245512193500381205&permissions=8&scope=bot"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button className="hover">Add to discord</button>
-            </a>
-            <button onClick={handleLogout} className="logout-btn">
-              Logout
-            </button>
-          </h1>
-        </div>
-      </section>
-
+      <header>
+        <h5 className="logo"></h5>
+        <nav className="navigation">
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </nav>
+      </header>
       <section id="profile-information">
         <div className="container">
           <h1>Profile Information</h1>
@@ -65,7 +52,6 @@ const StudentProfile = () => {
           </div>
         </div>
       </section>
-
       {/* <section id="schedule">
         <div className="container">
           <h1>Schedule</h1>
@@ -87,7 +73,6 @@ const StudentProfile = () => {
           </div>
         </div>
       </section> */}
-
       <section id="schedule">
         <div className="container">
           <h1>Schedule</h1>
@@ -155,42 +140,8 @@ const StudentProfile = () => {
           </div>
         </div>
       </section>
-
-      <section id="features">
-        <div className="container">
-          <h1>Features</h1>
-          <div></div>
-        </div>
-      </section>
-
-      <section id="about">
-        <div className="container">
-          <h1>Commands</h1>
-          <div></div>
-        </div>
-      </section>
-
-      <section id="addbot">
-        <div className="container">
-          <h3>
-            Add KuBot
-            <p>Start upgrading your Discord server today!</p>
-            <a
-              href="https://discord.com/oauth2/authorize?client_id=1245512193500381205&permissions=8&scope=bot"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <button className="hover">Add to discord</button>
-            </a>
-          </h3>
-        </div>
-      </section>
-
-      <footer>
-        <p>Copyright © 2024 KU BOT. All rights reserved.</p>
-      </footer>
+      s
     </div>
   );
 };
-
 export default StudentProfile;

@@ -92,9 +92,6 @@ const Login = () => {
               Don't have an account? <Link to={"/signup"}>Register</Link>
             </p1>
             <br />
-            <p1 className="pass-link">
-              Sign in with nontri account <Link to={"/ku_signup"}>myKU</Link>
-            </p1>
           </form>
         </div>
       </div>
