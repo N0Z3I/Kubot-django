@@ -32,7 +32,9 @@ class RegisterAndLoginStudentView(GenericAPIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         logger.error("Validation failed: %s", serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+    
+    
+
 class RegisterUserView(GenericAPIView):
     serializer_class = UserRegisterSerializer
 
@@ -108,12 +110,11 @@ class PasswordResetConfirm(GenericAPIView):
             user = User.objects.get(id=user_id)
             if not PasswordResetTokenGenerator().check_token(user, token):
                 return Response({'message': 'token is invalid or has expired'}, status=status.HTTP_401_UNAUTHORIZED)
-            return Response({'success': True, 'message': 'credentials is valid', 'uidb64': uidb64, 'token': token}, status=status.HTTP_200_OK)
-
-        except DjangoUnicodeDecodeError:
+            return Response({'success': True, 'message': 'credentials valid', 'uidb64': uidb64, 'token': token}, status=status.HTTP_200_OK)
+        except DjangoUnicodeDecodeError as e:
             return Response({'message': 'token is invalid or has expired'}, status=status.HTTP_401_UNAUTHORIZED)
 
-class SetNewPassword(GenericAPIView):
+class SetNewPasswordView(GenericAPIView):
     serializer_class = SetNewPasswordSerializer
 
     def patch(self, request):
@@ -128,9 +129,14 @@ class LogoutUserView(GenericAPIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        response = Response(status=status.HTTP_200_OK)
+        refresh_token = request.COOKIES.get('refresh')
+        if refresh_token:
+            try:
+                token = RefreshToken(refresh_token)
+                token.blacklist()
+            except Exception as e:
+                return Response({'message': 'An error occurred during logout'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        response = Response({'message': 'logout successful'}, status=status.HTTP_200_OK)
         response.delete_cookie('refresh')
         response.delete_cookie('access')
         return response

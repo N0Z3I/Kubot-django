@@ -63,7 +63,7 @@ const Login = () => {
           <form onSubmit={handleSubmit}>
             {isLoading && <p>Loading...</p>}
             <div className="form-group">
-            <h4>Login</h4>
+              <h4>Login</h4>
               <input
                 placeholder="Email"
                 type="text"
@@ -86,10 +86,12 @@ const Login = () => {
             <input type="submit" value="Login" className="submitButton" />
             <p1 className="pass-link">
               <Link to={"/forget_password"}>Forgot password?</Link>
-            </p1><br />
+            </p1>
+            <br />
             <p1 className="pass-link">
               Don't have an account? <Link to={"/signup"}>Register</Link>
-            </p1><br />
+            </p1>
+            <br />
           </form>
         </div>
       </div>

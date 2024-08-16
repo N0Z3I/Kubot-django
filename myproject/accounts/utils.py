@@ -3,6 +3,29 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from .models import User, OneTimePassword
 from django.utils.html import format_html
+from pymyku import Client
+
+def initialize_client(username, password):
+    client = Client(username, password)
+    client.initialize()
+    return client
+
+def get_student_data(username, password):
+    client = initialize_client(username, password)
+    return client.student_data
+
+def get_schedule(username, password):
+    client = initialize_client(username, password)
+    return client.fetch_schedule()
+
+def get_grades(username, password):
+    client = initialize_client(username, password)
+    return client.fetch_grades()
+
+def get_gpax(username, password):
+    client = initialize_client(username, password)
+    return client.fetch_gpax()
+
 
 def generateOtp():
     otp = ""

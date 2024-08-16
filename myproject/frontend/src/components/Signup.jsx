@@ -22,45 +22,33 @@ const Signup = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, first_name, last_name, password, password2 } = formdata;
-
     if (!email || !first_name || !last_name || !password || !password2) {
       setError("Please fill all the fields");
       return;
-    }
-
-    if (password !== password2) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    try {
+    } else {
+      console.log(formdata);
       const res = await axios.post(
         "http://localhost:8000/api/v1/auth/register/",
         formdata
       );
       const response = res.data;
-
+      console.log(response);
       if (res.status === 201) {
-        toast.success(response.message);
         navigate("/otp/verify");
-      } else {
-        setError(response.message || "Something went wrong");
+        toast.success(response.message);
       }
-    } catch (err) {
-      setError(err.response?.data?.message || "Network error");
     }
   };
 
   const { email, first_name, last_name, password, password2 } = formdata;
-
   return (
     <div>
       <div className="form-container">
         <div style={{ width: "30%" }} className="wrapper">
           <form onSubmit={handleSubmit}>
-            <p style={{ color: "red", padding: "1px" }}>{error}</p>
+            <p style={{ color: "red", padding: "1px" }}>{error ? error : ""}</p>
             <div className="form-group">
-            <h4>Sign Up</h4>
+              <h4>Sign Up</h4>
               <input
                 placeholder="Email"
                 type="text"
@@ -110,7 +98,7 @@ const Signup = () => {
                 onChange={handleOnChange}
               />
             </div>
-            <input type="submit" value="Sign Up" className="submitButton" />
+            <input type="submit" value="Submit" className="submitButton" />
             <p1 className="pass-link">
               Already have an account? <Link to={"/login"}>Login here</Link>
             </p1>

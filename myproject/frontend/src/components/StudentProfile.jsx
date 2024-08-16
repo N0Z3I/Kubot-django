@@ -37,11 +37,10 @@ const StudentProfile = () => {
         <h5 className="logo"></h5>
         <nav className="navigation">
           <button onClick={handleLogout} className="logout-btn">
-              Logout
-            </button>
+            Logout
+          </button>
         </nav>
       </header>
-
       <section id="profile-information">
         <div className="container">
           <h1>Profile Information</h1>
@@ -53,7 +52,6 @@ const StudentProfile = () => {
           </div>
         </div>
       </section>
-
       {/* <section id="schedule">
         <div className="container">
           <h1>Schedule</h1>
@@ -75,7 +73,6 @@ const StudentProfile = () => {
           </div>
         </div>
       </section> */}
-
       <section id="schedule">
         <div className="container">
           <h1>Schedule</h1>
@@ -142,9 +139,9 @@ const StudentProfile = () => {
             )}
           </div>
         </div>
-      </section>s
+      </section>
+      s
     </div>
   );
 };
-
 export default StudentProfile;

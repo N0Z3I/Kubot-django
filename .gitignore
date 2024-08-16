@@ -25,6 +25,4 @@ dist-ssr
 
 myenv/
 
-# Ignore batch files
-run_myenv.bat
-run_project.bat
+

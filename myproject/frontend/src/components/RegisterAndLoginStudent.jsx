@@ -72,7 +72,7 @@ const RegisterAndLoginStudent = () => {
             {isLoading && <p>Loading...</p>}
             {error && <p className="error-message">{error}</p>}
             <div className="form-group">
-            <h4>{isRegistering ? "MyKu Login" : "Login"}</h4>
+              <h4>{isRegistering ? "MyKu Login" : "Login"}</h4>
               <input
                 placeholder="Username"
                 type="text"
@@ -98,7 +98,7 @@ const RegisterAndLoginStudent = () => {
               className="submitButton"
             />
             <p1 className="pass-link">
-            Sign in with email account <Link to={"/login"}>Login here</Link>
+              Sign in with email account <Link to={"/login"}>Login here</Link>
             </p1>
           </form>
         </div>
