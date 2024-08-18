@@ -10,33 +10,69 @@ const ResetPassword = () => {
     password: "",
     confirm_password: "",
   });
+  const [error, setError] = useState("");
+
   const handleChange = (e) => {
     setNewPasswords({ ...newPasswords, [e.target.name]: e.target.value });
   };
 
-  const data = {
-    password: newPasswords.password,
-    confirm_password: newPasswords.confirm_password,
-    uidb64: uid,
-    token: token,
+  const validatePassword = (password) => {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    return (
+      password.length >= minLength &&
+      hasUpperCase &&
+      hasLowerCase &&
+      hasNumber &&
+      hasSpecialChar
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await axiosInstance.patch("/auth/set-new-password/", data);
-    const result = response.data;
-    if (response.status === 200) {
-      navigate("/login");
-      toast.success(result.message);
+
+    if (!validatePassword(newPasswords.password)) {
+      setError(
+        "Password must be at least 8 characters long and include uppercase letters, lowercase letters, numbers, and special characters"
+      );
+      return;
     }
-    console.log(response);
+
+    if (newPasswords.password !== newPasswords.confirm_password) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    const data = {
+      password: newPasswords.password,
+      confirm_password: newPasswords.confirm_password,
+      uidb64: uid,
+      token: token,
+    };
+
+    try {
+      const response = await axiosInstance.patch("/auth/set-new-password/", data);
+      const result = response.data;
+      if (response.status === 200) {
+        navigate("/login");
+        toast.success(result.message);
+      }
+      console.log(response);
+    } catch (error) {
+      setError("An error occurred while resetting your password");
+      console.error(error);
+    }
   };
 
   return (
     <div>
       <div className="form-container">
         <div className="wrapper" style={{ width: "100%" }}>
-          <form action="" onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
             <div className="form-group">
               <h4>Enter your New Password</h4>
               <input
@@ -58,6 +94,7 @@ const ResetPassword = () => {
                 onChange={handleChange}
               />
             </div>
+            {error && <p style={{ color: "red" }}>{error}</p>}
             <button type="submit" className="vbtn">
               Set New Password
             </button>
