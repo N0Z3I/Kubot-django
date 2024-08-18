@@ -98,7 +98,7 @@ const Signup = () => {
                 onChange={handleOnChange}
               />
             </div>
-            <input type="submit" value="Submit" className="submitButton" />
+            <input type="submit" value="Sign Up" className="submitButton" />
             <p1 className="pass-link">
               Already have an account? <Link to={"/login"}>Login here</Link>
             </p1>

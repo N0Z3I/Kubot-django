@@ -41,7 +41,7 @@ const ResetPassword = () => {
               <h4>Enter your New Password</h4>
               <input
                 placeholder="New Password"
-                type="text"
+                type="password"
                 className="email-form"
                 name="password"
                 value={newPasswords.password}
@@ -51,7 +51,7 @@ const ResetPassword = () => {
             <div className="form-group">
               <input
                 placeholder="Confirm Password"
-                type="text"
+                type="password"
                 className="email-form"
                 name="confirm_password"
                 value={newPasswords.confirm_password}
@@ -59,7 +59,7 @@ const ResetPassword = () => {
               />
             </div>
             <button type="submit" className="vbtn">
-              Submit
+              Set New Password
             </button>
           </form>
         </div>
