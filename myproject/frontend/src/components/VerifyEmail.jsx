@@ -26,6 +26,7 @@ const VerifyEmail = () => {
       <div className="form-container">
         <form onSubmit={handleSubmit}>
           <div className="form-group">
+          <h4>OTP Verification</h4>
             <input
               placeholder="Enter your OTP code"
               type="text"
@@ -35,7 +36,7 @@ const VerifyEmail = () => {
               onChange={(e) => setOtp(e.target.value)}
             />
           </div>
-          <input type="submit" className="vbtn" value="Send" />
+          <input type="submit" className="vbtn" value="Verify" />
         </form>
       </div>
     </div>
