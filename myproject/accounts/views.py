@@ -25,13 +25,20 @@ class RegisterAndLoginStudentView(GenericAPIView):
     serializer_class = RegisterAndLoginStudentSerializer
 
     def post(self, request):
-        logger.debug("Received data: %s", request.data)
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        logger.error("Validation failed: %s", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data
+
+        # Generate JWT token
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+
+        # Add tokens to the response
+        data = serializer.data
+        data['access_token'] = access_token
+        data['refresh_token'] = str(refresh)
+
+        return Response(data, status=status.HTTP_201_CREATED)
     
     
 
@@ -140,3 +147,17 @@ class LogoutUserView(GenericAPIView):
         response.delete_cookie('refresh')
         response.delete_cookie('access')
         return response
+
+class ScheduleView(GenericAPIView):
+    # You can define queryset and serializer_class if needed
+    # queryset = ...
+    # serializer_class = ...
+
+    def get(self, request, *args, **kwargs):
+        # Example schedule data
+        schedule = {
+            "Monday": "Math",
+            "Tuesday": "Science",
+            "Wednesday": "History"
+        }
+        return Response(schedule)
