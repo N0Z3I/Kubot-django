@@ -18,6 +18,29 @@ from rest_framework.exceptions import ValidationError, AuthenticationFailed
 
 import logging
 
+from .serializers import LoginWithMykuSerializer
+
+class MykuLoginView(GenericAPIView):
+    serializer_class = LoginWithMykuSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            try:
+                # รับข้อมูลนักศึกษา
+                student_data = serializer.validated_data['student_data']
+                
+                # เชื่อมโยงกับบัญชีเว็บ
+                return Response({
+                    'student_data': student_data,
+                    'message': 'Successfully linked MyKU.'
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 logger = logging.getLogger(__name__)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -86,11 +109,17 @@ class LoginUserView(GenericAPIView):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
+        # ดึง refresh และ access tokens จาก serializer
+        refresh = serializer.validated_data.get('refresh_token')
+        access = serializer.validated_data.get('access_token')
+
+        # สร้าง response พร้อมข้อมูล
         response = Response(serializer.data, status=status.HTTP_200_OK)
-        refresh = serializer.validated_data.get('refresh')
-        access = serializer.validated_data.get('access')
+
+        # ตั้งคุกกี้สำหรับ refresh และ access tokens
         response.set_cookie('refresh', refresh, httponly=True)
         response.set_cookie('access', access, httponly=True)
+
         return response
 
 class TestAuthenticationView(GenericAPIView):

@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView, RegisterAndLoginStudentView
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import ScheduleView
+from .views import MykuLoginView
 
 urlpatterns=[
     path('register/', RegisterUserView.as_view(), name = 'register'),
@@ -14,6 +14,5 @@ urlpatterns=[
     path('set-new-password/', SetNewPasswordView.as_view(), name = 'set-new-password'),
     path('logout/', LogoutUserView.as_view(), name = 'logout'),
     path('register-and-login-student/', RegisterAndLoginStudentView.as_view(), name='register_and_login_student'),
-    path('api/schedule/', ScheduleView.as_view(), name='get_schedule'),
-
+    path('myku-login/', MykuLoginView.as_view(), name='myku-login'),
 ]

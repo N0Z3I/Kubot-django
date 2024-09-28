@@ -13,46 +13,57 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle changes in input fields
   const handleOnChange = (e) => {
     setLoginData({ ...logindata, [e.target.name]: e.target.value });
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, password } = logindata;
+
+    // Check if fields are filled
     if (!email || !password) {
       setError("Email and password are required");
-    } else {
-      setIsLoading(true);
-      try {
-        const res = await axios.post(
-          "http://localhost:8000/api/v1/auth/login/",
-          logindata
-        );
-        const response = res.data;
-        console.log(response);
-        setIsLoading(false);
+      return;
+    }
 
-        const user = {
-          email: response.email,
-          names: response.full_name,
-        };
+    setIsLoading(true);
+    setError(""); // Clear previous error
 
-        if (res.status === 200) {
-          Cookies.set("user", JSON.stringify(user));
-          Cookies.set("access", response.access_token);
-          Cookies.set("refresh", response.refresh_token);
-          toast.success("Login successful");
-          setTimeout(() => {
-            navigate("/dashboard");
-            window.location.reload(); // Refresh the page after navigating
-          }, 1000);
-        }
-      } catch (error) {
-        setIsLoading(false);
-        setError("Login failed. Please try again.");
-        toast.error("Login failed. Please try again.");
+    try {
+      // Send login request to backend
+      const res = await axios.post(
+        "http://localhost:8000/api/v1/auth/login/",
+        logindata
+      );
+      const response = res.data;
+      console.log(response);
+
+      // Set loading to false after the request completes
+      setIsLoading(false);
+
+      const user = {
+        email: response.email,
+        names: response.full_name,
+      };
+
+      // If login is successful, store the user and tokens in cookies
+      if (res.status === 200) {
+        Cookies.set("user", JSON.stringify(user), { expires: 1 }); // Expires in 1 day
+        Cookies.set("access", response.access_token, { expires: 1 });
+        Cookies.set("refresh", response.refresh_token, { expires: 7 }); // Expires in 7 days
+        toast.success("Login successful");
+
+        // Navigate to the MyKU linking page after successful login
+        navigate("/link-myku");
       }
+    } catch (error) {
+      // Handle login failure
+      setIsLoading(false);
+      setError("Login failed. Please try again.");
+      toast.error("Login failed. Please try again.");
     }
   };
 

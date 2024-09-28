@@ -7,6 +7,7 @@ import {
   Profile,
   VerifyEmail,
   ForgetPassword,
+  LinkMyKU,
 } from "./components";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -23,6 +24,7 @@ function App() {
         <ToastContainer />
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/link-myku" element={<LinkMyKU />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Profile />} />

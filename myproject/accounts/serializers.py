@@ -14,6 +14,29 @@ import json
 import pymyku
 import requests as req_lib  # ใช้สำหรับจัดการ exceptions
 
+class LoginWithMykuSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=128, write_only=True)
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        try:
+            # ส่ง username และ password เข้า Client()
+            client = Client(username=username, password=password)
+            client.login()
+
+            # ดึงข้อมูลนักศึกษา (เช่นข้อมูลส่วนตัว) หลังจากล็อกอินสำเร็จ
+            student_data = client.fetch_student_personal()
+
+            # คุณสามารถใช้ข้อมูลนี้เพื่อเชื่อมโยงกับบัญชีเว็บของคุณได้
+            attrs['student_data'] = student_data
+        except Exception as e:
+            raise serializers.ValidationError(f"Failed to log in to MyKU: {str(e)}")
+
+        return attrs
+
 class RegisterAndLoginStudentSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=255, write_only=True)
@@ -192,26 +215,31 @@ class LoginUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['email','password','full_name','access_token','refresh_token']
+        fields = ['email', 'password', 'full_name', 'access_token', 'refresh_token']
         
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
         request = self.context.get('request')
+
+        # ตรวจสอบข้อมูลล็อกอิน
         user = authenticate(request, email=email, password=password)
         if not user:
-            raise AuthenticationFailed("invalid credentials try again")
+            raise AuthenticationFailed("Invalid credentials, try again.")
         if not user.is_verified:
-            raise AuthenticationFailed("Email is not verified")
-        user_tokens=user.tokens()
-            
-        
+            raise AuthenticationFailed("Email is not verified.")
+
+        # ดึง JWT tokens จาก user
+        user_tokens = user.tokens()
+
+        # คืนค่าข้อมูล
         return {
-        'email': user.email,
-        'full_name': user.get_full_name,
-        'access_token': str(user_tokens.get('access')),
-        'refresh_token': str(user_tokens.get('refresh'))
-    }
+            'email': user.email,
+            'full_name': user.get_full_name,
+            'access_token': str(user_tokens.get('access')),
+            'refresh_token': str(user_tokens.get('refresh'))
+        }
+
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255)
