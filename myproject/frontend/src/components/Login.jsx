@@ -23,25 +23,22 @@ const Login = () => {
     e.preventDefault();
     const { email, password } = logindata;
 
-    // Check if fields are filled
     if (!email || !password) {
       setError("Email and password are required");
       return;
     }
 
     setIsLoading(true);
-    setError(""); // Clear previous error
+    setError("");
 
     try {
-      // Send login request to backend
       const res = await axios.post(
         "http://localhost:8000/api/v1/auth/login/",
         logindata
       );
       const response = res.data;
-      console.log(response);
+      console.log(response); // Debugging จุดนี้เพื่อตรวจสอบ response
 
-      // Set loading to false after the request completes
       setIsLoading(false);
 
       const user = {
@@ -49,18 +46,20 @@ const Login = () => {
         names: response.full_name,
       };
 
-      // If login is successful, store the user and tokens in cookies
       if (res.status === 200) {
-        Cookies.set("user", JSON.stringify(user), { expires: 1 }); // Expires in 1 day
+        Cookies.set("user", JSON.stringify(user), { expires: 1 });
         Cookies.set("access", response.access_token, { expires: 1 });
-        Cookies.set("refresh", response.refresh_token, { expires: 7 }); // Expires in 7 days
-        toast.success("Login successful");
+        Cookies.set("refresh", response.refresh_token, { expires: 7 });
 
-        // Navigate to the MyKU linking page after successful login
-        navigate("/link-myku");
+        console.log(Cookies.get("access")); // เช็คว่าค่าถูกต้องไหม
+
+        // ทำให้แน่ใจว่า token ถูกตั้งค่าใน cookies เสร็จแล้วก่อน navigate
+        setTimeout(() => {
+          toast.success("Login successful");
+          navigate("/profile"); // หรือไปที่ /profile
+        }, 100); // ใส่ delay เล็กน้อยเพื่อให้ token ถูกเซ็ตลง cookies
       }
     } catch (error) {
-      // Handle login failure
       setIsLoading(false);
       setError("Login failed. Please try again.");
       toast.error("Login failed. Please try again.");

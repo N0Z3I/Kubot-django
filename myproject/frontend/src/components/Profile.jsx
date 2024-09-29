@@ -53,10 +53,8 @@ const Profile = () => {
       <header>
         <h5 className="logo"></h5>
         <nav className="navigation">
-          <a href="/ku_signup">
-            <button className="loginmyku-btn">
-              Sign in with nontri account
-            </button>
+          <a href="/link-myku">
+            <button className="loginmyku-btn">Link with nontri account</button>
           </a>
           <button onClick={handleLogout} className="logout-btn">
             Logout
