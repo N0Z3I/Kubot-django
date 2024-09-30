@@ -13,46 +13,56 @@ const Login = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // Handle changes in input fields
   const handleOnChange = (e) => {
     setLoginData({ ...logindata, [e.target.name]: e.target.value });
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, password } = logindata;
+
     if (!email || !password) {
       setError("Email and password are required");
-    } else {
-      setIsLoading(true);
-      try {
-        const res = await axios.post(
-          "http://localhost:8000/api/v1/auth/login/",
-          logindata
-        );
-        const response = res.data;
-        console.log(response);
-        setIsLoading(false);
+      return;
+    }
 
-        const user = {
-          email: response.email,
-          names: response.full_name,
-        };
+    setIsLoading(true);
+    setError("");
 
-        if (res.status === 200) {
-          Cookies.set("user", JSON.stringify(user));
-          Cookies.set("access", response.access_token);
-          Cookies.set("refresh", response.refresh_token);
+    try {
+      const res = await axios.post(
+        "http://localhost:8000/api/v1/auth/login/",
+        logindata
+      );
+      const response = res.data;
+      console.log(response); // Debugging จุดนี้เพื่อตรวจสอบ response
+
+      setIsLoading(false);
+
+      const user = {
+        email: response.email,
+        names: response.full_name,
+      };
+
+      if (res.status === 200) {
+        Cookies.set("user", JSON.stringify(user), { expires: 1 });
+        Cookies.set("access", response.access_token, { expires: 1 });
+        Cookies.set("refresh", response.refresh_token, { expires: 7 });
+
+        console.log(Cookies.get("access")); // เช็คว่าค่าถูกต้องไหม
+
+        // ทำให้แน่ใจว่า token ถูกตั้งค่าใน cookies เสร็จแล้วก่อน navigate
+        setTimeout(() => {
           toast.success("Login successful");
-          setTimeout(() => {
-            navigate("/dashboard");
-            window.location.reload(); // Refresh the page after navigating
-          }, 1000);
-        }
-      } catch (error) {
-        setIsLoading(false);
-        setError("Login failed. Please try again.");
-        toast.error("Login failed. Please try again.");
+          navigate("/profile"); // หรือไปที่ /profile
+        }, 100); // ใส่ delay เล็กน้อยเพื่อให้ token ถูกเซ็ตลง cookies
       }
+    } catch (error) {
+      setIsLoading(false);
+      setError("Login failed. Please try again.");
+      toast.error("Login failed. Please try again.");
     }
   };
 

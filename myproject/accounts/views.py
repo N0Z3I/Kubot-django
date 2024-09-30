@@ -18,6 +18,29 @@ from rest_framework.exceptions import ValidationError, AuthenticationFailed
 
 import logging
 
+from .serializers import LoginWithMykuSerializer
+
+class MykuLoginView(GenericAPIView):
+    serializer_class = LoginWithMykuSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            try:
+                # รับข้อมูลนักศึกษา
+                student_data = serializer.validated_data['student_data']
+                
+                # เชื่อมโยงกับบัญชีเว็บ
+                return Response({
+                    'student_data': student_data,
+                    'message': 'Successfully linked MyKU.'
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 logger = logging.getLogger(__name__)
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -25,13 +48,20 @@ class RegisterAndLoginStudentView(GenericAPIView):
     serializer_class = RegisterAndLoginStudentSerializer
 
     def post(self, request):
-        logger.debug("Received data: %s", request.data)
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        logger.error("Validation failed: %s", serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data
+
+        # Generate JWT token
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+
+        # Add tokens to the response
+        data = serializer.data
+        data['access_token'] = access_token
+        data['refresh_token'] = str(refresh)
+
+        return Response(data, status=status.HTTP_201_CREATED)
     
     
 
@@ -79,11 +109,17 @@ class LoginUserView(GenericAPIView):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
+        # ดึง refresh และ access tokens จาก serializer
+        refresh = serializer.validated_data.get('refresh_token')
+        access = serializer.validated_data.get('access_token')
+
+        # สร้าง response พร้อมข้อมูล
         response = Response(serializer.data, status=status.HTTP_200_OK)
-        refresh = serializer.validated_data.get('refresh')
-        access = serializer.validated_data.get('access')
+
+        # ตั้งคุกกี้สำหรับ refresh และ access tokens
         response.set_cookie('refresh', refresh, httponly=True)
         response.set_cookie('access', access, httponly=True)
+
         return response
 
 class TestAuthenticationView(GenericAPIView):
@@ -140,3 +176,17 @@ class LogoutUserView(GenericAPIView):
         response.delete_cookie('refresh')
         response.delete_cookie('access')
         return response
+
+class ScheduleView(GenericAPIView):
+    # You can define queryset and serializer_class if needed
+    # queryset = ...
+    # serializer_class = ...
+
+    def get(self, request, *args, **kwargs):
+        # Example schedule data
+        schedule = {
+            "Monday": "Math",
+            "Tuesday": "Science",
+            "Wednesday": "History"
+        }
+        return Response(schedule)

@@ -14,6 +14,29 @@ import json
 import pymyku
 import requests as req_lib  # ใช้สำหรับจัดการ exceptions
 
+class LoginWithMykuSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=128, write_only=True)
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        try:
+            # ส่ง username และ password เข้า Client()
+            client = Client(username=username, password=password)
+            client.login()
+
+            # ดึงข้อมูลนักศึกษา (เช่นข้อมูลส่วนตัว) หลังจากล็อกอินสำเร็จ
+            student_data = client.fetch_student_personal()
+
+            # คุณสามารถใช้ข้อมูลนี้เพื่อเชื่อมโยงกับบัญชีเว็บของคุณได้
+            attrs['student_data'] = student_data
+        except Exception as e:
+            raise serializers.ValidationError(f"Failed to log in to MyKU: {str(e)}")
+
+        return attrs
+
 class RegisterAndLoginStudentSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=255, write_only=True)
@@ -24,9 +47,17 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
     last_name_th = serializers.CharField(max_length=255, read_only=True)
     schedule = serializers.SerializerMethodField()
     group_course = serializers.SerializerMethodField()
+    announce = serializers.SerializerMethodField()
+    enroll = serializers.SerializerMethodField()
+    gpax = serializers.SerializerMethodField()
+    grades = serializers.SerializerMethodField()
+    student_address = serializers.SerializerMethodField()
+    student_education = serializers.SerializerMethodField()
+    student_personal = serializers.SerializerMethodField()
+    total_credit = serializers.SerializerMethodField()
 
     class Meta:
-        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code', 'first_name_th', 'last_name_th', 'schedule', 'group_course']
+        fields = ['username', 'password', 'access_token', 'refresh_token', 'student_code', 'first_name_th', 'last_name_th', 'schedule', 'group_course', 'announce', 'enroll', 'gpax', 'grades', 'student_address', 'student_education', 'student_personal', 'total_credit']
 
     def validate(self, attrs):
         username = attrs.get('username')
@@ -96,22 +127,53 @@ class RegisterAndLoginStudentSerializer(serializers.Serializer):
         return validated_data
 
     def get_schedule(self, obj):
-        try:
-            # Fetch the schedule using pymyku
-            client = Client(obj['username'], obj['password'])
-            schedule_data = client.fetch_schedule()  # fetch_schedule method without additional arguments
-            return schedule_data
-        except Exception as err:
-            raise ValidationError(f"Error occurred while fetching schedule: {err}")
+        return self.fetch_data(obj, "fetch_schedule")
 
     def get_group_course(self, obj):
+        return self.fetch_data(obj, "fetch_group_course")
+
+    def get_announce(self, obj):
+        return self.fetch_data(obj, "fetch_announce")
+
+    def get_enroll(self, obj):
+        return self.fetch_data(obj, "fetch_enroll")
+
+    def get_gpax(self, obj):
+        return self.fetch_data(obj, "fetch_gpax")
+
+    def get_grades(self, obj):
+        return self.fetch_data(obj, "fetch_grades")
+
+    def get_student_address(self, obj):
+        return self.fetch_data(obj, "fetch_student_address")
+
+    def get_student_education(self, obj):
+        return self.fetch_data(obj, "fetch_student_education")
+
+    def get_student_personal(self, obj):
+        return self.fetch_data(obj, "fetch_student_personal")
+
+    def get_total_credit(self, obj):
+        return self.fetch_data(obj, "get_total_credit")
+
+    def fetch_data(self, obj, method_name):
         try:
-            # Fetch the group course using pymyku
+            # Initialize the Client instance
             client = Client(obj['username'], obj['password'])
-            group_course_data = client.fetch_group_course()  # fetch_group_course method without additional arguments
-            return group_course_data
+
+            # Dynamically call the appropriate method
+            method = getattr(client, method_name)
+            data = method()
+
+            print(f"{method_name.capitalize()} : ", json.dumps(data, indent=4, ensure_ascii=False))  # Debug print
+            return data
+
         except Exception as err:
-            raise ValidationError(f"Error occurred while fetching group course: {err}")
+            raise ValidationError(f"Error occurred while fetching {method_name}: {err}")
+
+
+        
+    
 
     
     
@@ -153,26 +215,31 @@ class LoginUserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['email','password','full_name','access_token','refresh_token']
+        fields = ['email', 'password', 'full_name', 'access_token', 'refresh_token']
         
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
         request = self.context.get('request')
+
+        # ตรวจสอบข้อมูลล็อกอิน
         user = authenticate(request, email=email, password=password)
         if not user:
-            raise AuthenticationFailed("invalid credentials try again")
+            raise AuthenticationFailed("Invalid credentials, try again.")
         if not user.is_verified:
-            raise AuthenticationFailed("Email is not verified")
-        user_tokens=user.tokens()
-            
-        
+            raise AuthenticationFailed("Email is not verified.")
+
+        # ดึง JWT tokens จาก user
+        user_tokens = user.tokens()
+
+        # คืนค่าข้อมูล
         return {
-        'email': user.email,
-        'full_name': user.get_full_name,
-        'access_token': str(user_tokens.get('access')),
-        'refresh_token': str(user_tokens.get('refresh'))
-    }
+            'email': user.email,
+            'full_name': user.get_full_name,
+            'access_token': str(user_tokens.get('access')),
+            'refresh_token': str(user_tokens.get('refresh'))
+        }
+
 
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=255)

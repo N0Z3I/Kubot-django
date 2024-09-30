@@ -18,6 +18,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
+    myku_username = models.CharField(max_length=255, blank=True, null=True)
+    myku_password = models.CharField(max_length=255, blank=True, null=True)
+    myku_student_data = models.JSONField(blank=True, null=True)  # ใช้ JSONField เก็บข้อมูล MyKU
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]

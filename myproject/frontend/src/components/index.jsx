@@ -4,6 +4,8 @@ import Profile from "./Profile";
 import ForgetPassword from "./ForgetPassword";
 import VerifyEmail from "./VerifyEmail";
 import RegisterAndLoginStudent from "./RegisterAndLoginStudent";
+import LinkMyKU from "./LinkMyKU";
+import Dashboard from "./Dashboard";
 
 export {
   Signup,
@@ -12,4 +14,6 @@ export {
   ForgetPassword,
   VerifyEmail,
   RegisterAndLoginStudent,
+  LinkMyKU,
+  Dashboard,
 };

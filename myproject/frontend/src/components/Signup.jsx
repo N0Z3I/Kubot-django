@@ -19,44 +19,13 @@ const Signup = () => {
     setFormData({ ...formdata, [e.target.name]: e.target.value });
   };
 
-  const validatePassword = (password) => {
-    const minLength = 8;
-    const hasUpperCase = /[A-Z]/.test(password);
-    const hasLowerCase = /[a-z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-
-    return (
-      password.length >= minLength &&
-      hasUpperCase &&
-      hasLowerCase &&
-      hasNumber &&
-      hasSpecialChar
-    );
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, first_name, last_name, password, password2 } = formdata;
-
     if (!email || !first_name || !last_name || !password || !password2) {
       setError("Please fill all the fields");
       return;
-    }
-
-    if (password !== password2) {
-      setError("Passwords do not match");
-      return;
-    }
-
-    if (!validatePassword(password)) {
-      setError(
-        "Password must be at least 8 characters long and include uppercase letters, lowercase letters, numbers, and special characters"
-      );
-      return;
-    }
-
-    try {
+    } else {
       console.log(formdata);
       const res = await axios.post(
         "http://localhost:8000/api/v1/auth/register/",
@@ -68,9 +37,6 @@ const Signup = () => {
         navigate("/otp/verify");
         toast.success(response.message);
       }
-    } catch (err) {
-      setError("An error occurred while signing up");
-      console.error(err);
     }
   };
 
@@ -132,7 +98,7 @@ const Signup = () => {
                 onChange={handleOnChange}
               />
             </div>
-            <input type="submit" value="Sign Up" className="submitButton" />
+            <input type="submit" value="Submit" className="submitButton" />
             <p1 className="pass-link">
               Already have an account? <Link to={"/login"}>Login here</Link>
             </p1>
