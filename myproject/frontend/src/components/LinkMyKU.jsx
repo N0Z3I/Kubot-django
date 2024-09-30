@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const LinkMyku = () => {
@@ -47,8 +47,10 @@ const LinkMyku = () => {
 
   return (
     <div>
-      <h1>เชื่อมบัญชี MyKU</h1>
+      <div className="form-container">
+      <div style={{ width: "30%" }} name="wrapper">
       <form onSubmit={handleSubmit}>
+      <h4>Link account MyKU</h4>
         <input
           type="text"
           name="username"
@@ -63,11 +65,18 @@ const LinkMyku = () => {
           onChange={handleOnChange}
           placeholder="MyKU Password"
         />
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? "กำลังเชื่อม..." : "เชื่อมบัญชี MyKU"}
+        <button type="submit" className="submitButton" disabled={isLoading}>
+          {isLoading ? "กำลังเชื่อม..." : "Link account MyKU"}
         </button>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <br />
+            <p1 className="pass-link">
+              Sign in with email account <Link to={"/Login"}>Login here</Link>
+            </p1>
+            <br />
       </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
+    </div>
+    </div>
     </div>
   );
 };
