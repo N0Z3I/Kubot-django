@@ -1,7 +1,8 @@
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const LinkMyku = () => {
   const [mykuData, setMykuData] = useState({
@@ -25,10 +26,20 @@ const LinkMyku = () => {
     } else {
       setIsLoading(true);
       try {
-        const res = await axios.post(
-          "http://localhost:8000/api/v1/auth/myku-login/",
-          mykuData
-        );
+        // ดึง JWT token จาก cookies หรือ localStorage
+        const accessToken = Cookies.get("access");
+
+        if (!accessToken) {
+          throw new Error("User is not authenticated. Please login again.");
+        }
+
+        // ส่งคำขอไปยัง /myku-login/ พร้อม Authorization header
+        const res = await axiosInstance.post("/auth/myku-login/", mykuData, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
         const response = res.data;
         console.log(response);
         setIsLoading(false);
@@ -41,6 +52,10 @@ const LinkMyku = () => {
         setIsLoading(false);
         setError("เชื่อม MyKU ไม่สำเร็จ");
         toast.error("การเชื่อม MyKU ไม่สำเร็จ กรุณาลองใหม่");
+        console.error(
+          "Error:",
+          error.response ? error.response.data : error.message
+        );
       }
     }
   };

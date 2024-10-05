@@ -1,39 +1,36 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
+import axiosInstance from "../utils/axiosInstance";
 
 const Dashboard = () => {
   const [userData, setUserData] = useState(null);
   const navigate = useNavigate();
-  const accessToken = Cookies.get("access");
 
   // ตรวจสอบว่า login อยู่ไหม
   useEffect(() => {
+    const accessToken = Cookies.get("access");
     if (!accessToken) {
       navigate("/login");
     } else {
       fetchUserData();
     }
-  }, [accessToken]);
+  }, []);
 
   // ดึงข้อมูลผู้ใช้จาก backend
   const fetchUserData = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:8000/api/v1/auth/myku-data/",
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const res = await axiosInstance.get("/auth/myku-data/");
       if (res.status === 200) {
         setUserData(res.data);
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching user data:", error);
+      if (error.response) {
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+      }
       toast.error("ไม่สามารถดึงข้อมูลผู้ใช้ได้");
     }
   };
