@@ -3,7 +3,7 @@ from rest_framework.generics import GenericAPIView
 from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer, RegisterAndLoginStudentSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .utils import send_code_to_user
 from .models import OneTimePassword, User
 from django.utils.http import urlsafe_base64_decode
@@ -15,33 +15,149 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
-
+from pymyku import Client
+import jwt
+from django.conf import settings
+from django.contrib.auth import get_user_model
 import logging
+logger = logging.getLogger(__name__)
 
 from .serializers import LoginWithMykuSerializer
 
+User = get_user_model()
+
+from django.contrib.auth import get_user_model
+from rest_framework.permissions import AllowAny
+import logging
+import jwt
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
+User = get_user_model()
+
 class MykuLoginView(GenericAPIView):
+    permission_classes = [AllowAny]
     serializer_class = LoginWithMykuSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             try:
-                # รับข้อมูลนักศึกษา
-                student_data = serializer.validated_data['student_data']
-                
-                # เชื่อมโยงกับบัญชีเว็บ
-                return Response({
-                    'student_data': student_data,
-                    'message': 'Successfully linked MyKU.'
-                }, status=status.HTTP_200_OK)
+                # ตรวจสอบว่า header 'Authorization' มีอยู่หรือไม่
+                if 'Authorization' not in request.headers:
+                    return Response({'error': 'Authorization header is required for this request.'},
+                                    status=status.HTTP_401_UNAUTHORIZED)
+
+                auth_header = request.headers.get('Authorization')
+                token = auth_header.split(" ")[1]  # ดึง JWT token (Bearer <token>)
+                decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+                user_id = decoded_token.get('user_id')
+
+                if user_id:
+                    try:
+                        # ดึงผู้ใช้จากฐานข้อมูลโดยใช้ user_id
+                        user = User.objects.get(id=user_id)
+
+                        # รับข้อมูลนักศึกษาและข้อมูลการเข้าสู่ระบบ MyKU จาก serializer
+                        student_data = serializer.validated_data['student_data']
+                        schedule_data = serializer.validated_data['schedule_data']
+                        announce_data = serializer.validated_data['announce_data']
+                        grades_data = serializer.validated_data['grades_data']
+                        group_course_data = serializer.validated_data['group_course_data']
+                        student_education_data = serializer.validated_data['student_education_data']
+                        gpax_data = serializer.validated_data['gpax_data']
+
+                        # บันทึกข้อมูลของผู้ใช้
+                        myku_username = serializer.validated_data['username']
+                        myku_password = serializer.validated_data['password']
+                        user.myku_username = myku_username
+                        user.myku_password = myku_password
+                        user.save()
+
+                        # สร้าง response_data เพื่อส่งกลับไปให้ Frontend
+                        response_data = {
+                            'student_data': student_data,
+                            'results': {
+                                'schedule_data': schedule_data if schedule_data else [],
+                                'announce_data': announce_data if announce_data else [],
+                                'grades_data': grades_data if grades_data else [],
+                                'group_course_data': group_course_data if group_course_data else [],
+                                'student_education_data': student_education_data if student_education_data else None,
+                                'gpax_data': gpax_data if gpax_data else []
+                            },
+                            'message': 'Successfully linked MyKU and fetched additional data.'
+                        }
+
+                        return Response(response_data, status=status.HTTP_200_OK)
+
+                    except User.DoesNotExist:
+                        return Response({'error': 'User does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+
+                else:
+                    return Response({'error': 'Invalid JWT token.'}, status=status.HTTP_401_UNAUTHORIZED)
+
             except Exception as e:
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-logger = logging.getLogger(__name__)
+
+    
+class MykuDataView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # ดึงข้อมูลผู้ใช้ที่ล็อกอินอยู่
+            user = request.user
+
+            # สมมติว่า User model เก็บ username และ password ที่ใช้กับ MyKU
+            myku_username = user.myku_username
+            myku_password = user.myku_password
+
+            # ตรวจสอบข้อมูล MyKU ว่ามีครบถ้วนหรือไม่
+            if not myku_username or not myku_password:
+                raise ValidationError("MyKU credentials are not available for the user.")
+
+            # ใช้ username และ password ที่ดึงมาจากฐานข้อมูลเพื่อเข้าสู่ระบบ MyKU
+            client = Client(username=myku_username, password=myku_password)
+            client.login()  # Login ด้วยข้อมูลที่มี
+
+            # ดึงข้อมูลของนักศึกษาจาก MyKU
+            student_data = client.fetch_student_personal()
+            schedule_data = client.fetch_schedule()
+            announce_data = client.fetch_announce()
+            grades_data = client.fetch_grades()
+            group_course_data = client.fetch_group_course()
+            student_education_data = client.fetch_student_education()
+            gpax_data = client.fetch_gpax()
+
+            # เตรียมข้อมูลสำหรับการตอบกลับ
+            response_data = {
+                'student_data': student_data,
+                'results': {
+                    'schedule_data': schedule_data if schedule_data else [],
+                    'announce_data': announce_data if announce_data else [],
+                    'grades_data': grades_data if grades_data else [],
+                    'group_course_data': group_course_data if group_course_data else [],
+                    'student_education_data': student_education_data if student_education_data else None,
+                    'gpax_data': gpax_data if gpax_data else []
+                },
+                'message': 'Successfully fetched all MyKU data.'
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error in MykuDataView: {str(e)}")
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterAndLoginStudentView(GenericAPIView):
