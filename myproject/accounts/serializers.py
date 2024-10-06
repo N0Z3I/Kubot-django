@@ -23,24 +23,34 @@ class LoginWithMykuSerializer(serializers.Serializer):
         password = attrs.get('password')
 
         try:
-            # Debug logging เพื่อช่วยตรวจสอบข้อมูลที่เข้ามา
-            print(f"Attempting MyKU login with username: {username}")
-
-            # ส่ง username และ password เข้า Client()
+            # สร้าง Client และล็อกอิน
             client = Client(username=username, password=password)
             client.login()
 
-            # ดึงข้อมูลนักศึกษา (เช่นข้อมูลส่วนตัว) หลังจากล็อกอินสำเร็จ
+            # ดึงข้อมูลนักศึกษาหลักทั้งหมด
             student_data = client.fetch_student_personal()
+            schedule_data = client.fetch_schedule()
+            announce_data = client.fetch_announce()
+            grades_data = client.fetch_grades()
+            group_course_data = client.fetch_group_course()
+            student_education_data = client.fetch_student_education()
+            gpax_data = client.fetch_gpax()
 
-            # คุณสามารถใช้ข้อมูลนี้เพื่อเชื่อมโยงกับบัญชีเว็บของคุณได้
+            # เก็บข้อมูลทั้งหมดใน attrs เพื่อใช้ใน View
             attrs['student_data'] = student_data
+            attrs['schedule_data'] = schedule_data
+            attrs['announce_data'] = announce_data
+            attrs['grades_data'] = grades_data
+            attrs['group_course_data'] = group_course_data
+            attrs['student_education_data'] = student_education_data
+            attrs['gpax_data'] = gpax_data
+
         except Exception as e:
-            # เพิ่ม logging เพื่อดูรายละเอียดข้อผิดพลาด
-            print(f"Failed to login to MyKU: {str(e)}")
             raise serializers.ValidationError(f"Failed to log in to MyKU: {str(e)}")
 
         return attrs
+
+
 
 
 class RegisterAndLoginStudentSerializer(serializers.Serializer):
