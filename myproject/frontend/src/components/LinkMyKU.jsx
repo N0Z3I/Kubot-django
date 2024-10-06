@@ -62,27 +62,29 @@ const LinkMyku = () => {
 
   return (
     <div>
-      <h1>เชื่อมบัญชี MyKU</h1>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="username"
-          value={mykuData.username}
-          onChange={handleOnChange}
-          placeholder="MyKU Username"
-        />
-        <input
-          type="password"
-          name="password"
-          value={mykuData.password}
-          onChange={handleOnChange}
-          placeholder="MyKU Password"
-        />
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? "กำลังเชื่อม..." : "เชื่อมบัญชี MyKU"}
-        </button>
+        {isLoading && <p>Loading...</p>}
+        <div className="form-group">
+          <h4>Link account MyKU</h4>
+          <input
+            type="text"
+            name="username"
+            value={mykuData.username}
+            onChange={handleOnChange}
+            placeholder="MyKU Username"
+          />
+        </div>
+        <div className="form-group">
+          <input
+            type="password"
+            name="password"
+            value={mykuData.password}
+            onChange={handleOnChange}
+            placeholder="MyKU Password"
+          />
+        </div>
+        <input type="submit" value="Login" className="submitButton" />
       </form>
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 };

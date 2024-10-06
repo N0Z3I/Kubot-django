@@ -24,7 +24,7 @@ const Dashboard = () => {
     } else {
       fetchStudentData();
     }
-  }, [accessToken]);
+  }, []);
 
   const fetchStudentData = async () => {
     setIsLoading(true);
@@ -44,7 +44,6 @@ const Dashboard = () => {
         if (data && data.results) {
           const results = data.results;
 
-          // อัปเดต state ตามข้อมูลที่ได้รับมา
           if (data.student_data && data.student_data.results) {
             setStudentData(data.student_data.results.stdPersonalModel);
             console.log(
@@ -110,8 +109,26 @@ const Dashboard = () => {
     }
   };
 
+  // ฟังก์ชัน handleLogout
+  const handleLogout = () => {
+    // ลบ Token
+    Cookies.remove("access");
+    // นำผู้ใช้ไปยังหน้า Login
+    navigate("/login");
+    // แสดงข้อความแจ้งเตือน
+    toast.success("ออกจากระบบสำเร็จ");
+  };
+
   return (
     <div>
+      <header>
+        <h5 className="logo"></h5>
+        <nav className="navigation">
+          <button onClick={handleLogout} className="logout-btn">
+            Logout
+          </button>
+        </nav>
+      </header>
       <h1>Dashboard</h1>
       {isLoading ? (
         <p>กำลังโหลดข้อมูล...</p>
