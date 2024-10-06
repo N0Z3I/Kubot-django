@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .utils import send_code_to_user
-from .models import OneTimePassword, User
+from .models import OneTimePassword, User, StudentProfile, Schedule, Grade, GroupCourse, StudentEducation, GPAX, Announcement
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -36,65 +36,109 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 class MykuLoginView(GenericAPIView):
-    permission_classes = [AllowAny]
     serializer_class = LoginWithMykuSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             try:
-                # ตรวจสอบว่า header 'Authorization' มีอยู่หรือไม่
-                if 'Authorization' not in request.headers:
-                    return Response({'error': 'Authorization header is required for this request.'},
-                                    status=status.HTTP_401_UNAUTHORIZED)
+                # รับข้อมูลจาก serializer ที่ validate แล้ว
+                student_data = serializer.validated_data['student_data']
+                schedule_data = serializer.validated_data['schedule_data']
+                announce_data = serializer.validated_data['announce_data']
+                grades_data = serializer.validated_data['grades_data']
+                group_course_data = serializer.validated_data['group_course_data']
+                student_education_data = serializer.validated_data['student_education_data']
+                gpax_data = serializer.validated_data['gpax_data']
 
-                auth_header = request.headers.get('Authorization')
-                token = auth_header.split(" ")[1]  # ดึง JWT token (Bearer <token>)
-                decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-                user_id = decoded_token.get('user_id')
+                # ดึงหรือสร้าง StudentProfile จาก User
+                student_results = student_data['results']['stdPersonalModel']
+                student_profile, created = StudentProfile.objects.update_or_create(
+                    user=request.user,
+                    defaults={
+                        'std_id': student_results['stdId'],
+                        'name_th': student_results['nameTh'],
+                        'name_en': student_results['nameEn'],
+                        'birth_date': student_results['birthDate'],
+                        'gender': student_results['genderTh'],
+                        'religion': student_results['religionTh'],
+                        'phone': student_results['phone'],
+                        'email': student_results['email'],
+                    }
+                )
 
-                if user_id:
-                    try:
-                        # ดึงผู้ใช้จากฐานข้อมูลโดยใช้ user_id
-                        user = User.objects.get(id=user_id)
+                # บันทึกข้อมูลตารางเรียน (Schedule)
+                if schedule_data and 'results' in schedule_data:
+                    for schedule in schedule_data['results']:
+                        Schedule.objects.update_or_create(
+                            student_profile=student_profile,
+                            academic_year=schedule['academicYr'],
+                            semester=schedule['semester'],
+                        )
 
-                        # รับข้อมูลนักศึกษาและข้อมูลการเข้าสู่ระบบ MyKU จาก serializer
-                        student_data = serializer.validated_data['student_data']
-                        schedule_data = serializer.validated_data['schedule_data']
-                        announce_data = serializer.validated_data['announce_data']
-                        grades_data = serializer.validated_data['grades_data']
-                        group_course_data = serializer.validated_data['group_course_data']
-                        student_education_data = serializer.validated_data['student_education_data']
-                        gpax_data = serializer.validated_data['gpax_data']
+                # บันทึกข้อมูลประกาศ (Announcement)
+                if announce_data and 'results' in announce_data:
+                    for announcement in announce_data['results']:
+                        # สามารถบันทึกข้อมูลประกาศเพิ่มเติมได้ หากต้องการ
+                        pass
 
-                        # บันทึกข้อมูลของผู้ใช้
-                        myku_username = serializer.validated_data['username']
-                        myku_password = serializer.validated_data['password']
-                        user.myku_username = myku_username
-                        user.myku_password = myku_password
-                        user.save()
+                # บันทึกข้อมูลเกรด (Grade)
+                if grades_data and 'results' in grades_data:
+                    for semester in grades_data['results']:
+                        for course in semester['grade']:
+                            Grade.objects.update_or_create(
+                                student_profile=student_profile,
+                                academic_year=semester['academicYear'],
+                                subject_code=course['subject_code'],
+                                defaults={
+                                    'subject_name': course['subject_name_th'],
+                                    'credit': course['credit'],
+                                    'grade': course['grade'],
+                                }
+                            )
 
-                        # สร้าง response_data เพื่อส่งกลับไปให้ Frontend
-                        response_data = {
-                            'student_data': student_data,
-                            'results': {
-                                'schedule_data': schedule_data if schedule_data else [],
-                                'announce_data': announce_data if announce_data else [],
-                                'grades_data': grades_data if grades_data else [],
-                                'group_course_data': group_course_data if group_course_data else [],
-                                'student_education_data': student_education_data if student_education_data else None,
-                                'gpax_data': gpax_data if gpax_data else []
-                            },
-                            'message': 'Successfully linked MyKU and fetched additional data.'
-                        }
+                # บันทึกข้อมูลกลุ่มวิชา (GroupCourse)
+                if group_course_data and 'results' in group_course_data:
+                    for group in group_course_data['results']:
+                        for course in group['course']:
+                            GroupCourse.objects.update_or_create(
+                                student_profile=student_profile,
+                                subject_code=course['subject_code'],
+                                defaults={
+                                    'period_date': group['peroid_date'],
+                                    'subject_name': course['subject_name_th'],
+                                    'teacher_name': course['teacher_name'],
+                                }
+                            )
 
-                        return Response(response_data, status=status.HTTP_200_OK)
+                # บันทึกข้อมูลการศึกษา (StudentEducation)
+                if student_education_data and 'results' in student_education_data:
+                    for edu in student_education_data['results']['education']:
+                        StudentEducation.objects.update_or_create(
+                            student_profile=student_profile,
+                            defaults={
+                                'faculty_name_th': edu['facultyNameTh'],
+                                'major_name_th': edu['majorNameTh'],
+                                'status': edu['statusNameTh'],
+                                'degree_name': edu['degreeNameTh'],
+                            }
+                        )
 
-                    except User.DoesNotExist:
-                        return Response({'error': 'User does not exist.'}, status=status.HTTP_404_NOT_FOUND)
+                # บันทึกข้อมูล GPAX
+                if gpax_data and 'results' in gpax_data:
+                    for gpax in gpax_data['results']:
+                        GPAX.objects.update_or_create(
+                            student_profile=student_profile,
+                            defaults={
+                                'gpax': gpax['gpax'],
+                                'total_credit': gpax['total_credit'],
+                            }
+                        )
 
-                else:
-                    return Response({'error': 'Invalid JWT token.'}, status=status.HTTP_401_UNAUTHORIZED)
+                return Response({
+                    'student_data': student_data,
+                    'message': 'Successfully linked MyKU and saved all data.'
+                }, status=status.HTTP_200_OK)
 
             except Exception as e:
                 return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)

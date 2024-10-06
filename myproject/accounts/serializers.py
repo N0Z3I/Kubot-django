@@ -10,6 +10,8 @@ from django.urls import reverse
 from .utils import send_normal_email
 from rest_framework_simplejwt.tokens import RefreshToken, Token
 from pymyku import Client, requests
+from datetime import datetime
+
 import json
 import pymyku
 import requests as req_lib  # ใช้สำหรับจัดการ exceptions
@@ -35,6 +37,16 @@ class LoginWithMykuSerializer(serializers.Serializer):
             group_course_data = client.fetch_group_course()
             student_education_data = client.fetch_student_education()
             gpax_data = client.fetch_gpax()
+
+            # การตรวจสอบรูปแบบของข้อมูล เช่น birthDate
+            birth_date_str = student_data.get('results', {}).get('stdPersonalModel', {}).get('birthDate', None)
+            if birth_date_str:
+                try:
+                    # แปลงจาก ISO format เป็น YYYY-MM-DD
+                    birth_date = datetime.strptime(birth_date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+                    student_data['results']['stdPersonalModel']['birthDate'] = birth_date.strftime("%Y-%m-%d")
+                except ValueError:
+                    raise serializers.ValidationError("Invalid date format. Expected 'YYYY-MM-DD' or similar.")
 
             # เก็บข้อมูลทั้งหมดใน attrs เพื่อใช้ใน View
             attrs['student_data'] = student_data
