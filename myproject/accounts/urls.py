@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView, RegisterAndLoginStudentView
+from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import MykuLoginView, MykuDataView
 
@@ -13,7 +13,6 @@ urlpatterns=[
     path('password-reset-confirm/<uidb64>/<token>/', PasswordResetConfirm.as_view(), name = 'password-reset-confirm'),
     path('set-new-password/', SetNewPasswordView.as_view(), name = 'set-new-password'),
     path('logout/', LogoutUserView.as_view(), name = 'logout'),
-    path('register-and-login-student/', RegisterAndLoginStudentView.as_view(), name='register_and_login_student'),
     path('myku-login/', MykuLoginView.as_view(), name='myku-login'),
     path('myku-data/', MykuDataView.as_view(), name='myku-data'),
 ]

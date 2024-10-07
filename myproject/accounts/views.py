@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.generics import GenericAPIView
-from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer, RegisterAndLoginStudentSerializer
+from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -145,9 +145,6 @@ class MykuLoginView(GenericAPIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-
-    
 class MykuDataView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -196,34 +193,6 @@ class MykuDataView(GenericAPIView):
         except Exception as e:
             logger.error(f"Error in MykuDataView: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class RegisterAndLoginStudentView(GenericAPIView):
-    serializer_class = RegisterAndLoginStudentSerializer
-
-    def post(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data
-
-        # Generate JWT token
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-
-        # Add tokens to the response
-        data = serializer.data
-        data['access_token'] = access_token
-        data['refresh_token'] = str(refresh)
-
-        return Response(data, status=status.HTTP_201_CREATED)
-    
-    
 
 class RegisterUserView(GenericAPIView):
     serializer_class = UserRegisterSerializer
@@ -336,17 +305,3 @@ class LogoutUserView(GenericAPIView):
         response.delete_cookie('refresh')
         response.delete_cookie('access')
         return response
-
-class ScheduleView(GenericAPIView):
-    # You can define queryset and serializer_class if needed
-    # queryset = ...
-    # serializer_class = ...
-
-    def get(self, request, *args, **kwargs):
-        # Example schedule data
-        schedule = {
-            "Monday": "Math",
-            "Tuesday": "Science",
-            "Wednesday": "History"
-        }
-        return Response(schedule)
