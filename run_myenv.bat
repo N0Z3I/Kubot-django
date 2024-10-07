@@ -2,7 +2,7 @@
 
 :: Activate virtual environment
 echo Activating virtual environment...
-call D:\Kubot-django\myenv\Scripts\activate
+call D:\Github\Kubot-django\myenv\Scripts\activate
 
 @REM :: Set environment variables
 @REM echo Setting environment variables...
