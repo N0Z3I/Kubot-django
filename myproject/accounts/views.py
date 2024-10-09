@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .utils import send_code_to_user
-from .models import OneTimePassword, User, StudentProfile, Schedule, Grade, GroupCourse, StudentEducation, GPAX, Announcement
+from .models import OneTimePassword, User, StudentProfile, Schedule, Grade, GroupCourse, StudentEducation, GPAX, Announcement, DiscordProfile
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -22,18 +22,112 @@ from django.contrib.auth import get_user_model
 import logging
 logger = logging.getLogger(__name__)
 
-from .serializers import LoginWithMykuSerializer
+from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer
 
 User = get_user_model()
-
-from django.contrib.auth import get_user_model
 from rest_framework.permissions import AllowAny
-import logging
-import jwt
-from django.conf import settings
+import requests
 
-logger = logging.getLogger(__name__)
-User = get_user_model()
+class DiscordConnectView(GenericAPIView):
+    serializer_class = DiscordConnectSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            try:
+                # รับ authorization code และแลกเปลี่ยนเป็น access token
+                code = serializer.validated_data['code']
+                redirect_uri = "http://localhost:8000/api/v1/auth/discord/callback/"
+
+                # แลกเปลี่ยน code เป็น access token
+                token_response = requests.post(
+                    "https://discord.com/api/oauth2/token",
+                    data={
+                        "client_id": settings.DISCORD_CLIENT_ID,
+                        "client_secret": settings.DISCORD_CLIENT_SECRET,
+                        "grant_type": "authorization_code",
+                        "code": code,
+                        "redirect_uri": redirect_uri,
+                    },
+                    headers={
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
+                )
+
+                if token_response.status_code != 200:
+                    return Response({"error": "Failed to retrieve access token"}, status=status.HTTP_400_BAD_REQUEST)
+
+                token_data = token_response.json()
+                access_token = token_data.get('access_token')
+                refresh_token = token_data.get('refresh_token')
+                expires_in = token_data.get('expires_in')  # ไม่ใช้ None ในการกำหนดค่า
+
+                if expires_in is None or expires_in == '':
+                    expires_in = 0  # ใช้ค่า 0 แทนค่า None หรือ ''
+
+                # ดึงข้อมูลผู้ใช้จาก Discord API
+                user_response = requests.get(
+                    "https://discord.com/api/users/@me",
+                    headers={
+                        "Authorization": f"Bearer {access_token}"
+                    }
+                )
+
+                if user_response.status_code != 200:
+                    return Response({"error": "Failed to retrieve user data"}, status=status.HTTP_400_BAD_REQUEST)
+
+                discord_user_data = user_response.json()
+
+                # บันทึกข้อมูลลงในฐานข้อมูล
+                discord_user, created = DiscordProfile.objects.update_or_create(
+                    user=request.user,
+                    defaults={
+                        'discord_id': discord_user_data['id'],
+                        'discord_username': discord_user_data['username'],
+                        'discord_discriminator': discord_user_data['discriminator'],
+                        'avatar_url': f"https://cdn.discordapp.com/avatars/{discord_user_data['id']}/{discord_user_data['avatar']}.png",
+                        'access_token': access_token,
+                        'refresh_token': refresh_token or '',  # ถ้า refresh_token ไม่มีค่าให้เป็น ''
+                        'expires_in': expires_in,  # บันทึก expires_in ที่ได้รับมา
+                    }
+                )
+
+                return Response({"message": "Successfully connected to Discord"}, status=status.HTTP_200_OK)
+
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DiscordCallbackView(GenericAPIView):
+    def get(self, request):
+        code = request.GET.get('code')
+
+        if not code:
+            return Response({'error': 'Authorization code not provided'}, status=400)
+
+        # ตั้งค่าข้อมูลเพื่อแลกเปลี่ยน authorization code เป็น access token
+        data = {
+            'client_id': settings.DISCORD_CLIENT_ID,
+            'client_secret': settings.DISCORD_CLIENT_SECRET,
+            'grant_type': 'authorization_code',
+            'code': code,
+            'redirect_uri': 'http://localhost:8000/api/v1/auth/discord/callback/',  # URL ที่ Discord จะ redirect กลับมา
+        }
+
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        }
+
+        token_url = 'https://discord.com/api/oauth2/token'
+        response = requests.post(token_url, data=data, headers=headers)
+
+        if response.status_code == 200:
+            token_data = response.json()
+            return Response(token_data)
+        else:
+            return Response({'error': 'Failed to get access token'}, status=400)
 
 class MykuLoginView(GenericAPIView):
     serializer_class = LoginWithMykuSerializer

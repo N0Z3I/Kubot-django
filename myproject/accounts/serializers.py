@@ -16,6 +16,16 @@ import json
 import pymyku
 import requests as req_lib  # ใช้สำหรับจัดการ exceptions
 
+
+class DiscordConnectSerializer(serializers.Serializer):
+    code = serializers.CharField(max_length=255, required=True)
+
+    def validate_code(self, value):
+        if not value:
+            raise serializers.ValidationError("Authorization code is required")
+        return value
+
+
 class LoginWithMykuSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=128, write_only=True)

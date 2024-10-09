@@ -10,6 +10,7 @@ import {
   ResetPassword,
   LinkMyKU,
   Dashboard,
+  LinkDiscord,
 } from "./components";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -24,6 +25,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/link-myku" element={<LinkMyKU />} />
+          <Route path="/link-discord" element={<LinkDiscord />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/profile" element={<Profile />} />
