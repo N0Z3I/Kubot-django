@@ -3,7 +3,7 @@ from rest_framework.generics import GenericAPIView
 from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from .utils import send_code_to_user
 from .models import OneTimePassword, User, StudentProfile, Schedule, Grade, GroupCourse, StudentEducation, GPAX, Announcement, DiscordProfile
 from django.utils.http import urlsafe_base64_decode
@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer
 
 User = get_user_model()
-from rest_framework.permissions import AllowAny
 import requests
 
 class DiscordConnectView(GenericAPIView):

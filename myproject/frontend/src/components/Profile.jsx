@@ -68,16 +68,16 @@ const Profile = () => {
 
   // ฟังก์ชันที่เรียก backend เพื่อเชื่อมต่อกับ Discord
   const fetchDiscordData = async (code) => {
-    const accessToken = Cookies.get("access"); // ดึง access token จาก cookies
-
+    const accessToken = Cookies.get("access"); // ตรวจสอบ access token
+    print("accessToken");
     if (code && accessToken) {
       try {
         const res = await axios.post(
-          "http://localhost:8000/discord/connect/",
-          { code: code },
+          "http://localhost:8000/api/v1/auth/discord/callback/",
+          { code: code }, // ส่ง authorization code ที่ได้จาก Discord
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`,
+              Authorization: `Bearer ${accessToken}`, // ตั้ง Authorization header ให้ถูกต้อง
             },
           }
         );
@@ -93,6 +93,8 @@ const Profile = () => {
         );
         toast.error("เชื่อมต่อ Discord ไม่สำเร็จ กรุณาลองใหม่");
       }
+    } else {
+      toast.error("Access token not found");
     }
   };
 
@@ -120,7 +122,7 @@ const Profile = () => {
             you'll ever need!
             <p>KuBot is the easiest way to organize your studies.</p>
             <a
-              href="https://discord.com/oauth2/authorize?client_id=YOUR_DISCORD_CLIENT_ID&permissions=8&scope=bot"
+              href="https://discord.com/oauth2/authorize?client_id=1292933694511775847&permissions=8&scope=bot"
               target="_blank"
             >
               <button className="hover">Add to discord</button>

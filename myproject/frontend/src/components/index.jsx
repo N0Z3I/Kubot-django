@@ -6,7 +6,6 @@ import ResetPassword from "./ResetPassword";
 import VerifyEmail from "./VerifyEmail";
 import LinkMyKU from "./LinkMyKU";
 import Dashboard from "./Dashboard";
-import LinkDiscord from "./LinkDiscord";
 
 export {
   Signup,
@@ -17,5 +16,4 @@ export {
   VerifyEmail,
   LinkMyKU,
   Dashboard,
-  LinkDiscord,
 };
