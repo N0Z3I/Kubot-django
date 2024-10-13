@@ -7,19 +7,32 @@ import Cookies from "js-cookie";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(Cookies.get("user"));
+  const [user, setUser] = useState(null); // จัดการข้อมูลผู้ใช้ใน State
   const jwt_access = Cookies.get("access");
   const refresh = Cookies.get("refresh");
-  const [authCode, setAuthCode] = useState(null); // เก็บ authorization code จาก Discord
 
+  // เช็คว่ามี user และ jwt_access หรือไม่ (และป้องกันการวนลูป)
   useEffect(() => {
-    if (!jwt_access || !user) {
+    const storedUser = Cookies.get("user");
+    if (!jwt_access || !storedUser) {
       navigate("/login");
     } else {
-      getSomeData();
-      checkDiscordAuthCode();
+      setUser(JSON.parse(storedUser)); // ตั้งค่า user เมื่อมีข้อมูลจาก cookies
     }
-  }, [jwt_access, user]);
+  }, []); // [] ทำให้ useEffect นี้ทำงานแค่ครั้งเดียวตอน mount
+
+  // แยกการเช็ค Discord Auth Code ออกมาใน useEffect อีกตัว
+  useEffect(() => {
+    checkDiscordAuthCode(); // เรียกเช็คว่ามี Discord authorization code หรือไม่
+  }, []); // [] ทำให้ฟังก์ชันนี้ทำงานแค่ครั้งเดียวเช่นกัน
+
+  const checkDiscordAuthCode = () => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+      fetchDiscordData(code); // ถ้าเจอ code ให้ส่งไป backend
+    }
+  };
 
   const getSomeData = async () => {
     try {
@@ -53,27 +66,16 @@ const Profile = () => {
   // ฟังก์ชันสำหรับเชื่อมต่อ Discord
   const handleDiscordConnect = () => {
     const discordAuthURL = `https://discord.com/api/oauth2/authorize?client_id=1292933694511775847&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/&response_type=code&scope=identify`;
-    window.location.href = discordAuthURL; // ส่งผู้ใช้ไปยังหน้าการยืนยัน Discord
-  };
-
-  // ตรวจสอบว่ามี authorization code จาก URL หรือไม่
-  const checkDiscordAuthCode = () => {
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-    if (code) {
-      setAuthCode(code);
-      fetchDiscordData(code); // ส่ง authorization code ไปที่ backend
-    }
+    window.location.href = discordAuthURL;
   };
 
   // ฟังก์ชันที่เรียก backend เพื่อเชื่อมต่อกับ Discord
   const fetchDiscordData = async (code) => {
     const accessToken = Cookies.get("access"); // ตรวจสอบ access token
-    print("accessToken");
     if (code && accessToken) {
       try {
         const res = await axios.post(
-          "http://localhost:8000/api/v1/auth/discord/callback/",
+          "http://localhost:8000/api/v1/auth/discord/connect/",
           { code: code }, // ส่ง authorization code ที่ได้จาก Discord
           {
             headers: {
@@ -84,7 +86,7 @@ const Profile = () => {
 
         if (res.status === 200) {
           toast.success("เชื่อมต่อ Discord สำเร็จ!");
-          navigate("/profile"); // ไปที่หน้าโปรไฟล์หลังเชื่อมต่อสำเร็จ
+          navigate("/profile");
         }
       } catch (error) {
         console.error(

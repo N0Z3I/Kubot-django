@@ -1,9 +1,10 @@
 from django.shortcuts import render
 from rest_framework.generics import GenericAPIView
+from rest_framework.views import APIView
 from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .utils import send_code_to_user
 from .models import OneTimePassword, User, StudentProfile, Schedule, Grade, GroupCourse, StudentEducation, GPAX, Announcement, DiscordProfile
 from django.utils.http import urlsafe_base64_decode
@@ -99,34 +100,48 @@ class DiscordConnectView(GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DiscordCallbackView(GenericAPIView):
+class DiscordCallbackView(APIView):
+    permission_classes = [AllowAny]  # ไม่ต้องใช้ authentication
+
     def get(self, request):
-        code = request.GET.get('code')
-
+        code = request.query_params.get('code')
         if not code:
-            return Response({'error': 'Authorization code not provided'}, status=400)
+            return Response({'error': 'No authorization code provided'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # ตั้งค่าข้อมูลเพื่อแลกเปลี่ยน authorization code เป็น access token
+        # URL สำหรับแลกเปลี่ยน authorization code เป็น access token
+        token_url = 'https://discord.com/api/oauth2/token'
         data = {
             'client_id': settings.DISCORD_CLIENT_ID,
             'client_secret': settings.DISCORD_CLIENT_SECRET,
             'grant_type': 'authorization_code',
             'code': code,
-            'redirect_uri': 'http://localhost:8000/api/v1/auth/discord/callback/',  # URL ที่ Discord จะ redirect กลับมา
+            'redirect_uri': settings.DISCORD_REDIRECT_URI,
         }
 
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
+        try:
+            response = requests.post(token_url, data=data)
+            if response.status_code == 200:
+                token_data = response.json()
 
-        token_url = 'https://discord.com/api/oauth2/token'
-        response = requests.post(token_url, data=data, headers=headers)
+                # ดึงข้อมูลผู้ใช้จาก Discord API
+                discord_user_info_url = 'https://discord.com/api/users/@me'
+                headers = {'Authorization': f'Bearer {token_data["access_token"]}'}
+                user_info_response = requests.get(discord_user_info_url, headers=headers)
 
-        if response.status_code == 200:
-            token_data = response.json()
-            return Response(token_data)
-        else:
-            return Response({'error': 'Failed to get access token'}, status=400)
+                if user_info_response.status_code == 200:
+                    user_data = user_info_response.json()
+                    # ส่งข้อมูลผู้ใช้กลับไปยัง frontend หรือบันทึกลงฐานข้อมูล
+                    return Response({
+                        'message': 'Discord account linked successfully',
+                        'user_data': user_data,
+                        'token_data': token_data
+                    }, status=status.HTTP_200_OK)
+                else:
+                    return Response({'error': 'Failed to retrieve user info from Discord'}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({'error': 'Failed to retrieve access token'}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class MykuLoginView(GenericAPIView):
     serializer_class = LoginWithMykuSerializer
