@@ -11,7 +11,7 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -130,12 +130,14 @@ class DiscordCallbackView(APIView):
 
                 if user_info_response.status_code == 200:
                     user_data = user_info_response.json()
-                    # ส่งข้อมูลผู้ใช้กลับไปยัง frontend หรือบันทึกลงฐานข้อมูล
-                    return Response({
-                        'message': 'Discord account linked successfully',
-                        'user_data': user_data,
-                        'token_data': token_data
-                    }, status=status.HTTP_200_OK)
+
+                    # บันทึกข้อมูลผู้ใช้หรือส่งข้อมูลกลับไป frontend
+                    # ทำการบันทึกข้อมูลในระบบของคุณหากจำเป็น
+
+                    # เมื่อเชื่อมต่อสำเร็จ, ส่งผู้ใช้กลับไปที่หน้า profile ใน frontend
+                    redirect_url = f"http://localhost:5173/profile?discord_connected=true"
+                    return redirect(redirect_url)
+
                 else:
                     return Response({'error': 'Failed to retrieve user info from Discord'}, status=status.HTTP_400_BAD_REQUEST)
 

@@ -24,6 +24,12 @@ const Profile = () => {
   // แยกการเช็ค Discord Auth Code ออกมาใน useEffect อีกตัว
   useEffect(() => {
     checkDiscordAuthCode(); // เรียกเช็คว่ามี Discord authorization code หรือไม่
+
+    // เช็คว่ามีการเชื่อมต่อกับ Discord สำเร็จหรือไม่จาก URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("discord_connected") === "true") {
+      toast.success("เชื่อมต่อกับ Discord สำเร็จ!");
+    }
   }, []); // [] ทำให้ฟังก์ชันนี้ทำงานแค่ครั้งเดียวเช่นกัน
 
   const checkDiscordAuthCode = () => {
@@ -65,7 +71,7 @@ const Profile = () => {
 
   // ฟังก์ชันสำหรับเชื่อมต่อ Discord
   const handleDiscordConnect = () => {
-    const discordAuthURL = `https://discord.com/api/oauth2/authorize?client_id=1292933694511775847&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/&response_type=code&scope=identify`;
+    const discordAuthURL = `https://discord.com/api/oauth2/authorize?client_id=1292933694511775847&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/&response_type=code&scope=identify email guilds`;
     window.location.href = discordAuthURL;
   };
 
@@ -124,7 +130,7 @@ const Profile = () => {
             you'll ever need!
             <p>KuBot is the easiest way to organize your studies.</p>
             <a
-              href="https://discord.com/oauth2/authorize?client_id=1292933694511775847&permissions=8&scope=bot"
+              href="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot"
               target="_blank"
             >
               <button className="hover">Add to discord</button>
