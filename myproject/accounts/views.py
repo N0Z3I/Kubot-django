@@ -28,122 +28,135 @@ from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer
 User = get_user_model()
 import requests
 
-class DiscordConnectView(GenericAPIView):
-    serializer_class = DiscordConnectSerializer
+class DiscordConnectView(APIView):
+    permission_classes = [IsAuthenticated]  # ต้องล็อกอิน
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            try:
-                # รับ authorization code และแลกเปลี่ยนเป็น access token
-                code = serializer.validated_data['code']
-                redirect_uri = "http://localhost:8000/api/v1/auth/discord/callback/"
+        user = request.user  # ตรวจสอบว่าผู้ใช้ล็อกอินหรือไม่
+        if not user.is_authenticated:
+            return Response({'error': 'User not authenticated'}, status=401)
 
-                # แลกเปลี่ยน code เป็น access token
-                token_response = requests.post(
-                    "https://discord.com/api/oauth2/token",
-                    data={
-                        "client_id": settings.DISCORD_CLIENT_ID,
-                        "client_secret": settings.DISCORD_CLIENT_SECRET,
-                        "grant_type": "authorization_code",
-                        "code": code,
-                        "redirect_uri": redirect_uri,
-                    },
-                    headers={
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    }
-                )
+        code = request.data.get('code')
+        if not code:
+            return Response({'error': 'No authorization code provided'}, status=400)
 
-                if token_response.status_code != 200:
-                    return Response({"error": "Failed to retrieve access token"}, status=status.HTTP_400_BAD_REQUEST)
+        # แลกเปลี่ยน code เป็น access token
+        token_response = requests.post(
+            "https://discord.com/api/oauth2/token",
+            data={
+                "client_id": settings.DISCORD_CLIENT_ID,
+                "client_secret": settings.DISCORD_CLIENT_SECRET,
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": settings.DISCORD_REDIRECT_URI,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
+        )
 
-                token_data = token_response.json()
-                access_token = token_data.get('access_token')
-                refresh_token = token_data.get('refresh_token')
-                expires_in = token_data.get('expires_in')  # ไม่ใช้ None ในการกำหนดค่า
+        if token_response.status_code != 200:
+            return Response({'error': 'Failed to retrieve access token'}, status=400)
 
-                if expires_in is None or expires_in == '':
-                    expires_in = 0  # ใช้ค่า 0 แทนค่า None หรือ ''
+        token_data = token_response.json()
+        access_token = token_data.get('access_token')
 
-                # ดึงข้อมูลผู้ใช้จาก Discord API
-                user_response = requests.get(
-                    "https://discord.com/api/users/@me",
-                    headers={
-                        "Authorization": f"Bearer {access_token}"
-                    }
-                )
+        # ดึงข้อมูลจาก Discord API
+        user_response = requests.get(
+            "https://discord.com/api/users/@me",
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
 
-                if user_response.status_code != 200:
-                    return Response({"error": "Failed to retrieve user data"}, status=status.HTTP_400_BAD_REQUEST)
+        if user_response.status_code != 200:
+            return Response({'error': 'Failed to retrieve user info'}, status=400)
 
-                discord_user_data = user_response.json()
+        discord_user_data = user_response.json()
 
-                # บันทึกข้อมูลลงในฐานข้อมูล
-                discord_user, created = DiscordProfile.objects.update_or_create(
-                    user=request.user,
-                    defaults={
-                        'discord_id': discord_user_data['id'],
-                        'discord_username': discord_user_data['username'],
-                        'discord_discriminator': discord_user_data['discriminator'],
-                        'avatar_url': f"https://cdn.discordapp.com/avatars/{discord_user_data['id']}/{discord_user_data['avatar']}.png",
-                        'access_token': access_token,
-                        'refresh_token': refresh_token or '',  # ถ้า refresh_token ไม่มีค่าให้เป็น ''
-                        'expires_in': expires_in,  # บันทึก expires_in ที่ได้รับมา
-                    }
-                )
+        # ตรวจสอบว่ามีโปรไฟล์ Discord อยู่แล้วหรือไม่
+        discord_profile, created = DiscordProfile.objects.update_or_create(
+            discord_id=discord_user_data['id'],
+            defaults={
+                'user': user,  # เชื่อมกับ User
+                'discord_username': discord_user_data['username'],
+                'discord_discriminator': discord_user_data['discriminator'],
+                'avatar_url': f"https://cdn.discordapp.com/avatars/{discord_user_data['id']}/{discord_user_data['avatar']}.png",
+                'access_token': access_token,
+                'refresh_token': token_data.get('refresh_token', ''),
+                'expires_in': token_data.get('expires_in', 0),
+            }
+        )
 
-                return Response({"message": "Successfully connected to Discord"}, status=status.HTTP_200_OK)
+        # ตรวจสอบและยืนยันการเชื่อม
+        if discord_profile.user == user:
+            print(f"User {user.email} เชื่อมต่อกับ Discord สำเร็จ")
 
-            except Exception as e:
-                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'Successfully connected to Discord'}, status=200)
 
 
 class DiscordCallbackView(APIView):
-    permission_classes = [AllowAny]  # ไม่ต้องใช้ authentication
+    permission_classes = [AllowAny]
 
     def get(self, request):
         code = request.query_params.get('code')
         if not code:
-            return Response({'error': 'No authorization code provided'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'No authorization code provided'}, status=400)
 
-        # URL สำหรับแลกเปลี่ยน authorization code เป็น access token
-        token_url = 'https://discord.com/api/oauth2/token'
-        data = {
-            'client_id': settings.DISCORD_CLIENT_ID,
-            'client_secret': settings.DISCORD_CLIENT_SECRET,
-            'grant_type': 'authorization_code',
-            'code': code,
-            'redirect_uri': settings.DISCORD_REDIRECT_URI,
-        }
+        # แลกเปลี่ยน code เป็น access token
+        token_response = requests.post(
+            'https://discord.com/api/oauth2/token',
+            data={
+                'client_id': settings.DISCORD_CLIENT_ID,
+                'client_secret': settings.DISCORD_CLIENT_SECRET,
+                'grant_type': 'authorization_code',
+                'code': code,
+                'redirect_uri': settings.DISCORD_REDIRECT_URI,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"}
+        )
 
+        if token_response.status_code != 200:
+            return Response({'error': 'Failed to retrieve access token'}, status=400)
+
+        token_data = token_response.json()
+        access_token = token_data['access_token']
+
+        # ดึงข้อมูลผู้ใช้จาก Discord API
+        headers = {'Authorization': f'Bearer {access_token}'}
+        user_response = requests.get('https://discord.com/api/users/@me', headers=headers)
+
+        if user_response.status_code != 200:
+            return Response({'error': 'Failed to retrieve user info'}, status=400)
+
+        discord_user_data = user_response.json()
+
+        # ตรวจสอบว่ามีโปรไฟล์ Discord หรือไม่ และเชื่อมกับ User
+        discord_profile, created = DiscordProfile.objects.get_or_create(
+            discord_id=discord_user_data['id'],
+            defaults={
+                'discord_username': discord_user_data['username'],
+                'discord_discriminator': discord_user_data['discriminator'],
+                'avatar_url': f"https://cdn.discordapp.com/avatars/{discord_user_data['id']}/{discord_user_data['avatar']}.png",
+                'access_token': access_token,
+                'refresh_token': token_data.get('refresh_token', ''),
+            }
+        )
+
+        # Redirect ไปที่หน้าโปรไฟล์
+        redirect_url = f"http://localhost:5173/profile?discord_connected=true"
+        return redirect(redirect_url)
+    
+class DiscordProfileView(APIView):
+    permission_classes = [IsAuthenticated]  # ต้องล็อกอินก่อนเข้าถึง
+
+    def get(self, request):
         try:
-            response = requests.post(token_url, data=data)
-            if response.status_code == 200:
-                token_data = response.json()
-
-                # ดึงข้อมูลผู้ใช้จาก Discord API
-                discord_user_info_url = 'https://discord.com/api/users/@me'
-                headers = {'Authorization': f'Bearer {token_data["access_token"]}'}
-                user_info_response = requests.get(discord_user_info_url, headers=headers)
-
-                if user_info_response.status_code == 200:
-                    user_data = user_info_response.json()
-
-                    # บันทึกข้อมูลผู้ใช้หรือส่งข้อมูลกลับไป frontend
-                    # ทำการบันทึกข้อมูลในระบบของคุณหากจำเป็น
-
-                    # เมื่อเชื่อมต่อสำเร็จ, ส่งผู้ใช้กลับไปที่หน้า profile ใน frontend
-                    redirect_url = f"http://localhost:5173/profile?discord_connected=true"
-                    return redirect(redirect_url)
-
-                else:
-                    return Response({'error': 'Failed to retrieve user info from Discord'}, status=status.HTTP_400_BAD_REQUEST)
-
-            return Response({'error': 'Failed to retrieve access token'}, status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            profile = DiscordProfile.objects.get(user=request.user)
+            data = {
+                "discord_username": profile.discord_username,
+                "discord_discriminator": profile.discord_discriminator,
+                "avatar_url": profile.avatar_url,
+            }
+            return Response(data, status=200)
+        except DiscordProfile.DoesNotExist:
+            return Response({"error": "ไม่พบบัญชี Discord ที่เชื่อมต่อ"}, status=404)
 
 class MykuLoginView(GenericAPIView):
     serializer_class = LoginWithMykuSerializer

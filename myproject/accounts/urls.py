@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView
 from rest_framework_simplejwt.views import TokenRefreshView
-from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView
+from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView, DiscordProfileView
 
 urlpatterns=[
     path('register/', RegisterUserView.as_view(), name = 'register'),
@@ -17,4 +17,6 @@ urlpatterns=[
     path('myku-data/', MykuDataView.as_view(), name='myku-data'),
     path('discord/connect/', DiscordConnectView.as_view(), name='discord-connect'),
     path('discord/callback/', DiscordCallbackView.as_view(), name='discord-callback'),
+    path('discord/profile/', DiscordProfileView.as_view(), name='discord-profile'),
+
 ]

@@ -126,7 +126,12 @@ class OneTimePassword(models.Model):
         return f"{self.user.first_name}-passcode"
     
 class DiscordProfile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE, 
+        blank=True, 
+        null=True
+    )
     discord_id = models.CharField(max_length=255, unique=True)
     discord_username = models.CharField(max_length=255)
     discord_discriminator = models.CharField(max_length=4)
@@ -137,25 +142,3 @@ class DiscordProfile(models.Model):
 
     def __str__(self):
         return f"{self.discord_username}#{self.discord_discriminator}"
-
-    def refresh_access_token(self):
-        """
-        ฟังก์ชันนี้ใช้ในการรีเฟรช access token เมื่อหมดอายุ
-        """
-        token_url = "https://discord.com/api/oauth2/token"
-        data = {
-            'client_id': settings.DISCORD_CLIENT_ID,
-            'client_secret': settings.DISCORD_CLIENT_SECRET,
-            'grant_type': 'refresh_token',
-            'refresh_token': self.refresh_token,
-        }
-
-        response = requests.post(token_url, data=data)
-        if response.status_code == 200:
-            token_data = response.json()
-            self.access_token = token_data.get('access_token')
-            self.expires_in = token_data.get('expires_in')
-            self.refresh_token = token_data.get('refresh_token', self.refresh_token)
-            self.save()
-        else:
-            raise Exception("Failed to refresh Discord token")

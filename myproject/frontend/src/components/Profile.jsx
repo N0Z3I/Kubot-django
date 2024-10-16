@@ -10,7 +10,24 @@ const Profile = () => {
   const [user, setUser] = useState(null); // จัดการข้อมูลผู้ใช้ใน State
   const jwt_access = Cookies.get("access");
   const refresh = Cookies.get("refresh");
+  const [discordProfile, setDiscordProfile] = useState(null);
 
+  // ฟังก์ชันดึงข้อมูลโปรไฟล์ Discord
+  const getDiscordProfile = async () => {
+    try {
+      const response = await axiosInstance.get("/auth/discord/profile/");
+      if (response.status === 200) {
+        setDiscordProfile(response.data); // เก็บข้อมูล Discord ใน state
+      }
+    } catch (error) {
+      console.error("ไม่พบบัญชี Discord ที่เชื่อมต่อ");
+      toast.error("ไม่พบบัญชี Discord ที่เชื่อมต่อ");
+    }
+  };
+
+  useEffect(() => {
+    getDiscordProfile(); // ดึงข้อมูลเมื่อหน้าโหลด
+  }, []);
   // เช็คว่ามี user และ jwt_access หรือไม่ (และป้องกันการวนลูป)
   useEffect(() => {
     const storedUser = Cookies.get("user");
@@ -77,32 +94,30 @@ const Profile = () => {
 
   // ฟังก์ชันที่เรียก backend เพื่อเชื่อมต่อกับ Discord
   const fetchDiscordData = async (code) => {
-    const accessToken = Cookies.get("access"); // ตรวจสอบ access token
-    if (code && accessToken) {
-      try {
-        const res = await axios.post(
-          "http://localhost:8000/api/v1/auth/discord/connect/",
-          { code: code }, // ส่ง authorization code ที่ได้จาก Discord
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`, // ตั้ง Authorization header ให้ถูกต้อง
-            },
-          }
-        );
+    const accessToken = Cookies.get("access"); // รับ JWT Token
 
-        if (res.status === 200) {
-          toast.success("เชื่อมต่อ Discord สำเร็จ!");
-          navigate("/profile");
-        }
-      } catch (error) {
-        console.error(
-          "Error connecting to Discord:",
-          error.response ? error.response.data : error.message
-        );
-        toast.error("เชื่อมต่อ Discord ไม่สำเร็จ กรุณาลองใหม่");
-      }
-    } else {
+    if (!accessToken) {
       toast.error("Access token not found");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/auth/discord/connect/",
+        { code },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("เชื่อมต่อ Discord สำเร็จ!");
+      }
+    } catch (error) {
+      console.error("Error connecting to Discord:", error);
+      toast.error("เชื่อมต่อ Discord ไม่สำเร็จ กรุณาลองใหม่");
     }
   };
 
@@ -139,6 +154,20 @@ const Profile = () => {
           <img src="/favicon.png" alt="" />
         </div>
       </section>
+      <div>
+        <h1>โปรไฟล์ของคุณ</h1>
+        {discordProfile ? (
+          <div>
+            <h2>
+              Discord Username: {discordProfile.discord_username}#
+              {discordProfile.discord_discriminator}
+            </h2>
+            <img src={discordProfile.avatar_url} alt="Discord Avatar" />
+          </div>
+        ) : (
+          <p>ยังไม่ได้เชื่อมต่อกับ Discord</p>
+        )}
+      </div>
     </div>
   );
 };
