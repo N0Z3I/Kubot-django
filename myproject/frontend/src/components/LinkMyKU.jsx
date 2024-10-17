@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
+import { Link } from "react-router-dom";
 
 const LinkMyku = () => {
   const [mykuData, setMykuData] = useState({
@@ -86,6 +87,11 @@ const LinkMyku = () => {
           />
         </div>
         <input type="submit" value="Login" className="submitButton" />
+        <br />
+            <p1 className="pass-link">
+              Sign in with email account <Link to={"/Login"}>Login here</Link>
+            </p1>
+            <br />
       </form>
     </div>
     </div>
