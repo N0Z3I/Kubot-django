@@ -62,6 +62,8 @@ const LinkMyku = () => {
 
   return (
     <div>
+      <div className="form-container">
+       <div style={{ width: "30%" }} name="wrapper">
       <form onSubmit={handleSubmit}>
         {isLoading && <p>Loading...</p>}
         <div className="form-group">
@@ -85,6 +87,8 @@ const LinkMyku = () => {
         </div>
         <input type="submit" value="Login" className="submitButton" />
       </form>
+    </div>
+    </div>
     </div>
   );
 };
