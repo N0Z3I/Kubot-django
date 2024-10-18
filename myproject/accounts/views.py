@@ -29,18 +29,18 @@ User = get_user_model()
 import requests
 
 class DiscordConnectView(APIView):
-    permission_classes = [IsAuthenticated]  # ต้องล็อกอิน
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        user = request.user  # ตรวจสอบว่าผู้ใช้ล็อกอินหรือไม่
-        if not user.is_authenticated:
-            return Response({'error': 'User not authenticated'}, status=401)
-
+        logger.info("DiscordConnectView ถูกเรียก")
+        user = request.user
         code = request.data.get('code')
+
         if not code:
+            logger.error("ไม่มี authorization code ถูกส่งมา")
             return Response({'error': 'No authorization code provided'}, status=400)
 
-        # แลกเปลี่ยน code เป็น access token
+        # ตัวอย่างการแลกเปลี่ยน token
         token_response = requests.post(
             "https://discord.com/api/oauth2/token",
             data={
@@ -54,45 +54,43 @@ class DiscordConnectView(APIView):
         )
 
         if token_response.status_code != 200:
+            logger.error(f"Failed to retrieve access token: {token_response.text}")
             return Response({'error': 'Failed to retrieve access token'}, status=400)
 
         token_data = token_response.json()
         access_token = token_data.get('access_token')
 
-        # ดึงข้อมูลจาก Discord API
         user_response = requests.get(
             "https://discord.com/api/users/@me",
             headers={"Authorization": f"Bearer {access_token}"}
         )
 
         if user_response.status_code != 200:
+            logger.error(f"Failed to retrieve user info: {user_response.text}")
             return Response({'error': 'Failed to retrieve user info'}, status=400)
 
         discord_user_data = user_response.json()
+        logger.info(f"ดึงข้อมูลผู้ใช้จาก Discord สำเร็จ: {discord_user_data}")
 
-        # ตรวจสอบว่ามีโปรไฟล์ Discord อยู่แล้วหรือไม่
-        discord_profile, created = DiscordProfile.objects.update_or_create(
+        DiscordProfile.objects.update_or_create(
             discord_id=discord_user_data['id'],
             defaults={
-                'user': user,  # เชื่อมกับ User
+                'user': user,
                 'discord_username': discord_user_data['username'],
                 'discord_discriminator': discord_user_data['discriminator'],
                 'avatar_url': f"https://cdn.discordapp.com/avatars/{discord_user_data['id']}/{discord_user_data['avatar']}.png",
                 'access_token': access_token,
-                'refresh_token': token_data.get('refresh_token', ''),
-                'expires_in': token_data.get('expires_in', 0),
             }
         )
 
-        # ตรวจสอบและยืนยันการเชื่อม
-        if discord_profile.user == user:
-            print(f"User {user.email} เชื่อมต่อกับ Discord สำเร็จ")
-
+        logger.info(f"โปรไฟล์ Discord ของ {user.email} ถูกบันทึกสำเร็จ")
         return Response({'message': 'Successfully connected to Discord'}, status=200)
 
 
+from rest_framework.exceptions import AuthenticationFailed
+
 class DiscordCallbackView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny]  # อนุญาตให้เข้าถึงได้โดยไม่ต้องตรวจสอบสิทธิ์
 
     def get(self, request):
         code = request.query_params.get('code')
@@ -116,37 +114,50 @@ class DiscordCallbackView(APIView):
             return Response({'error': 'Failed to retrieve access token'}, status=400)
 
         token_data = token_response.json()
-        access_token = token_data['access_token']
+        access_token = token_data.get('access_token')
 
         # ดึงข้อมูลผู้ใช้จาก Discord API
-        headers = {'Authorization': f'Bearer {access_token}'}
-        user_response = requests.get('https://discord.com/api/users/@me', headers=headers)
+        user_response = requests.get(
+            'https://discord.com/api/users/@me',
+            headers={'Authorization': f'Bearer {access_token}'}
+        )
 
         if user_response.status_code != 200:
             return Response({'error': 'Failed to retrieve user info'}, status=400)
 
         discord_user_data = user_response.json()
 
-        # ตรวจสอบว่ามีโปรไฟล์ Discord หรือไม่ และเชื่อมกับ User
-        discord_profile, created = DiscordProfile.objects.get_or_create(
+        # ดึงผู้ใช้ที่ล็อกอินล่าสุดจาก session หรือเก็บใน state ของ React
+        user = self.get_authenticated_user()
+
+        # บันทึกโปรไฟล์ Discord
+        DiscordProfile.objects.update_or_create(
             discord_id=discord_user_data['id'],
             defaults={
+                'user': user,  # เชื่อมต่อโปรไฟล์กับผู้ใช้
                 'discord_username': discord_user_data['username'],
                 'discord_discriminator': discord_user_data['discriminator'],
                 'avatar_url': f"https://cdn.discordapp.com/avatars/{discord_user_data['id']}/{discord_user_data['avatar']}.png",
                 'access_token': access_token,
-                'refresh_token': token_data.get('refresh_token', ''),
             }
         )
 
-        # Redirect ไปที่หน้าโปรไฟล์
-        redirect_url = f"http://localhost:5173/profile?discord_connected=true"
-        return redirect(redirect_url)
+        return redirect('http://localhost:5173/profile?discord_connected=true')
+
+    def get_authenticated_user(self):
+        # ฟังก์ชันจำลองเพื่อดึงผู้ใช้ที่ล็อกอินอยู่จาก session หรือ JWT (ขึ้นกับการออกแบบระบบของคุณ)
+        return User.objects.first()  # ทดสอบด้วยผู้ใช้คนแรกในฐานข้อมูล
+
+
     
 class DiscordProfileView(APIView):
     permission_classes = [IsAuthenticated]  # ต้องล็อกอินก่อนเข้าถึง
 
     def get(self, request):
+        logger.info(f"Request user: {request.user}")
+        if not request.user.is_authenticated:
+            return Response({"error": "User is not authenticated"}, status=401)
+
         try:
             profile = DiscordProfile.objects.get(user=request.user)
             data = {

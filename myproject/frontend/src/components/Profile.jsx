@@ -16,11 +16,13 @@ const Profile = () => {
   const getDiscordProfile = async () => {
     try {
       const response = await axiosInstance.get("/auth/discord/profile/");
+      console.log(response.data); // ตรวจสอบข้อมูลใน console
+
       if (response.status === 200) {
-        setDiscordProfile(response.data); // เก็บข้อมูล Discord ใน state
+        setDiscordProfile(response.data); // บันทึกข้อมูลลงใน state
       }
     } catch (error) {
-      console.error("ไม่พบบัญชี Discord ที่เชื่อมต่อ");
+      console.error("ไม่พบบัญชี Discord ที่เชื่อมต่อ:", error);
       toast.error("ไม่พบบัญชี Discord ที่เชื่อมต่อ");
     }
   };
@@ -88,8 +90,8 @@ const Profile = () => {
 
   // ฟังก์ชันสำหรับเชื่อมต่อ Discord
   const handleDiscordConnect = () => {
-    const discordAuthURL = `https://discord.com/api/oauth2/authorize?client_id=1292933694511775847&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/&response_type=code&scope=identify email guilds`;
-    window.location.href = discordAuthURL;
+    const discordAuthURL = `https://discord.com/oauth2/authorize?client_id=1292933694511775847&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/&response_type=code&scope=identify email guilds`;
+    window.location.href = discordAuthURL; // พาผู้ใช้ไปที่ Discord เพื่อยืนยันการเชื่อมต่อ
   };
 
   // ฟังก์ชันที่เรียก backend เพื่อเชื่อมต่อกับ Discord
