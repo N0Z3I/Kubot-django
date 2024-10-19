@@ -114,7 +114,7 @@ const Dashboard = () => {
     // ลบ Token
     Cookies.remove("access");
     // นำผู้ใช้ไปยังหน้า Login
-    navigate("/login");
+    navigate("/link-myku");
     // แสดงข้อความแจ้งเตือน
     toast.success("ออกจากระบบสำเร็จ");
   };
