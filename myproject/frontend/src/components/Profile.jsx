@@ -59,6 +59,10 @@ const Profile = () => {
     }
   };
 
+  const handleDiscordLogout = async () => {
+  };
+  
+
   const getSomeData = async () => {
     try {
       const resp = await axiosInstance.get("/auth/profile/");
@@ -156,20 +160,32 @@ const Profile = () => {
           <img src="/favicon.png" alt="" />
         </div>
       </section>
-      <div>
-        <h1>โปรไฟล์ของคุณ</h1>
-        {discordProfile ? (
-          <div>
-            <h2>
-              Discord Username: {discordProfile.discord_username}#
-              {discordProfile.discord_discriminator}
-            </h2>
-            <img src={discordProfile.avatar_url} alt="Discord Avatar" />
-          </div>
-        ) : (
-          <p>ยังไม่ได้เชื่อมต่อกับ Discord</p>
-        )}
+      <div className="form-container">
+  <div className="wrapper profile-card">
+    <h4>Your Discord Profile</h4>
+    {discordProfile ? (
+      <div className="profile-content">
+        <img
+          className="profile-avatar"
+          src={discordProfile.avatar_url}
+          alt="Discord Avatar"
+        />
+        <p>
+          <strong>Username: </strong> {discordProfile.discord_username || "N/A"}
+        </p>
+        <div className="navigations">
+        <p>
+        <button onClick={handleDiscordLogout} className="logout-btn">
+            Logout
+          </button>
+        </p>
+        </div>
       </div>
+    ) : (
+      <p>ยังไม่ได้เชื่อมต่อกับ Discord</p>
+    )}
+  </div>
+</div>
     </div>
   );
 };

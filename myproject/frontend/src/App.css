@@ -289,7 +289,7 @@ header {
   height: 50px;
   font-size: 20px;
   font-weight: bold;
-  background-color: #e7461e;
+  background-color: #FF2400;
   margin: 1rem;
   border: none;
   color: #ebeefd;
@@ -377,3 +377,60 @@ body {
     transform: translateX(1);
   }
 }
+
+.profile-card {
+  padding: 22px;
+  margin-top: 10px;
+  margin-bottom: 1rem;
+  margin-right: auto;
+  margin-left: auto;
+  max-width: 400px;
+  width: 80%;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 5%;
+  margin-right: 60px;
+  margin-top: 3px;
+  margin-bottom: 20px;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.profile-content p {
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  font-family: "Poppins", sans-serif;
+  margin: 10px 0;
+}
+
+.navigations .logout-btn {
+  padding: 10px 22px;
+  outline: none;
+  width: 120px;
+  height: 50px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #FF2400;
+  margin-top: 2px;
+  border: none;
+  color: #ebeefd;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.navigations .logout-btn:hover {
+  transform: scale(1.05);
+}
+
