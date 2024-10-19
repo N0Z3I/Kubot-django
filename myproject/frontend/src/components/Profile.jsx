@@ -182,10 +182,14 @@ const Profile = () => {
         </div>
       </div>
     ) : (
-      <p>ยังไม่ได้เชื่อมต่อกับ Discord</p>
+      <p>Not connected to Discord yet.</p>
     )}
+         <div className="profile-content">
+    <img className="profile-avatar" src="/discord.jpg" alt="" />
+    <p><strong>Username: </strong> N/A</p>
   </div>
 </div>
+    </div>
     </div>
   );
 };

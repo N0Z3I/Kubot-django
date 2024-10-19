@@ -114,7 +114,7 @@ const Dashboard = () => {
     // ลบ Token
     Cookies.remove("access");
     // นำผู้ใช้ไปยังหน้า Login
-    navigate("/link-myku");
+    navigate("/login");
     // แสดงข้อความแจ้งเตือน
     toast.success("ออกจากระบบสำเร็จ");
   };
@@ -129,7 +129,7 @@ const Dashboard = () => {
           </button>
         </nav>
       </header>
-      <h1>Dashboard</h1>
+      <h4>Dashboard</h4>
       {isLoading ? (
         <p>กำลังโหลดข้อมูล...</p>
       ) : (
