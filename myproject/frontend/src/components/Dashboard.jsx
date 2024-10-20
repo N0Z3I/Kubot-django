@@ -148,7 +148,7 @@ const Dashboard = () => {
                   {gpax && (
             <div className="col-lg-6 col-md-8 mx-auto">
               <div className="card shadow-sm text-center p-4">
-                <h4>Grade result <br />หน่วยกิตสะสม: &nbsp;&nbsp;{gpax.total_credit} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; เกรดเฉลี่ยสะสม: &nbsp;&nbsp;{gpax.gpax}</h4>
+                <h4>Grade result <br />หน่วยกิตสะสม: &nbsp;&nbsp;{gpax.total_credit} &nbsp;&nbsp;&nbsp;&nbsp; เกรดเฉลี่ยสะสม: &nbsp;&nbsp;{gpax.gpax}</h4>
               </div>
             </div>
           )}
