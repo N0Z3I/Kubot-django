@@ -64,37 +64,37 @@ const LinkMyku = () => {
   return (
     <div>
       <div className="form-container">
-       <div style={{ width: "30%" }} name="wrapper">
-      <form onSubmit={handleSubmit}>
-        {isLoading && <p>Loading...</p>}
-        <div className="form-group">
-          <h4>Link account MyKU</h4>
-          <input
-            type="text"
-            name="username"
-            value={mykuData.username}
-            onChange={handleOnChange}
-            placeholder="MyKU Username"
-          />
-        </div>
-        <div className="form-group">
-          <input
-            type="password"
-            name="password"
-            value={mykuData.password}
-            onChange={handleOnChange}
-            placeholder="MyKU Password"
-          />
-        </div>
-        <input type="submit" value="Login" className="submitButton" />
-        <br />
+        <div style={{ width: "30%" }} name="wrapper">
+          <form onSubmit={handleSubmit}>
+            {isLoading && <p>Loading...</p>}
+            <div className="form-group">
+              <h4>Link account MyKU</h4>
+              <input
+                type="text"
+                name="username"
+                value={mykuData.username}
+                onChange={handleOnChange}
+                placeholder="MyKU Username"
+              />
+            </div>
+            <div className="form-group">
+              <input
+                type="password"
+                name="password"
+                value={mykuData.password}
+                onChange={handleOnChange}
+                placeholder="MyKU Password"
+              />
+            </div>
+            <input type="submit" value="Login" className="submitButton" />
+            <br />
             <p1 className="pass-link">
               Sign in with email account <Link to={"/Login"}>Login here</Link>
             </p1>
             <br />
-      </form>
-    </div>
-    </div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 };

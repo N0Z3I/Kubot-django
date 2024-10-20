@@ -59,9 +59,7 @@ const Profile = () => {
     }
   };
 
-  const handleDiscordLogout = async () => {
-  };
-  
+  const handleDiscordLogout = async () => {};
 
   const getSomeData = async () => {
     try {
@@ -161,31 +159,32 @@ const Profile = () => {
         </div>
       </section>
       <div className="form-container">
-  <div className="wrapper profile-card">
-    <h4>Your Discord Profile</h4>
-    {discordProfile ? (
-      <div className="profile-content">
-        <img
-          className="profile-avatar"
-          src={discordProfile.avatar_url}
-          alt="Discord Avatar"
-        />
-        <p>
-          <strong>Username: </strong> {discordProfile.discord_username || "N/A"}
-        </p>
-        <div className="navigations">
-        <p>
-        <button onClick={handleDiscordLogout} className="logout-btn">
-            Logout
-          </button>
-        </p>
+        <div className="wrapper profile-card">
+          <h4>Your Discord Profile</h4>
+          {discordProfile ? (
+            <div className="profile-content">
+              <img
+                className="profile-avatar"
+                src={discordProfile.avatar_url}
+                alt="Discord Avatar"
+              />
+              <p>
+                <strong>Username: </strong>{" "}
+                {discordProfile.discord_username || "N/A"}
+              </p>
+              <div className="navigations">
+                <p>
+                  <button onClick={handleDiscordLogout} className="logout-btn">
+                    Logout
+                  </button>
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p>Not connected to Discord yet.</p>
+          )}
         </div>
       </div>
-    ) : (
-      <p>Not connected to Discord yet.</p>
-    )}
-</div>
-    </div>
     </div>
   );
 };
