@@ -184,10 +184,6 @@ const Profile = () => {
     ) : (
       <p>Not connected to Discord yet.</p>
     )}
-         <div className="profile-content">
-    <img className="profile-avatar" src="/discord.jpg" alt="" />
-    <p><strong>Username: </strong> N/A</p>
-  </div>
 </div>
     </div>
     </div>
