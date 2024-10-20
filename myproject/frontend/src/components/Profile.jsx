@@ -22,8 +22,8 @@ const Profile = () => {
         setDiscordProfile(response.data); // บันทึกข้อมูลลงใน state
       }
     } catch (error) {
-      console.error("ไม่พบบัญชี Discord ที่เชื่อมต่อ:", error);
-      toast.error("ไม่พบบัญชี Discord ที่เชื่อมต่อ");
+      console.error("No connected Discord account found:", error);
+      toast.error("No connected Discord account found");
     }
   };
 
@@ -47,7 +47,7 @@ const Profile = () => {
     // เช็คว่ามีการเชื่อมต่อกับ Discord สำเร็จหรือไม่จาก URL
     const params = new URLSearchParams(window.location.search);
     if (params.get("discord_connected") === "true") {
-      toast.success("เชื่อมต่อกับ Discord สำเร็จ!");
+      toast.success("Successfully connected to Discord!");
     }
   }, []); // [] ทำให้ฟังก์ชันนี้ทำงานแค่ครั้งเดียวเช่นกัน
 
@@ -117,11 +117,11 @@ const Profile = () => {
       );
 
       if (response.status === 200) {
-        toast.success("เชื่อมต่อ Discord สำเร็จ!");
+        toast.success("Successfully connected to Discord!");
       }
     } catch (error) {
       console.error("Error connecting to Discord:", error);
-      toast.error("เชื่อมต่อ Discord ไม่สำเร็จ กรุณาลองใหม่");
+      toast.error("Discord connection failed. Please try again.");
     }
   };
 

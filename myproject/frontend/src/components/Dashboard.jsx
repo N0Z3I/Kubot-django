@@ -19,7 +19,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (!accessToken) {
-      toast.error("คุณยังไม่ได้เข้าสู่ระบบ กรุณาเข้าสู่ระบบก่อน");
+      toast.error("You are not logged in yet. Please log in first.");
       navigate("/login");
     } else {
       fetchStudentData();
@@ -94,16 +94,16 @@ const Dashboard = () => {
             console.log("GPAX Data set:", results.gpax_data.results[0]);
           }
         } else {
-          toast.error("ไม่สามารถดึงข้อมูลนักศึกษาได้");
+          toast.error("Unable to retrieve student data.");
           console.log("Results not found in data.");
         }
       } else {
-        toast.error("เกิดข้อผิดพลาดในการดึงข้อมูลผู้ใช้");
+        toast.error("An error occurred while retrieving user data.");
         console.log("Failed to fetch data from server. Status:", res.status);
       }
     } catch (error) {
       console.error("Error fetching student data:", error);
-      toast.error("ไม่สามารถดึงข้อมูลผู้ใช้ได้ กรุณาลองใหม่อีกครั้ง");
+      toast.error("Unable to retrieve user information. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +116,7 @@ const Dashboard = () => {
     // นำผู้ใช้ไปยังหน้า Login
     navigate("/login");
     // แสดงข้อความแจ้งเตือน
-    toast.success("ออกจากระบบสำเร็จ");
+    toast.success("Logout successful");
   };
 
   return (

@@ -22,8 +22,8 @@ const LinkMyku = () => {
     e.preventDefault();
     const { username, password } = mykuData;
     if (!username || !password) {
-      setError("Username และ Password เป็นข้อมูลที่จำเป็น");
-      toast.error("กรุณากรอกข้อมูลให้ครบ");
+      setError("Username and password are required information.");
+      toast.error("Please fill in your complete username and password.");
     } else {
       setIsLoading(true);
       try {
@@ -46,13 +46,13 @@ const LinkMyku = () => {
         setIsLoading(false);
 
         if (res.status === 200) {
-          toast.success("เชื่อม MyKU สำเร็จ");
+          toast.success("MyKU connection successful");
           navigate("/dashboard");
         }
       } catch (error) {
         setIsLoading(false);
-        setError("เชื่อม MyKU ไม่สำเร็จ");
-        toast.error("การเชื่อม MyKU ไม่สำเร็จ กรุณาลองใหม่");
+        setError("MyKU connection failed");
+        toast.error("MyKU connection failed. Please try again.");
         console.error(
           "Error:",
           error.response ? error.response.data : error.message
