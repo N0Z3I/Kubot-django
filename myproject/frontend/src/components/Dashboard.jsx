@@ -122,7 +122,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <header className="d-flex justify-content-between align-items-center mb-4">
-        <h4>STUDENT INFORMATION</h4>
+        <h4>Student information</h4>
         <button onClick={handleLogout} className="btn btn-danger logout-btn">
           Logout
         </button>
@@ -139,8 +139,10 @@ const Dashboard = () => {
               <div className="profile-cards shadow-sm text-center p-4">
                 <h4 className="card-title mb-4">Personal Information</h4>
                 <div className="personal-info">
+                  <p><strong>บัตรประจำตัวประชาชน:</strong> {studentData.idCardCode}</p>
                   <p><strong>ชื่อ-นามสกุล (TH):</strong> {studentData.nameTh}</p>
                   <p><strong>ชื่อ-นามสกุล (EN):</strong> {studentData.nameEn}</p>
+                  <p><strong>เพศ:</strong> {studentData.genderTh}</p>
                   <p><strong>เบอร์โทรศัพท์ติดต่อ:</strong> {studentData.phone}</p>
                   <p><strong>Email:</strong> {studentData.email}</p>
                   {gpax && (
