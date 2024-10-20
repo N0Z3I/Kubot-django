@@ -148,16 +148,14 @@ const Dashboard = () => {
                   {gpax && (
             <div className="col-lg-6 col-md-8 mx-auto">
               <div className="card shadow-sm text-center p-4">
-                <h4 className="card-title mb-4">GPAX</h4>
-                <p><strong>GPAX:</strong> {gpax.gpax}</p>
-                <p><strong>จำนวนหน่วยกิตทั้งหมด:</strong> {gpax.total_credit}</p>
+              <h4 className="card-title mb-4">Grade result</h4>
+                <h6><strong>หน่วยกิตสะสม: &nbsp;&nbsp;{gpax.total_credit}</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>เกรดเฉลี่ยสะสม: &nbsp;&nbsp;{gpax.gpax}</strong></h6>
               </div>
             </div>
           )}
                     {grades.length > 0 && (
             <div className="col-12">
               <div className="card shadow-sm text-center p-4">
-                <h4 className="card-title mb-4">Grade result</h4>
                 {grades.map((semester, index) => (
                   <div key={index} className="mb-3">
                     <h5>ปีการศึกษา: {semester.academicYear}, GPA: {semester.gpa}</h5>

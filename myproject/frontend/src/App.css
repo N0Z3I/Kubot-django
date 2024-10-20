@@ -482,3 +482,12 @@ h5 {
   font-weight: 800;
   font-style: normal;
 }
+
+h6 {
+  font-size: 1.6em;
+  color: #2c2c2c;
+  text-align: center;
+  font-family: "Poppins", sans-serif;
+  font-weight: 800;
+  font-style: normal;
+}
