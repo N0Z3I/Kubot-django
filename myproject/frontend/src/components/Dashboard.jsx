@@ -122,7 +122,7 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <header className="d-flex justify-content-between align-items-center mb-4">
-        <h4>Student information</h4>
+        <h4>Student Information</h4>
         <button onClick={handleLogout} className="btn btn-danger logout-btn">
           Logout
         </button>
