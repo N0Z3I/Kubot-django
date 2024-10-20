@@ -127,7 +127,7 @@ const Dashboard = () => {
           Logout
         </button>
       </header>
-  
+
       {isLoading ? (
         <div className="text-center">
           <p>Loading...</p>
@@ -139,72 +139,99 @@ const Dashboard = () => {
               <div className="profile-cards shadow-sm text-center p-4">
                 <h4 className="card-title mb-4">Personal Information</h4>
                 <div className="personal-info">
-                  <p><strong>บัตรประจำตัวประชาชน:</strong> {studentData.idCardCode}</p>
-                  <p><strong>ชื่อ-นามสกุล (TH):</strong> {studentData.nameTh}</p>
-                  <p><strong>ชื่อ-นามสกุล (EN):</strong> {studentData.nameEn}</p>
-                  <p><strong>เพศ:</strong> {studentData.genderTh}</p>
-                  <p><strong>เบอร์โทรศัพท์ติดต่อ:</strong> {studentData.phone}</p>
-                  <p><strong>Email:</strong> {studentData.email}</p>
-                  {gpax && (
-            <div className="col-lg-6 col-md-8 mx-auto">
-              <div className="card shadow-sm text-center p-4">
-                <h4>Grade result <br />หน่วยกิตสะสม: &nbsp;&nbsp;{gpax.total_credit} &nbsp;&nbsp;&nbsp;&nbsp; เกรดเฉลี่ยสะสม: &nbsp;&nbsp;{gpax.gpax}</h4>
-              </div>
-            </div>
-          )}
-                    {grades.length > 0 && (
-            <div className="col-12">
-              <div className="card shadow-sm text-center p-4">
-                {grades.map((semester, index) => (
-                  <div key={index} className="mb-3">
-                    <h5>ปีการศึกษา: {semester.academicYear}, GPA: {semester.gpa}</h5>
-                    <ul className="list-unstyled">
-                      {semester.grade.map((course, idx) => (
-                        <p key={idx}>
-                          <strong>{course.subject_name_th} ({course.subject_code}):</strong> เกรด {course.grade}
-                        </p>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {schedule.length > 0 ? (
-            <>
-              <h4>Schedule</h4>
-              <ul>
-                {schedule.map((item, index) => (
-                  <p key={index}>
-                    <strong>ปีการศึกษา:</strong> {item.academicYr}, <strong>ภาคการศึกษา:</strong> {item.semester}
+                  <p>
+                    <strong>บัตรประจำตัวประชาชน:</strong>{" "}
+                    {studentData.idCardCode}
                   </p>
-                ))}
-              </ul>
-            </>
-          ) : (
-            <p>ไม่มีตารางเรียนที่จะแสดง</p>
-          )}
-          {groupCourse.length > 0 ? (
-            <>
-              <h4>Subject</h4>
-              {groupCourse.map((group, index) => (
-                <div key={index}>
-                  <h5>Period: {group.peroid_date}</h5>
-                  <ul>
-                    {group.course.map((course, idx) => (
-                      <p key={idx}>
-                         <strong>วิชา:</strong> {course.subject_name_th} - <strong>อาจารย์:</strong>{" "}
-                        {course.teacher_name}
-                      </p>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </>
-          ) : (
-            <p>ไม่มีข้อมูลกลุ่มวิชาที่จะแสดง</p>
-          )}
-          {/* {announcements.length > 0 ? (
+                  <p>
+                    <strong>ชื่อ-นามสกุล (TH):</strong> {studentData.nameTh}
+                  </p>
+                  <p>
+                    <strong>ชื่อ-นามสกุล (EN):</strong> {studentData.nameEn}
+                  </p>
+                  <p>
+                    <strong>เพศ:</strong> {studentData.genderTh}
+                  </p>
+                  <p>
+                    <strong>เบอร์โทรศัพท์ติดต่อ:</strong> {studentData.phone}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {studentData.email}
+                  </p>
+                  {gpax && (
+                    <div className="col-lg-6 col-md-8 mx-auto">
+                      <div className="card shadow-sm text-center p-4">
+                        <h4>
+                          Grade result <br />
+                          หน่วยกิตสะสม: &nbsp;&nbsp;{gpax.total_credit}{" "}
+                          &nbsp;&nbsp;&nbsp;&nbsp; เกรดเฉลี่ยสะสม: &nbsp;&nbsp;
+                          {gpax.gpax}
+                        </h4>
+                      </div>
+                    </div>
+                  )}
+                  {grades.length > 0 && (
+                    <div className="col-12">
+                      <div className="card shadow-sm text-center p-4">
+                        {grades.map((semester, index) => (
+                          <div key={index} className="mb-3">
+                            <h5>
+                              ปีการศึกษา: {semester.academicYear}, GPA:{" "}
+                              {semester.gpa}
+                            </h5>
+                            <ul className="list-unstyled">
+                              {semester.grade.map((course, idx) => (
+                                <p key={idx}>
+                                  <strong>
+                                    {course.subject_name_th} (
+                                    {course.subject_code}):
+                                  </strong>{" "}
+                                  เกรด {course.grade}
+                                </p>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {schedule.length > 0 ? (
+                    <>
+                      <h4>Schedule</h4>
+                      <ul>
+                        {schedule.map((item, index) => (
+                          <p key={index}>
+                            <strong>ปีการศึกษา:</strong> {item.academicYr},{" "}
+                            <strong>ภาคการศึกษา:</strong> {item.semester}
+                          </p>
+                        ))}
+                      </ul>
+                    </>
+                  ) : (
+                    <p>ไม่มีตารางเรียนที่จะแสดง</p>
+                  )}
+                  {groupCourse.length > 0 ? (
+                    <>
+                      <h4>Subject</h4>
+                      {groupCourse.map((group, index) => (
+                        <div key={index}>
+                          <h5>Period: {group.peroid_date}</h5>
+                          <ul>
+                            {group.course.map((course, idx) => (
+                              <p key={idx}>
+                                <strong>วิชา:</strong> {course.subject_name_th}{" "}
+                                - <strong>อาจารย์:</strong>{" "}
+                                {course.teacher_name}
+                              </p>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <p>ไม่มีข้อมูลกลุ่มวิชาที่จะแสดง</p>
+                  )}
+                  {/* {announcements.length > 0 ? (
             <>
               <h2>ประกาศ</h2>
               <ul>
@@ -223,11 +250,10 @@ const Dashboard = () => {
               </div>
             </div>
           )}
-  
         </div>
       )}
     </div>
   );
-}
+};
 
 export default Dashboard;
