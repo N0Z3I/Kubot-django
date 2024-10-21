@@ -1,8 +1,10 @@
 import os
 import django
 import discord
+import asyncio
 from discord import app_commands
 from discord.ext import commands
+from discord.ext import tasks
 import environ
 from datetime import datetime
 from asyncio import sleep as s
@@ -111,13 +113,57 @@ async def clear(interaction: discord.Interaction, amount: int = 5):
     await interaction.channel.purge(limit=amount)
     await interaction.response.send_message(f"ลบข้อความ {amount} ข้อความเรียบร้อยแล้ว", ephemeral=True)
 
+user_reminder_tasks = {}
+
 @bot.tree.command(name="reminder", description="ตั้งการแจ้งเตือนเป็นระยะ")
 @app_commands.describe(time="เวลาระหว่างแจ้งเตือน (นาที)", msg="ข้อความที่จะแจ้งเตือน")
 async def reminder(interaction: discord.Interaction, time: int, msg: str):
-    await interaction.response.send_message(f"การแจ้งเตือน `{msg}` จะถูกส่งทุกๆ {time} นาที")
-    while True:
-        await s(60 * time)
-        await interaction.channel.send(f"{msg}, {interaction.user.mention}")
+    user = interaction.user
+
+    # ตรวจสอบว่าผู้ใช้มี reminder ที่กำลังรันอยู่หรือไม่
+    if user.id in user_reminder_tasks:
+        await interaction.response.send_message(
+            "คุณมีการแจ้งเตือนที่กำลังรันอยู่แล้ว! กรุณาหยุดการแจ้งเตือนก่อนด้วยคำสั่ง `/stop_reminder`", 
+            ephemeral=True
+        )
+        return
+
+    # ยืนยันการตั้งค่าการแจ้งเตือน
+    await interaction.response.send_message(
+        f"การแจ้งเตือน `{msg}` จะถูกส่งไปยัง DM ทุกๆ {time} นาที", 
+        ephemeral=True
+    )
+
+    # สร้าง DM Channel
+    dm_channel = await user.create_dm()
+
+    # สร้าง task การแจ้งเตือน
+    async def send_reminder():
+        while True:
+            await asyncio.sleep(60 * time)  # รอเป็นระยะเวลาที่กำหนด (วินาที)
+            await dm_channel.send(f"{user.mention}, {msg}")
+
+    # เริ่ม task และเก็บไว้ใน dictionary
+    task = asyncio.create_task(send_reminder())
+    user_reminder_tasks[user.id] = task
+
+@bot.tree.command(name="stop_reminder", description="หยุดการแจ้งเตือนที่ตั้งไว้")
+async def stop_reminder(interaction: discord.Interaction):
+    user = interaction.user
+
+    # ตรวจสอบว่าผู้ใช้มี task การแจ้งเตือนที่กำลังรันอยู่หรือไม่
+    if user.id not in user_reminder_tasks:
+        await interaction.response.send_message(
+            "คุณไม่มีการแจ้งเตือนที่กำลังรันอยู่!", 
+            ephemeral=True
+        )
+        return
+
+    # ยกเลิก task การแจ้งเตือนและลบออกจาก dictionary
+    task = user_reminder_tasks.pop(user.id)
+    task.cancel()
+
+    await interaction.response.send_message("การแจ้งเตือนของคุณถูกหยุดเรียบร้อยแล้ว", ephemeral=True)
 
 @bot.tree.command(name="activity", description="ดูข้อมูลกิจกรรมของ Ku")
 async def activity(interaction: discord.Interaction):
