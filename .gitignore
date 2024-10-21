@@ -24,6 +24,9 @@ dist-ssr
 *.sw?
 
 myenv/
-.env
+
+# Ignore .env files
+*.env
+
 
 
