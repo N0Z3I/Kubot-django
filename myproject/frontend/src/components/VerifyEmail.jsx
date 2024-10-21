@@ -3,35 +3,55 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
+const OTP_EXPIRATION_TIME = 600; // 10 นาที (600 วินาที)
+const COOLDOWN_TIME = 300; // 5 นาที (300 วินาที)
+
 const VerifyEmail = () => {
   const [otp, setOtp] = useState("");
-  const [timer, setTimer] = useState(600); // 10 นาที = 600 วินาที
-  const [cooldown, setCooldown] = useState(0); // คูลดาวน์ 5 นาที = 300 วินาที
+  const [timer, setTimer] = useState(OTP_EXPIRATION_TIME);
+  const [cooldown, setCooldown] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email; // รับอีเมลจาก state
+  const email = location.state?.email;
 
   useEffect(() => {
     if (!email) {
       toast.error("No email provided. Redirecting to signup...");
-      navigate("/signup"); // ถ้าไม่มีอีเมล ให้กลับไปหน้า Signup
+      navigate("/signup");
+      return;
+    }
+
+    const otpExpiration = localStorage.getItem("otpExpiration");
+    const cooldownEnd = localStorage.getItem("cooldownEnd");
+
+    const now = Math.floor(Date.now() / 1000);
+
+    // ตรวจสอบและอัปเดตเวลา OTP
+    if (otpExpiration) {
+      const remainingTime = parseInt(otpExpiration) - now;
+      setTimer(Math.max(remainingTime, 0));
+    }
+
+    // ตรวจสอบและอัปเดตเวลา Cooldown
+    if (cooldownEnd) {
+      const remainingCooldown = parseInt(cooldownEnd) - now;
+      setCooldown(Math.max(remainingCooldown, 0));
     }
   }, [email, navigate]);
 
+  // นับถอยหลัง OTP
   useEffect(() => {
     if (timer > 0) {
-      const otpInterval = setInterval(() => setTimer((prev) => prev - 1), 1000);
-      return () => clearInterval(otpInterval);
+      const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
+      return () => clearInterval(interval);
     }
   }, [timer]);
 
+  // นับถอยหลังคูลดาวน์
   useEffect(() => {
     if (cooldown > 0) {
-      const cooldownInterval = setInterval(
-        () => setCooldown((prev) => prev - 1),
-        1000
-      );
-      return () => clearInterval(cooldownInterval);
+      const interval = setInterval(() => setCooldown((prev) => prev - 1), 1000);
+      return () => clearInterval(interval);
     }
   }, [cooldown]);
 
@@ -65,8 +85,13 @@ const VerifyEmail = () => {
         email,
       });
       toast.success("OTP has been resent!");
-      setTimer(600); // รีเซ็ตเวลาให้ OTP หมดอายุใน 10 นาที
-      setCooldown(300); // เริ่มคูลดาวน์ 5 นาที
+
+      const now = Math.floor(Date.now() / 1000);
+      localStorage.setItem("otpExpiration", now + OTP_EXPIRATION_TIME);
+      localStorage.setItem("cooldownEnd", now + COOLDOWN_TIME);
+
+      setTimer(OTP_EXPIRATION_TIME); // รีเซ็ตเวลา OTP
+      setCooldown(COOLDOWN_TIME); // เริ่มคูลดาวน์ใหม่
     } catch (err) {
       toast.error("Failed to resend OTP. Please try again.");
     }
