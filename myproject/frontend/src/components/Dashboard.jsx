@@ -158,6 +158,38 @@ const Dashboard = () => {
                   <p>
                     <strong>Email:</strong> {studentData.email}
                   </p>
+                  {studentEducation && studentEducation.education ? (
+                    <>
+                      <h4>Educational information</h4>
+                      {studentEducation.education.map((edu, index) => (
+                        <div key={index}>
+                          <p>
+                            <strong>ระดับการศึกษา:</strong> {edu.edulevelNameTh}
+                          </p>
+                          <p>
+                            <strong>สถานภาพนิสิต:</strong> {edu.statusNameTh}
+                          </p>
+                          <p>
+                            <strong>ชื่อปริญญา:</strong> {edu.degreeNameTh}
+                          </p>
+                          <p>
+                            <strong>คณะ:</strong> {edu.facultyNameTh}
+                          </p>
+                          <p>
+                            <strong>ภาควิชา:</strong> {edu.departmentNameTh}
+                          </p>
+                          <p>
+                            <strong>สาขา:</strong> {edu.majorNameTh}
+                          </p>
+                          <p>
+                            <strong>อาจารย์ที่ปรึกษา:</strong> {edu.teacherName}
+                          </p>
+                        </div>
+                      ))}
+                    </>
+                  ) : (
+                    <p>ไม่มีข้อมูลการศึกษาที่จะแสดง</p>
+                  )}
                   {gpax && (
                     <div className="col-lg-6 col-md-8 mx-auto">
                       <div className="card shadow-sm text-center p-4">
