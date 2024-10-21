@@ -47,7 +47,10 @@ const ResetPassword = () => {
     };
 
     try {
-      const response = await axiosInstance.patch("/auth/set-new-password/", data);
+      const response = await axiosInstance.patch(
+        "/auth/set-new-password/",
+        data
+      );
       const result = response.data;
 
       if (response.status === 200) {
@@ -87,7 +90,7 @@ const ResetPassword = () => {
               />
             </div>
             <button type="submit" className="vbtn">
-              Submit
+              Set New Password
             </button>
           </form>
         </div>
