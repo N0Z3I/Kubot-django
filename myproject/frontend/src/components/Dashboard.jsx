@@ -140,10 +140,6 @@ const Dashboard = () => {
                 <h4 className="card-title mb-4">Personal Information</h4>
                 <div className="personal-info">
                   <p>
-                    <strong>บัตรประจำตัวประชาชน:</strong>{" "}
-                    {studentData.idCardCode}
-                  </p>
-                  <p>
                     <strong>ชื่อ-นามสกุล (TH):</strong> {studentData.nameTh}
                   </p>
                   <p>
