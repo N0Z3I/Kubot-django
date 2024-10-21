@@ -39,13 +39,29 @@ async def hello(interaction: discord.Interaction):
 
 @bot.tree.command(name="invite", description="รับลิงก์เชิญบอท KuBot")
 async def invite(interaction: discord.Interaction):
+    # สร้าง Embed สำหรับการเชิญ
     embed = discord.Embed(
         color=discord.Color.dark_teal(),
-        url="https://discord.com/oauth2/authorize?client_id=1234209115878723704&permissions=8&scope=bot",
-        description="KuBot เป็นวิธีที่ง่ายที่สุดในการจัดการการศึกษาของคุณ",
+        url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot",
+        description="KuBot เป็นวิธีที่สะดวกในการจัดการการเรียนของคุณ",
         title="เชิญฉันเข้าสู่เซิร์ฟเวอร์ของคุณ คลิกที่นี่!"
     )
+    
+    # เพิ่มข้อมูลผู้เขียนใน Embed
+    embed.set_author(
+        name="KuBot",
+        url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot",
+        icon_url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
+    )
+
+    # เพิ่ม Thumbnail
+    embed.set_thumbnail(
+        url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
+    )
+
+    # ส่ง Embed ไปยังผู้ใช้
     await interaction.response.send_message(embed=embed)
+
 
 @bot.tree.command(name="ping", description="ตรวจสอบ ping ของบอท")
 async def ping(interaction: discord.Interaction):
@@ -105,14 +121,47 @@ async def reminder(interaction: discord.Interaction, time: int, msg: str):
 
 @bot.tree.command(name="activity", description="ดูข้อมูลกิจกรรมของ Ku")
 async def activity(interaction: discord.Interaction):
+    # สร้าง Embed
     embed = discord.Embed(
-        color=discord.Color.dark_teal(),
+        title="กิจกรรม",
         description="ลองดูลิงก์ที่มีประโยชน์เหล่านี้เพื่อดูกิจกรรมที่เกี่ยวข้องกับ Ku",
-        title="กิจกรรม"
+        color=discord.Color.dark_teal()
     )
+    
+    # ตั้งค่า Author ของ Embed
+    embed.set_author(
+        name="KuBot",
+        url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot",
+        icon_url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
+    )
+
+    # ตั้งค่า Thumbnail ของ Embed
+    embed.set_thumbnail(
+        url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
+    )
+
+    # สร้าง View ที่มีปุ่มต่าง ๆ
     view = discord.ui.View()
-    view.add_item(discord.ui.Button(label="ปฏิทินการศึกษา", style=discord.ButtonStyle.link, url="https://ead.kps.ku.ac.th/2021/index.php?Itemid=162"))
-    view.add_item(discord.ui.Button(label="ประเมินการเรียนการสอน", style=discord.ButtonStyle.link, url="https://eassess.ku.ac.th/m/"))
+
+    # เพิ่มปุ่ม 'ปฏิทินการศึกษา'
+    view.add_item(
+        discord.ui.Button(
+            label="ปฏิทินการศึกษา", 
+            style=discord.ButtonStyle.link, 
+            url="https://ead.kps.ku.ac.th/2021/index.php?Itemid=162"
+        )
+    )
+
+    # เพิ่มปุ่ม 'ประเมินการเรียนการสอน'
+    view.add_item(
+        discord.ui.Button(
+            label="ประเมินการเรียนการสอน", 
+            style=discord.ButtonStyle.link, 
+            url="https://eassess.ku.ac.th/m/"
+        )
+    )
+
+    # ส่ง Embed พร้อม View ที่มีปุ่มไปยังผู้ใช้
     await interaction.response.send_message(embed=embed, view=view)
 
 @bot.tree.command(name="server", description="ดูข้อมูลเซิร์ฟเวอร์ปัจจุบัน")
@@ -127,5 +176,49 @@ async def server(interaction: discord.Interaction):
     embed.add_field(name="📆 Created at:", value=guild.created_at.strftime("%B %d %Y, %T"), inline=True)
     embed.add_field(name="🆔 Server ID:", value=guild.id, inline=True)
     await interaction.response.send_message(embed=embed)
+    
+@bot.tree.command(name="help", description="ดูวิธีเริ่มต้นใช้งาน KuBot!")
+async def help_command(interaction: discord.Interaction):
+    # สร้าง Embed เพื่อนำเสนอข้อมูล
+    embed = discord.Embed(
+        title="ช่วยเหลือ",
+        description="ลองดูลิงก์ที่มีประโยชน์เหล่านี้เพื่อเริ่มต้นใช้งาน KuBot!",
+        color=discord.Color.dark_teal()
+    )
+    
+    # ตั้งค่า Author และ Thumbnail ของ Embed
+    embed.set_author(
+        name="KuBot",
+        url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot",
+        icon_url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
+    )
+    embed.set_thumbnail(
+        url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
+    )
+
+    # สร้าง View สำหรับปุ่ม
+    view = discord.ui.View()
+    
+    # ปุ่มเว็บไซต์
+    button_website = discord.ui.Button(
+        label="เว็บไซต์", 
+        style=discord.ButtonStyle.link, 
+        url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    )
+    
+    # ปุ่มเชิญบอท
+    button_invite = discord.ui.Button(
+        label="เชิญ", 
+        style=discord.ButtonStyle.link, 
+        url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot"
+    )
+    
+    # เพิ่มปุ่มลงใน View
+    view.add_item(button_website)
+    view.add_item(button_invite)
+
+    # ส่ง Embed พร้อมกับปุ่ม
+    await interaction.response.send_message(embed=embed, view=view)
+
 
 bot.run(env("DISCORD_BOT_TOKEN"))
