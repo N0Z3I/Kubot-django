@@ -1,11 +1,12 @@
 from django.urls import path, include
-from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView
+from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView, ResendOtpView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView, DiscordProfileView
 
 urlpatterns=[
     path('register/', RegisterUserView.as_view(), name = 'register'),
     path('verify-email/', VerifyUserEmail.as_view(), name = 'verify-email'),
+    path('resend-otp/', ResendOtpView.as_view(), name='resend-otp'),
     path('login/', LoginUserView.as_view(), name = 'login'),
     path('profile/', TestAuthenticationView.as_view(), name = 'granted'),
     path('token/refresh/', TokenRefreshView.as_view(), name = 'refresh-token'),

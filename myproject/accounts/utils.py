@@ -3,6 +3,8 @@ from django.core.mail import EmailMessage
 from django.conf import settings
 from .models import User, OneTimePassword
 from django.utils.html import format_html
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.timezone import now, timedelta
 
 def generateOtp():
     otp = ""
@@ -11,12 +13,27 @@ def generateOtp():
     return otp
 
 def send_code_to_user(email):
-    Subject = "One time passcode for Email verification"
+    Subject = "One-Time Passcode for Email Verification"
     otp_code = generateOtp()
     print(f"Generated OTP: {otp_code}")
-    user = User.objects.get(email=email)
-    current_site = "myAuth.com"
-    
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        raise ValueError("User with this email does not exist.")
+
+    # ลบ OTP เดิมหากมีอยู่
+    OneTimePassword.objects.filter(user=user).delete()
+
+    # ตรวจสอบคูลดาวน์ (กรณีต้องการ)
+    recent_otp = OneTimePassword.objects.filter(user=user, created_at__gte=now() - timedelta(minutes=5))
+    if recent_otp.exists():
+        raise Exception("Please wait a few minutes before requesting a new OTP.")
+
+    # สร้าง OTP ใหม่และบันทึกลงฐานข้อมูล
+    OneTimePassword.objects.create(user=user, code=otp_code)
+
+    # เนื้อหาอีเมล
     email_body = format_html(
         '''
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background-color: #f9f9f9;">
@@ -31,23 +48,21 @@ def send_code_to_user(email):
             </div>
         ''',
         first_name=user.first_name,
-        current_site=current_site,
         otp_code=otp_code
     )
+
     from_email = settings.DEFAULT_FROM_EMAIL
-    
-    # Debug: Print email details
     print(f"Sending email to {email} from {from_email}")
-    
-    OneTimePassword.objects.create(user=user, code=otp_code)
-    
+
     send_email = EmailMessage(subject=Subject, body=email_body, from_email=from_email, to=[email])
-    send_email.content_subtype = "html"  # Main content is now text/html
+    send_email.content_subtype = "html"
+
     try:
         send_email.send(fail_silently=False)
         print(f"Email sent successfully to {email}")
     except Exception as e:
         print(f"Failed to send email to {email}: {e}")
+        raise
 
 def send_normal_email(data):
     email = EmailMessage(

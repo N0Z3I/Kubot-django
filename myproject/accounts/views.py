@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
-from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer
+from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer, EmailSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -20,6 +20,7 @@ from pymyku import Client
 import jwt
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now, timedelta
 import logging
 logger = logging.getLogger(__name__)
 
@@ -87,7 +88,6 @@ class DiscordConnectView(APIView):
         return Response({'message': 'Successfully connected to Discord'}, status=200)
 
 
-from rest_framework.exceptions import AuthenticationFailed
 
 class DiscordCallbackView(APIView):
     permission_classes = [AllowAny]  # อนุญาตให้เข้าถึงได้โดยไม่ต้องตรวจสอบสิทธิ์
@@ -364,6 +364,24 @@ class VerifyUserEmail(GenericAPIView):
 
         except OneTimePassword.DoesNotExist:
             return Response({'message': 'passcode not provided'}, status=status.HTTP_400_NOT_FOUND)
+        
+class ResendOtpView(GenericAPIView):
+    serializer_class = EmailSerializer
+
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            try:
+                user = User.objects.get(email=email)
+                OneTimePassword.objects.filter(user=user).delete()
+                send_code_to_user(email)
+                return Response({'message': 'OTP has been resent!'}, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({'message': f'Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginUserView(GenericAPIView):
     serializer_class = LoginUserSerializer

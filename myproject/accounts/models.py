@@ -4,6 +4,8 @@ from django.utils.translation import gettext_lazy as _
 from .manager import UserManager
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
+from django.utils.timezone import now
+
 
 
 
@@ -119,11 +121,12 @@ class GPAX(models.Model):
         return f"GPAX for {self.student_profile.std_id}: {self.gpax}"
 
 class OneTimePassword(models.Model):
-    user = models.OneToOneField(User, on_delete = models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     code = models.CharField(max_length=6, unique=True)
-    
+    created_at = models.DateTimeField(default=now)  # บันทึกเวลาที่สร้าง OTP
+
     def __str__(self):
-        return f"{self.user.first_name}-passcode"
+        return f"{self.user.first_name} - {self.code}"
     
 class DiscordProfile(models.Model):
     user = models.OneToOneField(

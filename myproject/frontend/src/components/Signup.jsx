@@ -38,17 +38,27 @@ const Signup = () => {
     }
   };
 
+  const resendOtp = async (email) => {
+    try {
+      await axios.post("http://localhost:8000/api/v1/auth/resend-otp/", {
+        email,
+      });
+      toast.success("OTP has been sent to your email.");
+    } catch (err) {
+      toast.error("Failed to send OTP. Please try again.");
+      console.error(err);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, first_name, last_name, password, password2 } = formdata;
 
-    // Validate required fields
     if (!email || !first_name || !last_name || !password || !password2) {
       toast.error("Please fill all the fields");
       return;
     }
 
-    // Validate password strength
     if (!validatePassword(password)) {
       toast.error(
         "Password must be at least 8 characters long, and include uppercase, lowercase, number, and special character."
@@ -56,13 +66,11 @@ const Signup = () => {
       return;
     }
 
-    // Check if passwords match
     if (password !== password2) {
       toast.error("Passwords do not match");
       return;
     }
 
-    // Check if email is already used
     const emailExists = await checkEmailExists(email);
     if (emailExists) {
       toast.error("Email is already registered");
@@ -74,10 +82,10 @@ const Signup = () => {
         "http://localhost:8000/api/v1/auth/register/",
         formdata
       );
-      const response = res.data;
       if (res.status === 201) {
-        toast.success(response.message);
-        navigate("/otp/verify");
+        toast.success("Registration successful. Sending OTP...");
+        await resendOtp(email); // ส่ง OTP
+        navigate("/otp/verify", { state: { email } }); // ส่งอีเมลไปหน้า Verify
       }
     } catch (err) {
       toast.error("Failed to register. Please try again.");
@@ -144,9 +152,9 @@ const Signup = () => {
               />
             </div>
             <input type="submit" value="Register" className="submitButton" />
-            <p1 className="pass-link">
+            <p className="pass-link">
               Already have an account? <Link to={"/login"}>Login here</Link>
-            </p1>
+            </p>
           </form>
         </div>
       </div>

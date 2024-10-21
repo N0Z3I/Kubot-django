@@ -97,6 +97,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
         )
         return user
+    
+class EmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
 
 class LoginUserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=255, min_length=6)
