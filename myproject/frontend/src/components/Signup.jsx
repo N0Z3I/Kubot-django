@@ -152,9 +152,9 @@ const Signup = () => {
               />
             </div>
             <input type="submit" value="Register" className="submitButton" />
-            <p className="pass-link">
+            <p1 className="pass-link">
               Already have an account? <Link to={"/login"}>Login here</Link>
-            </p>
+            </p1>
           </form>
         </div>
       </div>
