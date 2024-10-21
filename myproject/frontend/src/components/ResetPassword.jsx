@@ -10,26 +10,54 @@ const ResetPassword = () => {
     password: "",
     confirm_password: "",
   });
+
   const handleChange = (e) => {
     setNewPasswords({ ...newPasswords, [e.target.name]: e.target.value });
   };
 
-  const data = {
-    password: newPasswords.password,
-    confirm_password: newPasswords.confirm_password,
-    uidb64: uid,
-    token: token,
+  const validatePassword = (password) => {
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+    return passwordRegex.test(password);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await axiosInstance.patch("/auth/set-new-password/", data);
-    const result = response.data;
-    if (response.status === 200) {
-      navigate("/login");
-      toast.success(result.message);
+    const { password, confirm_password } = newPasswords;
+
+    // ตรวจสอบความซับซ้อนของรหัสผ่าน
+    if (!validatePassword(password)) {
+      toast.error(
+        "Password must be at least 8 characters long, and include uppercase, lowercase, number, and special character."
+      );
+      return;
     }
-    console.log(response);
+
+    // ตรวจสอบการยืนยันรหัสผ่าน
+    if (password !== confirm_password) {
+      toast.error("Passwords do not match.");
+      return;
+    }
+
+    const data = {
+      password,
+      confirm_password,
+      uidb64: uid,
+      token: token,
+    };
+
+    try {
+      const response = await axiosInstance.patch("/auth/set-new-password/", data);
+      const result = response.data;
+
+      if (response.status === 200) {
+        toast.success(result.message);
+        navigate("/login");
+      }
+    } catch (err) {
+      toast.error("Failed to reset password. Please try again.");
+      console.error(err);
+    }
   };
 
   return (
@@ -38,10 +66,10 @@ const ResetPassword = () => {
         <div className="wrapper" style={{ width: "100%" }}>
           <form action="" onSubmit={handleSubmit}>
             <div className="form-group">
-              <h4>Enter your New Password</h4>
+              <h4>Set New Password</h4>
               <input
                 placeholder="New Password"
-                type="text"
+                type="password"
                 className="email-form"
                 name="password"
                 value={newPasswords.password}
@@ -50,8 +78,8 @@ const ResetPassword = () => {
             </div>
             <div className="form-group">
               <input
-                placeholder="Confirm Password"
-                type="text"
+                placeholder="Confirm New Password"
+                type="password"
                 className="email-form"
                 name="confirm_password"
                 value={newPasswords.confirm_password}

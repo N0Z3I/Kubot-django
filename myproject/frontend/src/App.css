@@ -496,3 +496,24 @@ h6 {
   font-weight: 800;
   font-style: normal;
 }
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.resend-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #ebeefd;
+  border: none;
+  border-radius: 5px;
+  color: #2c2c2c;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.resend-button:hover {
+  transform: scale(1.05);
+}

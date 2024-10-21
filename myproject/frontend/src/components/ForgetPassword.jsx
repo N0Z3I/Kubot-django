@@ -31,9 +31,9 @@ const ForgetPassword = () => {
         ) : (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <h4>Enter your registered email</h4>
+              <h4>Reset Password</h4>
               <input
-                placeholder="Email Address"
+                placeholder="Enter your email address"
                 type="text"
                 className="email-form"
                 name="email"
@@ -41,7 +41,7 @@ const ForgetPassword = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <button className="vbtn">Send</button>
+            <button className="vbtn">Reset Password</button>
           </form>
         )}
       </div>
