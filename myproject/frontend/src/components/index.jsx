@@ -6,6 +6,7 @@ import ResetPassword from "./ResetPassword";
 import VerifyEmail from "./VerifyEmail";
 import LinkMyKU from "./LinkMyKU";
 import Dashboard from "./Dashboard";
+import ProtectedRoute from "./ProtectedRoute";
 
 export {
   Signup,
@@ -16,4 +17,5 @@ export {
   VerifyEmail,
   LinkMyKU,
   Dashboard,
+  ProtectedRoute,
 };
