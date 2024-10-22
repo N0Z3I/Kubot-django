@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
-from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer, EmailSerializer
+from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer, EmailSerializer, VerifyOtpSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -333,37 +333,55 @@ class RegisterUserView(GenericAPIView):
 
     def post(self, request):
         user_data = request.data
+        email = user_data.get('email')
+
+        # ตรวจสอบและลบ OTP และผู้ใช้ที่ยังไม่ยืนยัน
+        try:
+            existing_user = User.objects.get(email=email, is_verified=False)
+
+            # ลบ OTP ที่เกี่ยวข้องกับผู้ใช้ก่อนลบผู้ใช้
+            OneTimePassword.objects.filter(user=existing_user).delete()
+
+            # ลบผู้ใช้ที่ไม่ยืนยัน
+            existing_user.delete()
+        except User.DoesNotExist:
+            pass  # ถ้าไม่มีผู้ใช้ที่ยังไม่ยืนยันก็ข้ามไป
+
+        # สร้างผู้ใช้ใหม่และส่ง OTP ใหม่
         serializer = self.serializer_class(data=user_data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            user = serializer.data
-            send_code_to_user(user['email'])
-            # send email function user['email']
-            print(user)
+            user = serializer.save(is_active=False, is_verified=False)  # ผู้ใช้ยังไม่พร้อมใช้งาน
+            send_code_to_user(user.email)  # ส่ง OTP ใหม่
+
             return Response({
-                'data': user,
-                'message': f'hi thanks for signing up a passcode has be sent to verify your email'
+                'message': 'Registration successful. OTP sent to your email.'
             }, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class VerifyUserEmail(GenericAPIView):
-    def post(self, request):
-        otpcode = request.data.get('otp')
-        try:
-            user_code_obj = OneTimePassword.objects.get(code=otpcode)
-            user = user_code_obj.user
-            if not user.is_verified:
-                user.is_verified = True
-                user.save()
-                return Response({
-                    'message': 'account email verified successfully'
-                }, status=status.HTTP_200_OK)
-            return Response({
-                'message': 'code is invalid user already verified'
-            }, status=status.HTTP_204_NO_CONTENT)
+    serializer_class = VerifyOtpSerializer
 
-        except OneTimePassword.DoesNotExist:
-            return Response({'message': 'passcode not provided'}, status=status.HTTP_400_NOT_FOUND)
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+        otp = serializer.validated_data['otp']
+
+        try:
+            user = User.objects.get(email=email, is_verified=False)
+            otp_record = OneTimePassword.objects.get(user=user, code=otp)
+
+            user.is_verified = True
+            user.is_active = True  # เปิดใช้งานผู้ใช้
+            user.save()
+            otp_record.delete()  # ลบ OTP หลังจากยืนยัน
+
+            return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
+
+        except (User.DoesNotExist, OneTimePassword.DoesNotExist):
+            return Response({'message': 'Invalid OTP or email.'}, status=status.HTTP_400_BAD_REQUEST)
         
 class ResendOtpView(GenericAPIView):
     serializer_class = EmailSerializer

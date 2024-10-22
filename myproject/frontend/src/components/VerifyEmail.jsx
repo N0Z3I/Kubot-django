@@ -56,19 +56,23 @@ const VerifyEmail = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (otp) {
+    if (otp && email) {
+      // ตรวจสอบว่า otp และ email มีค่า
       try {
         const response = await axios.post(
           "http://localhost:8000/api/v1/auth/verify-email/",
-          { otp }
+          { otp, email } // ส่งทั้ง OTP และ Email
         );
         if (response.status === 200) {
           toast.success(response.data.message);
-          navigate("/login");
+          localStorage.clear(); // ล้างข้อมูลหลังยืนยันสำเร็จ
+          navigate("/login"); // ย้ายไปหน้า Login
         }
       } catch (err) {
         toast.error("Invalid OTP. Please try again.");
       }
+    } else {
+      toast.error("Please enter your OTP.");
     }
   };
 
@@ -109,8 +113,13 @@ const VerifyEmail = () => {
         >
           Resend One-Time Password
         </button>
-        {cooldown > 0 && <p>Resend available in: {formatTime(cooldown)}</p>}
-        <p>OTP will expire in: {formatTime(timer)} minutes</p>
+        {cooldown > 0 && (
+          <p1>
+            Resend available in: {formatTime(cooldown)}
+            <br></br>
+          </p1>
+        )}
+        <p1>OTP will expire in: {formatTime(timer)} minutes</p1>
       </form>
     </div>
   );

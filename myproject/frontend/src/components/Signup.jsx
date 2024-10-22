@@ -83,75 +83,76 @@ const Signup = () => {
         formdata
       );
       if (res.status === 201) {
-        toast.success("Registration successful. Sending OTP...");
+        toast.success("Registration successful. OTP sent to your email.");
 
-        const now = Math.floor(Date.now() / 1000); // เวลาปัจจุบันในวินาที
-        localStorage.setItem("otpExpiration", now + OTP_EXPIRATION_TIME); // บันทึก OTP Expiration
+        const now = Math.floor(Date.now() / 1000);
+        localStorage.setItem("otpExpiration", now + OTP_EXPIRATION_TIME); // บันทึก OTP ใหม่
+        localStorage.setItem("userData", JSON.stringify({ email })); // เก็บอีเมลใน LocalStorage
 
-        await resendOtp(email); // ส่ง OTP
-        navigate("/otp/verify", { state: { email } }); // ส่งอีเมลไปหน้า Verify
+        navigate("/otp/verify", { state: { email } }); // ส่งไปหน้า Verify
       }
     } catch (err) {
-      toast.error("Failed to register. Please try again.");
+      toast.error("Registration failed. Please try again.");
       console.error(err);
     }
   };
 
   const { email, first_name, last_name, password, password2 } = formdata;
+
   return (
     <div className="form-container">
       <div style={{ width: "30%" }} className="wrapper">
         <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <h4>Sign Up</h4>
-          <input
-            placeholder="Email"
-            type="text"
-            name="email"
-            value={email}
-            onChange={handleOnChange}
-            className="email-form"
-          />
+          <div className="form-group">
+            <h4>Sign Up</h4>
+            <input
+              placeholder="Email"
+              type="text"
+              name="email"
+              value={email}
+              onChange={handleOnChange}
+              className="email-form"
+            />
           </div>
           <div className="form-group">
-          <input
-            placeholder="First Name"
-            type="text"
-            name="first_name"
-            value={first_name}
-            onChange={handleOnChange}
-            className="email-form"
-          />
+            <input
+              placeholder="First Name"
+              type="text"
+              name="first_name"
+              value={first_name}
+              onChange={handleOnChange}
+              className="email-form"
+            />
           </div>
           <div className="form-group">
-          <input
-            placeholder="Last Name"
-            type="text"
-            name="last_name"
-            value={last_name}
-            onChange={handleOnChange}
-            className="email-form"
-          />
+            <input
+              placeholder="Last Name"
+              type="text"
+              name="last_name"
+              value={last_name}
+              onChange={handleOnChange}
+              className="email-form"
+            />
           </div>
           <div className="form-group">
-          <input
-            placeholder="Password"
-            type="password"
-            name="password"
-            value={password}
-            onChange={handleOnChange}
-            className="email-form"
-          />
+            <input
+              placeholder="Password"
+              type="password"
+              name="password"
+              value={password}
+              onChange={handleOnChange}
+              className="email-form"
+            />
           </div>
           <div className="form-group">
-          <input
-            placeholder="Confirm Password"
-            type="password"
-            name="password2"
-            value={password2}
-            onChange={handleOnChange}
-            className="email-form"
-          />
+            <input
+              placeholder="Confirm Password"
+              type="password"
+              name="password2"
+              value={password2}
+              onChange={handleOnChange}
+              className="email-form"
+            />
           </div>
           <input type="submit" value="Register" className="submitButton" />
           <p1 className="pass-link">
