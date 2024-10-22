@@ -102,6 +102,7 @@ const Signup = () => {
     <div className="form-container">
       <div style={{ width: "30%" }} className="wrapper">
         <form onSubmit={handleSubmit}>
+        <div className="form-group">
           <h4>Sign Up</h4>
           <input
             placeholder="Email"
@@ -111,6 +112,8 @@ const Signup = () => {
             onChange={handleOnChange}
             className="email-form"
           />
+          </div>
+          <div className="form-group">
           <input
             placeholder="First Name"
             type="text"
@@ -119,6 +122,8 @@ const Signup = () => {
             onChange={handleOnChange}
             className="email-form"
           />
+          </div>
+          <div className="form-group">
           <input
             placeholder="Last Name"
             type="text"
@@ -127,6 +132,8 @@ const Signup = () => {
             onChange={handleOnChange}
             className="email-form"
           />
+          </div>
+          <div className="form-group">
           <input
             placeholder="Password"
             type="password"
@@ -135,6 +142,8 @@ const Signup = () => {
             onChange={handleOnChange}
             className="email-form"
           />
+          </div>
+          <div className="form-group">
           <input
             placeholder="Confirm Password"
             type="password"
@@ -143,10 +152,11 @@ const Signup = () => {
             onChange={handleOnChange}
             className="email-form"
           />
+          </div>
           <input type="submit" value="Register" className="submitButton" />
-          <p className="pass-link">
+          <p1 className="pass-link">
             Already have an account? <Link to="/login">Login here</Link>
-          </p>
+          </p1>
         </form>
       </div>
     </div>
