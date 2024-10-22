@@ -21,25 +21,19 @@ const VerifyEmail = () => {
       return;
     }
 
-    const otpExpiration = localStorage.getItem("otpExpiration");
-    const cooldownEnd = localStorage.getItem("cooldownEnd");
-
     const now = Math.floor(Date.now() / 1000);
+    const otpExpiration = parseInt(localStorage.getItem("otpExpiration"), 10);
+    const cooldownEnd = parseInt(localStorage.getItem("cooldownEnd"), 10);
 
-    // ตรวจสอบและอัปเดตเวลา OTP
     if (otpExpiration) {
-      const remainingTime = parseInt(otpExpiration) - now;
-      setTimer(Math.max(remainingTime, 0));
+      setTimer(Math.max(otpExpiration - now, 0));
     }
 
-    // ตรวจสอบและอัปเดตเวลา Cooldown
     if (cooldownEnd) {
-      const remainingCooldown = parseInt(cooldownEnd) - now;
-      setCooldown(Math.max(remainingCooldown, 0));
+      setCooldown(Math.max(cooldownEnd - now, 0));
     }
   }, [email, navigate]);
 
-  // นับถอยหลัง OTP
   useEffect(() => {
     if (timer > 0) {
       const interval = setInterval(() => setTimer((prev) => prev - 1), 1000);
@@ -47,7 +41,6 @@ const VerifyEmail = () => {
     }
   }, [timer]);
 
-  // นับถอยหลังคูลดาวน์
   useEffect(() => {
     if (cooldown > 0) {
       const interval = setInterval(() => setCooldown((prev) => prev - 1), 1000);
@@ -90,8 +83,8 @@ const VerifyEmail = () => {
       localStorage.setItem("otpExpiration", now + OTP_EXPIRATION_TIME);
       localStorage.setItem("cooldownEnd", now + COOLDOWN_TIME);
 
-      setTimer(OTP_EXPIRATION_TIME); // รีเซ็ตเวลา OTP
-      setCooldown(COOLDOWN_TIME); // เริ่มคูลดาวน์ใหม่
+      setTimer(OTP_EXPIRATION_TIME);
+      setCooldown(COOLDOWN_TIME);
     } catch (err) {
       toast.error("Failed to resend OTP. Please try again.");
     }
@@ -100,16 +93,14 @@ const VerifyEmail = () => {
   return (
     <div className="form-container">
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <h4>Please enter your One-Time Password to verify your account</h4>
-          <input
-            placeholder="Enter your OTP code"
-            type="text"
-            className="email-form"
-            value={otp}
-            onChange={(e) => setOtp(e.target.value)}
-          />
-        </div>
+        <h4>Please enter your One-Time Password to verify your account</h4>
+        <input
+          placeholder="Enter your OTP code"
+          type="text"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          className="email-form"
+        />
         <input type="submit" className="vbtn" value="Validate" />
         <button
           className="resend-button"
