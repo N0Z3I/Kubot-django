@@ -64,7 +64,7 @@ const Login = () => {
     <div className="form-container">
       <div style={{ width: "30%" }} name="wrapper">
         <form onSubmit={handleSubmit}>
-          {isLoading && <p>Loading...</p>}
+          {isLoading && <p1>Loading...</p1>}
           <div className="form-group">
             <h4>Login</h4>
             <input

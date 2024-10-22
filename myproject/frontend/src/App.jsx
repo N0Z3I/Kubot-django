@@ -24,13 +24,13 @@ function App() {
         <ToastContainer />
         <Routes>
           <Route path="/" element={<Profile />} />
-          <Route path="/link-myku" element={<LinkMyKU />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/" element={<ProtectedRoute />}>
             <Route path="profile" element={<Profile />} />
+            <Route path="/link-myku" element={<LinkMyKU />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Route>
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/otp/verify" element={<VerifyEmail />} />
           <Route path="/forget_password" element={<ForgetPassword />} />
           <Route

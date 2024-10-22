@@ -12,111 +12,69 @@ const Dashboard = () => {
   const [groupCourse, setGroupCourse] = useState([]);
   const [studentEducation, setStudentEducation] = useState(null);
   const [gpax, setGpax] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
   const accessToken = Cookies.get("access");
 
   useEffect(() => {
     if (!accessToken) {
-      toast.error("You are not logged in yet. Please log in first.");
+      toast.error("You are not logged in. Please log in first.");
       navigate("/login");
-    } else {
-      fetchStudentData();
+      return;
     }
+
+    fetchAllData(); // โหลดข้อมูลทั้งหมดเมื่อ Component Mount
   }, []);
 
-  const fetchStudentData = async () => {
-    setIsLoading(true);
+  const fetchAllData = async () => {
     try {
-      const res = await axiosInstance.get("/auth/myku-data/", {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      console.log("Response from /auth/myku-data/:", res);
+      setIsLoading(true);
+      const res = await axiosInstance.get("/auth/myku-data/");
 
       if (res.status === 200) {
         const data = res.data;
-        console.log("Data received:", data);
 
-        if (data && data.results) {
-          const results = data.results;
-
-          if (data.student_data && data.student_data.results) {
-            setStudentData(data.student_data.results.stdPersonalModel);
-            console.log(
-              "Student Data set:",
-              data.student_data.results.stdPersonalModel
-            );
-          }
-
-          if (results.schedule_data && results.schedule_data.results) {
-            setSchedule(results.schedule_data.results);
-            console.log("Schedule Data set:", results.schedule_data.results);
-          }
-
-          if (results.announce_data && results.announce_data.results) {
-            setAnnouncements(results.announce_data.results);
-            console.log(
-              "Announcements Data set:",
-              results.announce_data.results
-            );
-          }
-
-          if (results.grades_data && results.grades_data.results) {
-            setGrades(results.grades_data.results);
-            console.log("Grades Data set:", results.grades_data.results);
-          }
-
-          if (results.group_course_data && results.group_course_data.results) {
-            setGroupCourse(results.group_course_data.results);
-            console.log(
-              "Group Course Data set:",
-              results.group_course_data.results
-            );
-          }
-
-          if (
-            results.student_education_data &&
-            results.student_education_data.results
-          ) {
-            setStudentEducation(results.student_education_data.results);
-            console.log(
-              "Student Education Data set:",
-              results.student_education_data.results
-            );
-          }
-
-          if (results.gpax_data && results.gpax_data.results.length > 0) {
-            setGpax(results.gpax_data.results[0]);
-            console.log("GPAX Data set:", results.gpax_data.results[0]);
-          }
-        } else {
-          toast.error("Unable to retrieve student data.");
-          console.log("Results not found in data.");
+        // ตั้งค่าข้อมูลนักศึกษา
+        if (data.student_data?.results?.stdPersonalModel) {
+          setStudentData(data.student_data.results.stdPersonalModel);
         }
+
+        // ตั้งค่าตารางเรียน
+        setSchedule(data.results?.schedule_data?.results || []);
+
+        // ตั้งค่าประกาศ
+        setAnnouncements(data.results?.announce_data?.results || []);
+
+        // ตั้งค่าเกรด
+        setGrades(data.results?.grades_data?.results || []);
+
+        // ตั้งค่ากลุ่มวิชา
+        setGroupCourse(data.results?.group_course_data?.results || []);
+
+        // ตั้งค่าข้อมูลการศึกษา
+        setStudentEducation(data.results?.student_education_data?.results);
+
+        // ตั้งค่า GPAX
+        const gpaxData = data.results?.gpax_data?.results || [];
+        if (gpaxData.length > 0) setGpax(gpaxData[0]);
       } else {
-        toast.error("An error occurred while retrieving user data.");
-        console.log("Failed to fetch data from server. Status:", res.status);
+        toast.error("Failed to load data.");
       }
     } catch (error) {
-      console.error("Error fetching student data:", error);
-      toast.error("Unable to retrieve user information. Please try again.");
+      console.error("Error fetching data:", error);
+      toast.error("Unable to retrieve data. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // ฟังก์ชัน handleLogout
   const handleLogout = () => {
-    // ลบ Token
     Cookies.remove("access");
-    // นำผู้ใช้ไปยังหน้า Login
+    Cookies.remove("refresh");
+    Cookies.remove("user");
+    toast.success("Logout successful.");
     navigate("/login");
-    // แสดงข้อความแจ้งเตือน
-    toast.success("Logout successful");
   };
 
   return (
@@ -130,7 +88,7 @@ const Dashboard = () => {
 
       {isLoading ? (
         <div className="text-center">
-          <p>Loading...</p>
+          <p1>Loading...</p1>
         </div>
       ) : (
         <div className="row gx-5 gy-4">
@@ -139,52 +97,64 @@ const Dashboard = () => {
               <div className="profile-cards shadow-sm text-center p-4">
                 <h4 className="card-title mb-4">Personal Information</h4>
                 <div className="personal-info">
-                  <p>
+                  <p1>
                     <strong>ชื่อ-นามสกุล (TH):</strong> {studentData.nameTh}
-                  </p>
-                  <p>
+                    <br></br>
+                  </p1>
+                  <p1>
                     <strong>ชื่อ-นามสกุล (EN):</strong> {studentData.nameEn}
-                  </p>
-                  <p>
+                    <br></br>
+                  </p1>
+                  <p1>
                     <strong>เพศ:</strong> {studentData.genderTh}
-                  </p>
-                  <p>
+                    <br></br>
+                  </p1>
+                  <p1>
                     <strong>เบอร์โทรศัพท์ติดต่อ:</strong> {studentData.phone}
-                  </p>
-                  <p>
+                    <br></br>
+                  </p1>
+                  <p1>
                     <strong>Email:</strong> {studentData.email}
-                  </p>
+                    <br></br>
+                  </p1>
                   {studentEducation && studentEducation.education ? (
                     <>
                       <h4>Educational information</h4>
                       {studentEducation.education.map((edu, index) => (
                         <div key={index}>
-                          <p>
+                          <p1>
                             <strong>ระดับการศึกษา:</strong> {edu.edulevelNameTh}
-                          </p>
-                          <p>
+                            <br></br>
+                          </p1>
+                          <p1>
                             <strong>สถานภาพนิสิต:</strong> {edu.statusNameTh}
-                          </p>
-                          <p>
+                            <br></br>
+                          </p1>
+                          <p1>
                             <strong>ชื่อปริญญา:</strong> {edu.degreeNameTh}
-                          </p>
-                          <p>
+                            <br></br>
+                          </p1>
+                          <p1>
                             <strong>คณะ:</strong> {edu.facultyNameTh}
-                          </p>
-                          <p>
+                            <br></br>
+                          </p1>
+                          <p1>
                             <strong>ภาควิชา:</strong> {edu.departmentNameTh}
-                          </p>
-                          <p>
+                            <br></br>
+                          </p1>
+                          <p1>
                             <strong>สาขา:</strong> {edu.majorNameTh}
-                          </p>
-                          <p>
+                            <br></br>
+                          </p1>
+                          <p1>
                             <strong>อาจารย์ที่ปรึกษา:</strong> {edu.teacherName}
-                          </p>
+                            <br></br>
+                          </p1>
                         </div>
                       ))}
                     </>
                   ) : (
-                    <p>ไม่มีข้อมูลการศึกษาที่จะแสดง</p>
+                    <p1>ไม่มีข้อมูลการศึกษาที่จะแสดง</p1>
                   )}
                   {gpax && (
                     <div className="col-lg-6 col-md-8 mx-auto">
@@ -209,13 +179,14 @@ const Dashboard = () => {
                             </h5>
                             <ul className="list-unstyled">
                               {semester.grade.map((course, idx) => (
-                                <p key={idx}>
+                                <p1 key={idx}>
                                   <strong>
                                     {course.subject_name_th} (
                                     {course.subject_code}):
                                   </strong>{" "}
                                   เกรด {course.grade}
-                                </p>
+                                  <br></br>
+                                </p1>
                               ))}
                             </ul>
                           </div>
@@ -228,15 +199,15 @@ const Dashboard = () => {
                       <h4>Schedule</h4>
                       <ul>
                         {schedule.map((item, index) => (
-                          <p key={index}>
+                          <p1 key={index}>
                             <strong>ปีการศึกษา:</strong> {item.academicYr},{" "}
                             <strong>ภาคการศึกษา:</strong> {item.semester}
-                          </p>
+                          </p1>
                         ))}
                       </ul>
                     </>
                   ) : (
-                    <p>ไม่มีตารางเรียนที่จะแสดง</p>
+                    <p1>ไม่มีตารางเรียนที่จะแสดง</p1>
                   )}
                   {groupCourse.length > 0 ? (
                     <>
@@ -246,18 +217,18 @@ const Dashboard = () => {
                           <h5>Period: {group.peroid_date}</h5>
                           <ul>
                             {group.course.map((course, idx) => (
-                              <p key={idx}>
+                              <p1 key={idx}>
                                 <strong>วิชา:</strong> {course.subject_name_th}{" "}
                                 - <strong>อาจารย์:</strong>{" "}
                                 {course.teacher_name}
-                              </p>
+                              </p1>
                             ))}
                           </ul>
                         </div>
                       ))}
                     </>
                   ) : (
-                    <p>ไม่มีข้อมูลกลุ่มวิชาที่จะแสดง</p>
+                    <p1>ไม่มีข้อมูลกลุ่มวิชาที่จะแสดง</p1>
                   )}
                   {/* {announcements.length > 0 ? (
             <>
@@ -272,7 +243,7 @@ const Dashboard = () => {
               </ul>
             </>
           ) : (
-            <p>ไม่มีประกาศที่จะแสดง</p>
+            <p1>ไม่มีประกาศที่จะแสดง</p1>
           )} */}
                 </div>
               </div>
