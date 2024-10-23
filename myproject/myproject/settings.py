@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import environ
 from pathlib import Path
 from datetime import timedelta
+import os
 
 
 # Initialize environment variables
@@ -189,7 +190,7 @@ DISCORD_CLIENT_ID = env('DISCORD_CLIENT_ID')
 DISCORD_CLIENT_SECRET = env('DISCORD_CLIENT_SECRET')
 DISCORD_REDIRECT_URI = env('DISCORD_REDIRECT_URI')
 
-DISCORD_BOT_TOKEN= env('DISCORD_BOT_TOKEN')
+DISCORD_BOT_TOKEN= os.getenv('DISCORD_BOT_TOKEN')
 
 LOGGING = {
     'version': 1,

@@ -15,6 +15,7 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from pymyku import Client
 import jwt
@@ -28,6 +29,9 @@ from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer
 
 User = get_user_model()
 import requests
+import environ
+env = environ.Env()
+environ.Env.read_env()
 
 class DiscordConnectView(APIView):
     permission_classes = [IsAuthenticated]
@@ -87,15 +91,18 @@ class DiscordConnectView(APIView):
         logger.info(f"โปรไฟล์ Discord ของ {user.email} ถูกบันทึกสำเร็จ")
         return Response({'message': 'Successfully connected to Discord'}, status=200)
 
-
-
 class DiscordCallbackView(APIView):
-    permission_classes = [AllowAny]  # อนุญาตให้เข้าถึงได้โดยไม่ต้องตรวจสอบสิทธิ์
+    permission_classes = [AllowAny]
 
     def get(self, request):
         code = request.query_params.get('code')
-        if not code:
-            return Response({'error': 'No authorization code provided'}, status=400)
+        jwt_token = request.query_params.get('state')  # ดึง JWT token จาก state
+
+        if not code or not jwt_token:
+            return Response({'error': 'Authorization code or JWT token missing'}, status=400)
+
+        # ตรวจสอบ JWT token เพื่อดึงผู้ใช้ที่ล็อกอิน
+        user = self.get_authenticated_user(jwt_token)
 
         # แลกเปลี่ยน code เป็น access token
         token_response = requests.post(
@@ -105,7 +112,7 @@ class DiscordCallbackView(APIView):
                 'client_secret': settings.DISCORD_CLIENT_SECRET,
                 'grant_type': 'authorization_code',
                 'code': code,
-                'redirect_uri': settings.DISCORD_REDIRECT_URI,
+                'redirect_uri': 'http://localhost:8000/api/v1/auth/discord/callback/',
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"}
         )
@@ -127,14 +134,11 @@ class DiscordCallbackView(APIView):
 
         discord_user_data = user_response.json()
 
-        # ดึงผู้ใช้ที่ล็อกอินล่าสุดจาก session หรือเก็บใน state ของ React
-        user = self.get_authenticated_user()
-
         # บันทึกโปรไฟล์ Discord
         DiscordProfile.objects.update_or_create(
             discord_id=discord_user_data['id'],
             defaults={
-                'user': user,  # เชื่อมต่อโปรไฟล์กับผู้ใช้
+                'user': user,  # เชื่อมกับผู้ใช้ที่ได้รับจาก JWT
                 'discord_username': discord_user_data['username'],
                 'discord_discriminator': discord_user_data['discriminator'],
                 'avatar_url': f"https://cdn.discordapp.com/avatars/{discord_user_data['id']}/{discord_user_data['avatar']}.png",
@@ -144,12 +148,17 @@ class DiscordCallbackView(APIView):
 
         return redirect('http://localhost:5173/profile?discord_connected=true')
 
-    def get_authenticated_user(self):
-        # ฟังก์ชันจำลองเพื่อดึงผู้ใช้ที่ล็อกอินอยู่จาก session หรือ JWT (ขึ้นกับการออกแบบระบบของคุณ)
-        return User.objects.first()  # ทดสอบด้วยผู้ใช้คนแรกในฐานข้อมูล
+    def get_authenticated_user(self, token):
+        # ตรวจสอบ JWT token เพื่อดึงผู้ใช้ที่ล็อกอิน
+        jwt_auth = JWTAuthentication()
+        validated_token = jwt_auth.get_validated_token(token)
+        user = jwt_auth.get_user(validated_token)
 
+        if not user:
+            raise AuthenticationFailed("User not authenticated")
 
-    
+        return user
+
 class DiscordProfileView(APIView):
     permission_classes = [IsAuthenticated]  # ต้องล็อกอินก่อนเข้าถึง
 

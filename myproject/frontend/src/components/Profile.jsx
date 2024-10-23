@@ -12,6 +12,20 @@ const Profile = () => {
   const refresh = Cookies.get("refresh");
   const [discordProfile, setDiscordProfile] = useState(null);
 
+  const connectDiscord = () => {
+    const token = Cookies.get("access"); // ดึง JWT token จาก Cookies
+
+    if (!token) {
+      console.error("JWT token missing.");
+      return;
+    }
+
+    const oauthURL = `https://discord.com/api/oauth2/authorize?client_id=1292933694511775847&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/&response_type=code&scope=identify%20email`;
+
+    // ส่ง JWT Token ไปกับ redirect URL
+    window.location.href = `${oauthURL}&state=${token}`;
+  };
+
   // ฟังก์ชันดึงข้อมูลโปรไฟล์ Discord
   const getDiscordProfile = async () => {
     try {
@@ -59,7 +73,18 @@ const Profile = () => {
     }
   };
 
-  const handleDiscordLogout = async () => {};
+  const handleDiscordLogout = async () => {
+    try {
+      const response = await axiosInstance.post("/auth/discord/logout/");
+      if (response.status === 200) {
+        setDiscordProfile(null); // ล้างข้อมูลโปรไฟล์จาก state
+        toast.success("Logged out from Discord successfully.");
+      }
+    } catch (error) {
+      console.error("Error logging out from Discord:", error);
+      toast.error("Logout from Discord failed. Please try again.");
+    }
+  };
 
   const getSomeData = async () => {
     try {
@@ -92,8 +117,17 @@ const Profile = () => {
 
   // ฟังก์ชันสำหรับเชื่อมต่อ Discord
   const handleDiscordConnect = () => {
-    const discordAuthURL = `https://discord.com/oauth2/authorize?client_id=1292933694511775847&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/&response_type=code&scope=identify email guilds`;
-    window.location.href = discordAuthURL; // พาผู้ใช้ไปที่ Discord เพื่อยืนยันการเชื่อมต่อ
+    const token = Cookies.get("access"); // ดึง JWT token จาก Cookies
+
+    if (!token) {
+      toast.error("JWT token not found. Please log in.");
+      return;
+    }
+
+    const discordAuthURL = `https://discord.com/api/oauth2/authorize?client_id=1292933694511775847&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/&response_type=code&scope=identify%20email`;
+
+    // ส่ง JWT Token ไปกับ redirect URL
+    window.location.href = `${discordAuthURL}&state=${token}`;
   };
 
   // ฟังก์ชันที่เรียก backend เพื่อเชื่อมต่อกับ Discord

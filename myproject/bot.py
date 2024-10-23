@@ -8,6 +8,7 @@ from discord.ext import tasks
 import environ
 from datetime import datetime
 from asyncio import sleep as s
+import os
 
 # โหลด environment variables จากไฟล์ .env
 env = environ.Env()
@@ -34,6 +35,40 @@ async def on_ready():
         print(f"Synced {len(synced)} commands.")
     except Exception as e:
         print(f"Error syncing commands: {e}")
+        
+@bot.tree.command(name="login", description="เข้าสู่ระบบ KuBot และเชื่อมบัญชี Discord")
+async def login(interaction: discord.Interaction):
+    user = interaction.user
+
+    # สร้างลิงก์ OAuth2 สำหรับการเชื่อมบัญชี
+    oauth_url = (
+        f"https://discord.com/api/oauth2/authorize?client_id={env('DISCORD_CLIENT_ID')}"
+        f"&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/"
+        f"&response_type=code&scope=identify%20email"
+    )
+
+    # ส่งลิงก์ OAuth2 ไปยัง DM ของผู้ใช้
+    dm_channel = await user.create_dm()
+    await dm_channel.send(
+        f"สวัสดี {user.name}! กรุณาคลิกที่ลิงก์นี้เพื่อลงชื่อเข้าใช้และเชื่อมบัญชีของคุณ:\n{oauth_url}"
+    )
+
+    # แจ้งผู้ใช้ในช่องแชทว่าลิงก์ถูกส่งไปใน DM
+    await interaction.response.send_message("ลิงก์การเข้าสู่ระบบถูกส่งไปยัง DM ของคุณ", ephemeral=True)
+    
+@bot.tree.command(name="check_login", description="ตรวจสอบสถานะการเชื่อมต่อบัญชี Discord")
+async def check_login(interaction: discord.Interaction):
+    user = interaction.user
+
+    try:
+        profile = DiscordProfile.objects.get(discord_id=user.id)
+        await interaction.response.send_message(
+            f"คุณเชื่อมต่อบัญชีกับ KuBot เรียบร้อยแล้วในชื่อ: {profile.discord_username}#{profile.discord_discriminator}"
+        )
+    except DiscordProfile.DoesNotExist:
+        await interaction.response.send_message(
+            "คุณยังไม่ได้เชื่อมต่อบัญชี กรุณาใช้คำสั่ง `/login` เพื่อเชื่อมบัญชี", ephemeral=True
+        )
 
 @bot.tree.command(name="hello", description="ทักทาย Hello World!")
 async def hello(interaction: discord.Interaction):
@@ -267,4 +302,4 @@ async def help_command(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, view=view)
 
 
-bot.run(env("DISCORD_BOT_TOKEN"))
+bot.run(os.getenv("DISCORD_BOT_TOKEN"))
