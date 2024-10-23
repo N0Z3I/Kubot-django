@@ -25,19 +25,6 @@ const Signup = () => {
     return passwordRegex.test(password);
   };
 
-  const checkEmailExists = async (email) => {
-    try {
-      const res = await axios.post(
-        "http://localhost:8000/api/v1/auth/check-email/",
-        { email }
-      );
-      return res.data.exists;
-    } catch (error) {
-      console.error("Error checking email:", error);
-      return false;
-    }
-  };
-
   const resendOtp = async (email) => {
     try {
       await axios.post("http://localhost:8000/api/v1/auth/resend-otp/", {
@@ -71,12 +58,6 @@ const Signup = () => {
       return;
     }
 
-    const emailExists = await checkEmailExists(email);
-    if (emailExists) {
-      toast.error("Email is already registered");
-      return;
-    }
-
     try {
       const res = await axios.post(
         "http://localhost:8000/api/v1/auth/register/",
@@ -92,7 +73,9 @@ const Signup = () => {
         navigate("/otp/verify", { state: { email } }); // ส่งไปหน้า Verify
       }
     } catch (err) {
-      toast.error("Registration failed. Please try again.");
+      toast.error(
+        "Registration failed or Email is already registered. Please try again."
+      );
       console.error(err);
     }
   };
@@ -155,9 +138,9 @@ const Signup = () => {
             />
           </div>
           <input type="submit" value="Register" className="submitButton" />
-          <p1 className="pass-link">
+          <p className="pass-link">
             Already have an account? <Link to="/login">Login here</Link>
-          </p1>
+          </p>
         </form>
       </div>
     </div>

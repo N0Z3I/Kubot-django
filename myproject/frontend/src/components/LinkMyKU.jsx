@@ -66,7 +66,7 @@ const LinkMyku = () => {
       <div style={{ width: "30%" }} className="wrapper">
         <form onSubmit={handleSubmit}>
           <h4>Link MyKU Account</h4>
-          {isLoading && <p1>Loading...</p1>}
+          {isLoading && <p>Loading...</p>}
 
           <div className="form-group">
             <input
@@ -90,13 +90,13 @@ const LinkMyku = () => {
             />
           </div>
 
-          {error && <p1 className="error-text">{error}</p1>}
+          {error && <p className="error-text">{error}</p>}
 
           <input type="submit" value="Link Account" className="submitButton" />
 
-          <p1 className="pass-link">
+          <p className="pass-link">
             Sign in with email account <Link to="/login">Login here</Link>
-          </p1>
+          </p>
         </form>
       </div>
     </div>

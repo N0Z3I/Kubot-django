@@ -114,12 +114,12 @@ const VerifyEmail = () => {
           Resend One-Time Password
         </button>
         {cooldown > 0 && (
-          <p1>
+          <p>
             Resend available in: {formatTime(cooldown)}
             <br></br>
-          </p1>
+          </p>
         )}
-        <p1>OTP will expire in: {formatTime(timer)} minutes</p1>
+        <p>OTP will expire in: {formatTime(timer)} minutes</p>
       </form>
     </div>
   );

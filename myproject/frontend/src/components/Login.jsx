@@ -64,7 +64,7 @@ const Login = () => {
     <div className="form-container">
       <div style={{ width: "30%" }} name="wrapper">
         <form onSubmit={handleSubmit}>
-          {isLoading && <p1>Loading...</p1>}
+          {isLoading && <p>Loading...</p>}
           <div className="form-group">
             <h4>Login</h4>
             <input
@@ -87,14 +87,12 @@ const Login = () => {
             />
           </div>
           <input type="submit" value="Login" className="submitButton" />
-          <p1 className="pass-link">
+          <p className="pass-link">
             <Link to={"/forget_password"}>Forgot password?</Link>
-          </p1>
-          <br />
-          <p1 className="pass-link">
+          </p>
+          <p className="pass-link">
             Don't have an account? <Link to={"/signup"}>Register</Link>
-          </p1>
-          <br />
+          </p>
         </form>
       </div>
     </div>

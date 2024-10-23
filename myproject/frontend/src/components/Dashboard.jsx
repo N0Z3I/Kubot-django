@@ -88,7 +88,7 @@ const Dashboard = () => {
 
       {isLoading ? (
         <div className="text-center">
-          <p1>Loading...</p1>
+          <p>Loading...</p>
         </div>
       ) : (
         <div className="row gx-5 gy-4">
@@ -97,64 +97,64 @@ const Dashboard = () => {
               <div className="profile-cards shadow-sm text-center p-4">
                 <h4 className="card-title mb-4">Personal Information</h4>
                 <div className="personal-info">
-                  <p1>
+                  <p>
                     <strong>ชื่อ-นามสกุล (TH):</strong> {studentData.nameTh}
                     <br></br>
-                  </p1>
-                  <p1>
+                  </p>
+                  <p>
                     <strong>ชื่อ-นามสกุล (EN):</strong> {studentData.nameEn}
                     <br></br>
-                  </p1>
-                  <p1>
+                  </p>
+                  <p>
                     <strong>เพศ:</strong> {studentData.genderTh}
                     <br></br>
-                  </p1>
-                  <p1>
+                  </p>
+                  <p>
                     <strong>เบอร์โทรศัพท์ติดต่อ:</strong> {studentData.phone}
                     <br></br>
-                  </p1>
-                  <p1>
+                  </p>
+                  <p>
                     <strong>Email:</strong> {studentData.email}
                     <br></br>
-                  </p1>
+                  </p>
                   {studentEducation && studentEducation.education ? (
                     <>
                       <h4>Educational information</h4>
                       {studentEducation.education.map((edu, index) => (
                         <div key={index}>
-                          <p1>
+                          <p>
                             <strong>ระดับการศึกษา:</strong> {edu.edulevelNameTh}
                             <br></br>
-                          </p1>
-                          <p1>
+                          </p>
+                          <p>
                             <strong>สถานภาพนิสิต:</strong> {edu.statusNameTh}
                             <br></br>
-                          </p1>
-                          <p1>
+                          </p>
+                          <p>
                             <strong>ชื่อปริญญา:</strong> {edu.degreeNameTh}
                             <br></br>
-                          </p1>
-                          <p1>
+                          </p>
+                          <p>
                             <strong>คณะ:</strong> {edu.facultyNameTh}
                             <br></br>
-                          </p1>
-                          <p1>
+                          </p>
+                          <p>
                             <strong>ภาควิชา:</strong> {edu.departmentNameTh}
                             <br></br>
-                          </p1>
-                          <p1>
+                          </p>
+                          <p>
                             <strong>สาขา:</strong> {edu.majorNameTh}
                             <br></br>
-                          </p1>
-                          <p1>
+                          </p>
+                          <p>
                             <strong>อาจารย์ที่ปรึกษา:</strong> {edu.teacherName}
                             <br></br>
-                          </p1>
+                          </p>
                         </div>
                       ))}
                     </>
                   ) : (
-                    <p1>ไม่มีข้อมูลการศึกษาที่จะแสดง</p1>
+                    <p>ไม่มีข้อมูลการศึกษาที่จะแสดง</p>
                   )}
                   {gpax && (
                     <div className="col-lg-6 col-md-8 mx-auto">
@@ -179,14 +179,14 @@ const Dashboard = () => {
                             </h5>
                             <ul className="list-unstyled">
                               {semester.grade.map((course, idx) => (
-                                <p1 key={idx}>
+                                <p key={idx}>
                                   <strong>
                                     {course.subject_name_th} (
                                     {course.subject_code}):
                                   </strong>{" "}
                                   เกรด {course.grade}
                                   <br></br>
-                                </p1>
+                                </p>
                               ))}
                             </ul>
                           </div>
@@ -199,15 +199,15 @@ const Dashboard = () => {
                       <h4>Schedule</h4>
                       <ul>
                         {schedule.map((item, index) => (
-                          <p1 key={index}>
+                          <p key={index}>
                             <strong>ปีการศึกษา:</strong> {item.academicYr},{" "}
                             <strong>ภาคการศึกษา:</strong> {item.semester}
-                          </p1>
+                          </p>
                         ))}
                       </ul>
                     </>
                   ) : (
-                    <p1>ไม่มีตารางเรียนที่จะแสดง</p1>
+                    <p>ไม่มีตารางเรียนที่จะแสดง</p>
                   )}
                   {groupCourse.length > 0 ? (
                     <>
@@ -217,18 +217,18 @@ const Dashboard = () => {
                           <h5>Period: {group.peroid_date}</h5>
                           <ul>
                             {group.course.map((course, idx) => (
-                              <p1 key={idx}>
+                              <p key={idx}>
                                 <strong>วิชา:</strong> {course.subject_name_th}{" "}
                                 - <strong>อาจารย์:</strong>{" "}
                                 {course.teacher_name}
-                              </p1>
+                              </p>
                             ))}
                           </ul>
                         </div>
                       ))}
                     </>
                   ) : (
-                    <p1>ไม่มีข้อมูลกลุ่มวิชาที่จะแสดง</p1>
+                    <p>ไม่มีข้อมูลกลุ่มวิชาที่จะแสดง</p>
                   )}
                   {/* {announcements.length > 0 ? (
             <>
@@ -243,7 +243,7 @@ const Dashboard = () => {
               </ul>
             </>
           ) : (
-            <p1>ไม่มีประกาศที่จะแสดง</p1>
+            <p>ไม่มีประกาศที่จะแสดง</p>
           )} */}
                 </div>
               </div>

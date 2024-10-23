@@ -218,10 +218,11 @@ h1 {
 }
 
 p {
-  font-size: 20px;
-  font-weight: 300;
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-size: 18px;
+  font-style: normal;
   color: #2c2c2c;
-  font-family: "Roboto Mono", monospace;
   text-transform: none;
 }
 
@@ -260,15 +261,6 @@ footer {
   margin: 5px 0;
 }
 
-p1 {
-  font-family: "Poppins", sans-serif;
-  font-weight: 400;
-  font-size: 18px;
-  font-style: normal;
-  color: #2c2c2c;
-  text-transform: none;
-}
-
 header {
   position: fixed;
   top: 0;
@@ -294,7 +286,7 @@ header {
   height: 50px;
   font-size: 20px;
   font-weight: bold;
-  background-color: #FF2400;
+  background-color: #ff2400;
   margin: 1rem;
   border: none;
   color: #ebeefd;
@@ -312,10 +304,12 @@ body {
   margin: auto;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   overflow: auto;
-  background: linear-gradient(315deg,
-      rgb(70, 133, 133) 38%,
-      rgb(80, 180, 152) 68%,
-      rgb(156, 219, 166) 98%);
+  background: linear-gradient(
+    315deg,
+    rgb(70, 133, 133) 38%,
+    rgb(80, 180, 152) 68%,
+    rgb(156, 219, 166) 98%
+  );
   animation: gradient 15s ease infinite;
   background-size: 400% 400%;
   background-attachment: fixed;
@@ -425,7 +419,7 @@ body {
   height: 50px;
   font-size: 18px;
   font-weight: bold;
-  background-color: #FF2400;
+  background-color: #ff2400;
   margin-top: 2px;
   border: none;
   color: #ebeefd;
@@ -452,7 +446,6 @@ body {
   border-radius: 20px;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
   flex-direction: column;
-
 }
 
 .personal-info strong {
@@ -466,7 +459,7 @@ body {
   height: 50px;
   font-size: 20px;
   font-weight: bold;
-  background-color: #FF2400;
+  background-color: #ff2400;
   margin: 1rem;
   border: none;
   color: #ebeefd;

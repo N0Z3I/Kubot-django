@@ -147,13 +147,12 @@ const Profile = () => {
             The only Discord app
             <br />
             you'll ever need! <br></br>
-            <p1>KuBot is the easiest way to organize your studies.</p1>
+            <p>KuBot is the easiest way to organize your studies.</p>
             <a
               href="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot"
               target="_blank"
             >
               {" "}
-              <br></br>
               <button className="hover">Add to discord</button>
             </a>
           </h1>
@@ -170,22 +169,22 @@ const Profile = () => {
                 src={discordProfile.avatar_url}
                 alt="Discord Avatar"
               />
-              <p1>
+              <p>
                 <strong>
                   Username: {discordProfile.discord_username || "N/A"}
                 </strong>{" "}
                 <br></br>
-              </p1>
+              </p>
               <div className="navigations">
-                <p1>
+                <p>
                   <button onClick={handleDiscordLogout} className="logout-btn">
                     Logout
                   </button>
-                </p1>
+                </p>
               </div>
             </div>
           ) : (
-            <p1>Not connected to Discord yet.</p1>
+            <p>Not connected to Discord yet.</p>
           )}
         </div>
       </div>
