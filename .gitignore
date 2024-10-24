@@ -27,6 +27,7 @@ myenv/
 
 # Ignore .env files
 *.env
+.env
 
 
 

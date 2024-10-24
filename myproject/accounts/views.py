@@ -33,6 +33,27 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
+class StudentDataView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            # ดึงข้อมูลโปรไฟล์นิสิตที่เชื่อมต่อกับผู้ใช้ปัจจุบัน
+            student_profile = StudentProfile.objects.get(user=request.user)
+
+            data = {
+                "std_id": student_profile.std_id,
+                "name_th": student_profile.name_th,
+                "name_en": student_profile.name_en,
+                "birth_date": student_profile.birth_date,
+                "gender": student_profile.gender,
+                "email": student_profile.email,
+            }
+
+            return Response(data, status=200)
+        except StudentProfile.DoesNotExist:
+            return Response({"error": "Student profile not found."}, status=404)
+
 class DiscordConnectView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -303,6 +324,8 @@ class MykuDataView(GenericAPIView):
             # ตรวจสอบข้อมูล MyKU ว่ามีครบถ้วนหรือไม่
             if not myku_username or not myku_password:
                 raise ValidationError("MyKU credentials are not available for the user.")
+            if not user.is_authenticated:
+                return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
 
             # ใช้ username และ password ที่ดึงมาจากฐานข้อมูลเพื่อเข้าสู่ระบบ MyKU
             client = Client(username=myku_username, password=myku_password)
