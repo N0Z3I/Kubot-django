@@ -49,6 +49,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')
     std_id = models.CharField(max_length=20, unique=True)
+    std_code = models.CharField(max_length=20, unique=True)
     name_th = models.CharField(max_length=255)
     name_en = models.CharField(max_length=255)
     birth_date = models.DateField()

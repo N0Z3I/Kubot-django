@@ -110,6 +110,10 @@ const Dashboard = () => {
                     <br></br>
                   </p>
                   <p>
+                    <strong>รหัสนิสิต:</strong> {gpax?.std_code || "N/A"}
+                    <br></br>
+                  </p>
+                  <p>
                     <strong>เบอร์โทรศัพท์ติดต่อ:</strong> {studentData.phone}
                     <br></br>
                   </p>

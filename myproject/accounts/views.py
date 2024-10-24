@@ -214,6 +214,8 @@ class MykuLoginView(GenericAPIView):
                 group_course_data = serializer.validated_data['group_course_data']
                 student_education_data = serializer.validated_data['student_education_data']
                 gpax_data = serializer.validated_data['gpax_data']
+                
+                std_code = gpax_data['results'][0]['std_code']
 
                 # ดึงหรือสร้าง StudentProfile จาก User
                 student_results = student_data['results']['stdPersonalModel']
@@ -221,6 +223,7 @@ class MykuLoginView(GenericAPIView):
                     user=request.user,
                     defaults={
                         'std_id': student_results['stdId'],
+                        'std_code': std_code,
                         'name_th': student_results['nameTh'],
                         'name_en': student_results['nameEn'],
                         'birth_date': student_results['birthDate'],
@@ -301,6 +304,7 @@ class MykuLoginView(GenericAPIView):
 
                 return Response({
                     'student_data': student_data,
+                    'std_code': std_code,
                     'message': 'Successfully linked MyKU and saved all data.'
                 }, status=status.HTTP_200_OK)
 

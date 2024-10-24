@@ -46,7 +46,7 @@ async def kuprofile(interaction: discord.Interaction):
             title=f"โปรไฟล์ของ {student_profile.name_th}",
             color=discord.Color.blue()
         )
-        embed.add_field(name="รหัสนิสิต", value=student_profile.std_id, inline=True)
+        embed.add_field(name="รหัสนิสิต", value=student_profile.std_code, inline=True)
         embed.add_field(name="ชื่อ (TH)", value=student_profile.name_th, inline=True)
         embed.add_field(name="ชื่อ (EN)", value=student_profile.name_en, inline=True)
         embed.add_field(name="เพศ", value=student_profile.gender, inline=True)
