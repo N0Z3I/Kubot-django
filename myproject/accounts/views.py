@@ -274,7 +274,11 @@ class MykuLoginView(GenericAPIView):
                                 defaults={
                                     'period_date': group['peroid_date'],
                                     'subject_name': course['subject_name_th'],
-                                    'teacher_name': course['teacher_name'],
+                                    'teacher_name': course.get('teacher_name', 'N/A'),
+                                    'day_w': course.get('day_w', 'N/A'),
+                                    'room_name_th': course.get('room_name_th', 'N/A'),
+                                    'time_from': course.get('time_from', 'N/A'),
+                                    'time_to': course.get('time_to', 'N/A'),
                                 }
                             )
 

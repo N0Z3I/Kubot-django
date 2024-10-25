@@ -201,38 +201,60 @@ const Dashboard = () => {
                   {schedule.length > 0 ? (
                     <>
                       <h4>Schedule</h4>
-                      <ul>
-                        {schedule.map((item, index) => (
-                          <p key={index}>
+                      {schedule.map((item, index) => (
+                        <div key={index} className="mb-4">
+                          <h5>
                             <strong>ปีการศึกษา:</strong> {item.academicYr},{" "}
                             <strong>ภาคการศึกษา:</strong> {item.semester}
-                          </p>
-                        ))}
-                      </ul>
-                    </>
-                  ) : (
-                    <p>ไม่มีตารางเรียนที่จะแสดง</p>
-                  )}
-                  {groupCourse.length > 0 ? (
-                    <>
-                      <h4>Subject</h4>
-                      {groupCourse.map((group, index) => (
-                        <div key={index}>
-                          <h5>Period: {group.peroid_date}</h5>
-                          <ul>
-                            {group.course.map((course, idx) => (
-                              <p key={idx}>
-                                <strong>วิชา:</strong> {course.subject_name_th}{" "}
-                                - <strong>อาจารย์:</strong>{" "}
-                                {course.teacher_name}
-                              </p>
-                            ))}
-                          </ul>
+                          </h5>
+
+                          {/* Filter and display relevant group courses */}
+                          {groupCourse.length > 0 ? (
+                            <ul className="list-unstyled">
+                              {groupCourse
+                                .filter((group) =>
+                                  group.peroid_date.includes(item.academicYr)
+                                )
+                                .map((group, idx) => (
+                                  <li key={idx} className="mb-2">
+                                    <h6>Period: {group.peroid_date}</h6>
+                                    {group.course.map((course, cIdx) => (
+                                      <div key={cIdx}>
+                                        <p>
+                                          <strong>วิชา:</strong>{" "}
+                                          {course.subject_name_th} (
+                                          {course.subject_code})
+                                        </p>
+                                        <p>
+                                          <strong>อาจารย์:</strong>{" "}
+                                          {course.teacher_name}
+                                        </p>
+                                        <p>
+                                          <strong>วัน:</strong>{" "}
+                                          {course.day_w.trim()}
+                                        </p>
+                                        <p>
+                                          <strong>เวลา:</strong>{" "}
+                                          {course.time_from} - {course.time_to}
+                                        </p>
+                                        <p>
+                                          <strong>ห้อง:</strong>{" "}
+                                          {course.room_name_th}
+                                        </p>
+                                        <hr />
+                                      </div>
+                                    ))}
+                                  </li>
+                                ))}
+                            </ul>
+                          ) : (
+                            <p>ไม่มีข้อมูลวิชาสำหรับปีการศึกษานี้</p>
+                          )}
                         </div>
                       ))}
                     </>
                   ) : (
-                    <p>ไม่มีข้อมูลกลุ่มวิชาที่จะแสดง</p>
+                    <p>ไม่มีตารางเรียนที่จะแสดง</p>
                   )}
                   {/* {announcements.length > 0 ? (
             <>

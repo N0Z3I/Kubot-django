@@ -12,7 +12,7 @@ import discord
 import asyncio
 from discord import app_commands
 from discord.ext import commands
-from accounts.models import DiscordProfile, StudentProfile, GPAX, StudentEducation
+from accounts.models import DiscordProfile, StudentProfile, GPAX, StudentEducation, Schedule, GroupCourse
 import concurrent.futures
 
 
@@ -31,6 +31,68 @@ async def on_ready():
         print(f"Synced {len(synced)} commands.")
     except Exception as e:
         print(f"Error syncing commands: {e}")
+        
+@bot.tree.command(name="schedule", description="แสดงตารางเรียนของนิสิตพร้อมรายละเอียดวิชา")
+async def schedule(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+
+    try:
+        # Fetch Discord and Student profiles
+        discord_profile = await run_in_thread(lambda: DiscordProfile.objects.get(discord_id=str(interaction.user.id)))
+        student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user=discord_profile.user))
+
+        # Fetch schedule data and group courses
+        schedules = await run_in_thread(lambda: list(Schedule.objects.filter(student_profile=student_profile)))
+        group_courses = await run_in_thread(lambda: list(GroupCourse.objects.filter(student_profile=student_profile)))
+
+        if not schedules or not group_courses:
+            await interaction.followup.send("ไม่มีข้อมูลตารางเรียนที่จะแสดง", ephemeral=True)
+            return
+
+        embed = discord.Embed(title="ตารางเรียน", color=discord.Color.dark_teal())
+
+        # Loop through each schedule and match with group courses
+        for schedule in schedules:
+            embed.add_field(
+                name=f"ปีการศึกษา {schedule.academic_year}, ภาคการศึกษา {schedule.semester}",
+                value="**รายละเอียดวิชา:**",
+                inline=False,
+            )
+
+            # Filter matching group courses by academic year
+            relevant_courses = [
+                course for course in group_courses if str(schedule.academic_year) in course.period_date
+            ]
+
+            if relevant_courses:
+                for course in relevant_courses:
+                    embed.add_field(
+                        name=f"{course.subject_name} ({course.subject_code})",
+                        value=(
+                            f"ผู้สอน: {course.teacher_name}\n"
+                            f"เวลา: {course.time_from} - {course.time_to}\n"
+                            f"วัน: {course.day_w.strip()}\n"
+                            f"ห้อง: {course.room_name_th}"
+                        ),
+                        inline=False,
+                    )
+            else:
+                embed.add_field(name="ไม่มีข้อมูลวิชา", value="ไม่พบข้อมูลกลุ่มวิชา", inline=False)
+
+        await interaction.followup.send(embed=embed)
+
+    except DiscordProfile.DoesNotExist:
+        await interaction.followup.send("ไม่พบนิสิตที่เชื่อมกับบัญชีนี้", ephemeral=True)
+    except StudentProfile.DoesNotExist:
+        await interaction.followup.send("ไม่พบข้อมูลนิสิตในระบบ", ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(f"เกิดข้อผิดพลาด: {str(e)}", ephemeral=True)
+
+async def run_in_thread(func):
+    """Run blocking code in a separate thread to avoid blocking the event loop."""
+    loop = asyncio.get_running_loop()
+    with concurrent.futures.ThreadPoolExecutor() as pool:
+        return await loop.run_in_executor(pool, func)
 
 @bot.tree.command(name="kuprofile", description="แสดงข้อมูลโปรไฟล์นิสิต")
 async def kuprofile(interaction: discord.Interaction):

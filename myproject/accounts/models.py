@@ -89,6 +89,10 @@ class GroupCourse(models.Model):
     subject_code = models.CharField(max_length=20)
     subject_name = models.CharField(max_length=255)
     teacher_name = models.CharField(max_length=255)
+    time_from = models.CharField(max_length=10)  
+    time_to = models.CharField(max_length=10)  
+    day_w = models.CharField(max_length=20)    
+    room_name_th = models.CharField(max_length=255)  
 
     def __str__(self):
         return f"GroupCourse for {self.student_profile.std_id} - {self.subject_name}"
