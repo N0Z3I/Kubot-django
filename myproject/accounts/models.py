@@ -72,15 +72,21 @@ class Schedule(models.Model):
 
 
 class Grade(models.Model):
-    student_profile = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='grades')
+    student_profile = models.ForeignKey(
+        StudentProfile, on_delete=models.CASCADE, related_name='grades'
+    )
     academic_year = models.CharField(max_length=20)
+    semester = models.CharField(max_length=10) 
     subject_code = models.CharField(max_length=20)
-    subject_name = models.CharField(max_length=255)
+    subject_name_th = models.CharField(max_length=255)
+    subject_name_en = models.CharField(max_length=255, blank=True, null=True)
     credit = models.FloatField()
     grade = models.CharField(max_length=2)
+    gpa = models.FloatField(null=True, blank=True)
+    total_credits = models.FloatField(null=True, blank=True) 
 
     def __str__(self):
-        return f"Grade for {self.student_profile.std_id} - {self.subject_name}: {self.grade}"
+        return f"Grade for {self.student_profile.std_code} - {self.subject_name_th}: {self.grade}"
 
 
 class GroupCourse(models.Model):

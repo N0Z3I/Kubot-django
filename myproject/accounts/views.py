@@ -266,19 +266,26 @@ class MykuLoginView(GenericAPIView):
                         pass
 
                 # บันทึกข้อมูลเกรด (Grade)
-                if grades_data and 'results' in grades_data:
-                    for semester in grades_data['results']:
-                        for course in semester['grade']:
-                            Grade.objects.update_or_create(
-                                student_profile=student_profile,
-                                academic_year=semester['academicYear'],
-                                subject_code=course['subject_code'],
-                                defaults={
-                                    'subject_name': course['subject_name_th'],
-                                    'credit': course['credit'],
-                                    'grade': course['grade'],
-                                }
-                            )
+                for semester_data in grades_data['results']:
+                    academic_year = semester_data['academicYear']
+                    gpa = semester_data['gpa']
+                    total_credits = semester_data['cr']
+
+                    for course in semester_data['grade']:
+                        Grade.objects.update_or_create(
+                            student_profile=student_profile,
+                            academic_year=academic_year,
+                            semester=course['registration_semester'],
+                            subject_code=course['subject_code'],
+                            defaults={
+                                'subject_name_th': course['subject_name_th'],
+                                'subject_name_en': course['subject_name_en'],
+                                'credit': course['credit'],
+                                'grade': course['grade'],
+                                'gpa': gpa, 
+                                'total_credits': total_credits  
+                            }
+                        )
 
                 # บันทึกข้อมูลกลุ่มวิชา (GroupCourse)
                 if group_course_data and 'results' in group_course_data:
@@ -338,51 +345,93 @@ class MykuDataView(GenericAPIView):
 
     def get(self, request):
         try:
-            # ดึงข้อมูลผู้ใช้ที่ล็อกอินอยู่
+            # ดึงโปรไฟล์ของผู้ใช้งานที่ล็อกอิน
             user = request.user
+            student_profile = StudentProfile.objects.get(user=user)
 
-            # สมมติว่า User model เก็บ username และ password ที่ใช้กับ MyKU
-            myku_username = user.myku_username
-            myku_password = user.myku_password
+            # ดึงข้อมูลที่เกี่ยวข้องจากฐานข้อมูล
+            schedules = Schedule.objects.filter(student_profile=student_profile)
+            group_courses = GroupCourse.objects.filter(student_profile=student_profile)
+            grades = Grade.objects.filter(student_profile=student_profile)
+            student_education = StudentEducation.objects.filter(student_profile=student_profile).first()
+            gpax = GPAX.objects.get(student_profile=student_profile)
 
-            # ตรวจสอบข้อมูล MyKU ว่ามีครบถ้วนหรือไม่
-            if not myku_username or not myku_password:
-                raise ValidationError("MyKU credentials are not available for the user.")
-            if not user.is_authenticated:
-                return Response({'error': 'Unauthorized'}, status=status.HTTP_401_UNAUTHORIZED)
+            # จัดกลุ่มเกรดตามปีการศึกษาและภาคการศึกษา
+            grouped_grades = {}
+            for grade in grades:
+                key = f"{grade.academic_year} - ภาค {grade.semester}"
+                if key not in grouped_grades:
+                    grouped_grades[key] = {
+                        'gpa': grade.gpa,
+                        'total_credits': grade.total_credits,
+                        'courses': [],
+                    }
+                grouped_grades[key]['courses'].append({
+                    'subject_code': grade.subject_code,
+                    'subject_name_th': grade.subject_name_th,
+                    'subject_name_en': grade.subject_name_en,
+                    'credit': grade.credit,
+                    'grade': grade.grade,
+                })
 
-            # ใช้ username และ password ที่ดึงมาจากฐานข้อมูลเพื่อเข้าสู่ระบบ MyKU
-            client = Client(username=myku_username, password=myku_password)
-            client.login()  # Login ด้วยข้อมูลที่มี
+            # เรียงลำดับปีการศึกษาและภาคการศึกษาให้ใหม่ขึ้นก่อน
+            sorted_grades = dict(sorted(
+                grouped_grades.items(), 
+                key=lambda x: (int(x[0].split('/')[0]), int(x[0].split(' ')[-1])), 
+                reverse=True
+            ))
 
-            # ดึงข้อมูลของนักศึกษาจาก MyKU
-            student_data = client.fetch_student_personal()
-            schedule_data = client.fetch_schedule()
-            announce_data = client.fetch_announce()
-            grades_data = client.fetch_grades()
-            group_course_data = client.fetch_group_course()
-            student_education_data = client.fetch_student_education()
-            gpax_data = client.fetch_gpax()
-
-            # เตรียมข้อมูลสำหรับการตอบกลับ
+            # เตรียมข้อมูลเพื่อตอบกลับ
             response_data = {
-                'student_data': student_data,
-                'results': {
-                    'schedule_data': schedule_data if schedule_data else [],
-                    'announce_data': announce_data if announce_data else [],
-                    'grades_data': grades_data if grades_data else [],
-                    'group_course_data': group_course_data if group_course_data else [],
-                    'student_education_data': student_education_data if student_education_data else None,
-                    'gpax_data': gpax_data if gpax_data else []
+                'student_profile': {
+                    'std_code': student_profile.std_code,
+                    'name_th': student_profile.name_th,
+                    'name_en': student_profile.name_en,
+                    'birth_date': student_profile.birth_date,
+                    'gender': student_profile.gender,
+                    'religion': student_profile.religion,
+                    'phone': student_profile.phone,
+                    'email': student_profile.email,
                 },
-                'message': 'Successfully fetched all MyKU data.'
+                'grades_data': sorted_grades,
+                'schedule_data': [
+                    {'academic_year': s.academic_year, 'semester': s.semester} for s in schedules
+                ],
+                'group_course_data': [
+                    {
+                        'subject_code': g.subject_code,
+                        'subject_name': g.subject_name,
+                        'teacher_name': g.teacher_name,
+                        'day_w': g.day_w,
+                        'room_name_th': g.room_name_th,
+                        'time_from': g.time_from,
+                        'time_to': g.time_to,
+                    }
+                    for g in group_courses
+                ],
+                'student_education_data': {
+                    'faculty_name_th': student_education.faculty_name_th,
+                    'major_name_th': student_education.major_name_th,
+                    'status': student_education.status,
+                    'degree_name': student_education.degree_name,
+                } if student_education else None,
+                'gpax_data': {
+                    'gpax': gpax.gpax,
+                    'total_credit': gpax.total_credit,
+                },
             }
 
             return Response(response_data, status=status.HTTP_200_OK)
 
+        except StudentProfile.DoesNotExist:
+            return Response({'error': 'Student profile not found'}, status=status.HTTP_404_NOT_FOUND)
+        except GPAX.DoesNotExist:
+            return Response({'error': 'GPAX data not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            logger.error(f"Error in MykuDataView: {str(e)}")
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 
 class RegisterUserView(GenericAPIView):
     serializer_class = UserRegisterSerializer
