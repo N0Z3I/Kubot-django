@@ -73,19 +73,6 @@ const Profile = () => {
     }
   };
 
-  const handleDiscordLogout = async () => {
-    try {
-      const response = await axiosInstance.post("/auth/discord/logout/");
-      if (response.status === 200) {
-        setDiscordProfile(null); // ล้างข้อมูลโปรไฟล์จาก state
-        toast.success("Logged out from Discord successfully.");
-      }
-    } catch (error) {
-      console.error("Error logging out from Discord:", error);
-      toast.error("Logout from Discord failed. Please try again.");
-    }
-  };
-
   const getSomeData = async () => {
     try {
       const resp = await axiosInstance.get("/auth/profile/");
@@ -156,6 +143,34 @@ const Profile = () => {
     } catch (error) {
       console.error("Error connecting to Discord:", error);
       toast.error("Discord connection failed. Please try again.");
+    }
+  };
+
+  const handleDiscordLogout = async () => {
+    try {
+      const accessToken = Cookies.get("access");
+      if (!accessToken) {
+        toast.error("No active session found.");
+        return;
+      }
+
+      // Call backend to disconnect Discord
+      const response = await axiosInstance.post(
+        "/auth/discord/logout/",
+        {},
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      if (response.status === 200) {
+        setDiscordProfile(null); // Clear state
+        Cookies.remove("discord_access_token"); // Remove token if stored
+        toast.success("Successfully disconnected from Discord.");
+      }
+    } catch (error) {
+      console.error("Error disconnecting Discord:", error);
+      toast.error("Failed to disconnect Discord. Please try again.");
     }
   };
 

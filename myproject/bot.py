@@ -37,11 +37,9 @@ async def schedule(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
 
     try:
-        # Fetch Discord and Student profiles
         discord_profile = await run_in_thread(lambda: DiscordProfile.objects.get(discord_id=str(interaction.user.id)))
         student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user=discord_profile.user))
 
-        # Fetch schedule data and group courses
         schedules = await run_in_thread(lambda: list(Schedule.objects.filter(student_profile=student_profile)))
         group_courses = await run_in_thread(lambda: list(GroupCourse.objects.filter(student_profile=student_profile)))
 
@@ -51,7 +49,6 @@ async def schedule(interaction: discord.Interaction):
 
         embed = discord.Embed(title="ตารางเรียน", color=discord.Color.dark_teal())
 
-        # Loop through each schedule and match with group courses
         for schedule in schedules:
             embed.add_field(
                 name=f"ปีการศึกษา {schedule.academic_year}, ภาคการศึกษา {schedule.semester}",
@@ -59,7 +56,6 @@ async def schedule(interaction: discord.Interaction):
                 inline=False,
             )
 
-            # Filter matching group courses by academic year
             relevant_courses = [
                 course for course in group_courses if str(schedule.academic_year) in course.period_date
             ]
@@ -99,11 +95,9 @@ async def kuprofile(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
 
     try:
-        # ใช้ lambda เพื่อส่ง argument อย่างถูกต้อง
         discord_profile = await run_in_thread(lambda: DiscordProfile.objects.get(discord_id=str(interaction.user.id)))
         student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user=discord_profile.user))
 
-        # สร้าง Embed สำหรับแสดงข้อมูล
         embed = discord.Embed(
             title=f"โปรไฟล์ของ {student_profile.name_th}",
             color=discord.Color.dark_teal()
@@ -135,12 +129,10 @@ async def kugpax(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
 
     try:
-        # ใช้ lambda เพื่อดึงข้อมูลจาก DiscordProfile และ StudentProfile
         discord_profile = await run_in_thread(lambda: DiscordProfile.objects.get(discord_id=str(interaction.user.id)))
         student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user=discord_profile.user))
         gpax_data = await run_in_thread(lambda: GPAX.objects.get(student_profile=student_profile))
 
-        # สร้าง Embed สำหรับแสดงผลการเรียนและ GPAX
         embed = discord.Embed(
             title=f"เกรดเฉลี่ยสะสมของ {student_profile.name_th}",
             color=discord.Color.dark_teal()
@@ -169,12 +161,10 @@ async def kueducation(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
 
     try:
-        # ใช้ lambda เพื่อดึงข้อมูลจาก DiscordProfile และ StudentProfile
         discord_profile = await run_in_thread(lambda: DiscordProfile.objects.get(discord_id=str(interaction.user.id)))
         student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user=discord_profile.user))
         education_data = await run_in_thread(lambda: StudentEducation.objects.get(student_profile=student_profile))
 
-        # สร้าง Embed สำหรับแสดงข้อมูลการศึกษา
         embed = discord.Embed(
             title=f"ข้อมูลการศึกษาของ {student_profile.name_th}",
             color=discord.Color.dark_teal()
@@ -204,7 +194,6 @@ async def run_in_thread(func):
 async def login(interaction: discord.Interaction):
     user = interaction.user
 
-    # สร้างลิงก์ OAuth2 สำหรับการเชื่อมบัญชี
     oauth_url = (
         f"https://discord.com/api/oauth2/authorize?client_id={env('DISCORD_CLIENT_ID')}"
         f"&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/"
@@ -217,7 +206,6 @@ async def login(interaction: discord.Interaction):
         f"สวัสดี {user.name}! กรุณาคลิกที่ลิงก์นี้เพื่อลงชื่อเข้าใช้และเชื่อมบัญชีของคุณ:\n{oauth_url}"
     )
 
-    # แจ้งผู้ใช้ในช่องแชทว่าลิงก์ถูกส่งไปใน DM
     await interaction.response.send_message("ลิงก์การเข้าสู่ระบบถูกส่งไปยัง DM ของคุณ", ephemeral=True)
     
 @bot.tree.command(name="check_login", description="ตรวจสอบสถานะการเชื่อมต่อบัญชี Discord")
@@ -240,7 +228,6 @@ async def hello(interaction: discord.Interaction):
 
 @bot.tree.command(name="invite", description="รับลิงก์เชิญบอท KuBot")
 async def invite(interaction: discord.Interaction):
-    # สร้าง Embed สำหรับการเชิญ
     embed = discord.Embed(
         color=discord.Color.dark_teal(),
         url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot",
@@ -248,38 +235,31 @@ async def invite(interaction: discord.Interaction):
         title="เชิญฉันเข้าสู่เซิร์ฟเวอร์ของคุณ คลิกที่นี่!"
     )
     
-    # เพิ่มข้อมูลผู้เขียนใน Embed
     embed.set_author(
         name="KuBot",
         url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot",
         icon_url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
     )
 
-    # เพิ่ม Thumbnail
     embed.set_thumbnail(
         url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
     )
 
-    # ส่ง Embed ไปยังผู้ใช้
     await interaction.response.send_message(embed=embed)
 
 
 @bot.tree.command(name="ping", description="ตรวจสอบ ping ของบอท")
 async def ping(interaction: discord.Interaction):
-    # คำนวณความหน่วงของบอท
     bot_latency = round(bot.latency * 1000, 2)
 
-    # สร้าง Embed เพื่อนำเสนอผลลัพธ์
     embed = discord.Embed(
         title="🏓 Pong!",
         description="เช็คสถานะ Ping ของบอท",
         color=discord.Color.dark_teal()
     )
     
-    # เพิ่มข้อมูล latency
     embed.add_field(name="Latency:", value=f"`{bot_latency}` ms", inline=False)
 
-    # ส่ง Embed ไปยัง Discord
     await interaction.response.send_message(embed=embed)
 
 @bot.tree.command(name="avatar", description="ดู Avatar ของผู้ใช้")
@@ -319,7 +299,6 @@ user_reminder_tasks = {}
 async def reminder(interaction: discord.Interaction, time: int, msg: str):
     user = interaction.user
 
-    # ตรวจสอบว่าผู้ใช้มี reminder ที่กำลังรันอยู่หรือไม่
     if user.id in user_reminder_tasks:
         await interaction.response.send_message(
             "คุณมีการแจ้งเตือนที่กำลังรันอยู่แล้ว! กรุณาหยุดการแจ้งเตือนก่อนด้วยคำสั่ง `/stop_reminder`", 
@@ -327,22 +306,18 @@ async def reminder(interaction: discord.Interaction, time: int, msg: str):
         )
         return
 
-    # ยืนยันการตั้งค่าการแจ้งเตือน
     await interaction.response.send_message(
         f"การแจ้งเตือน `{msg}` จะถูกส่งไปยัง DM ทุกๆ {time} นาที", 
         ephemeral=True
     )
 
-    # สร้าง DM Channel
     dm_channel = await user.create_dm()
 
-    # สร้าง task การแจ้งเตือน
     async def send_reminder():
         while True:
             await asyncio.sleep(60 * time)  # รอเป็นระยะเวลาที่กำหนด (วินาที)
             await dm_channel.send(f"{user.mention}, {msg}")
 
-    # เริ่ม task และเก็บไว้ใน dictionary
     task = asyncio.create_task(send_reminder())
     user_reminder_tasks[user.id] = task
 
@@ -350,7 +325,6 @@ async def reminder(interaction: discord.Interaction, time: int, msg: str):
 async def stop_reminder(interaction: discord.Interaction):
     user = interaction.user
 
-    # ตรวจสอบว่าผู้ใช้มี task การแจ้งเตือนที่กำลังรันอยู่หรือไม่
     if user.id not in user_reminder_tasks:
         await interaction.response.send_message(
             "คุณไม่มีการแจ้งเตือนที่กำลังรันอยู่!", 
@@ -358,7 +332,6 @@ async def stop_reminder(interaction: discord.Interaction):
         )
         return
 
-    # ยกเลิก task การแจ้งเตือนและลบออกจาก dictionary
     task = user_reminder_tasks.pop(user.id)
     task.cancel()
 
@@ -366,29 +339,24 @@ async def stop_reminder(interaction: discord.Interaction):
 
 @bot.tree.command(name="activity", description="ดูข้อมูลกิจกรรมของ Ku")
 async def activity(interaction: discord.Interaction):
-    # สร้าง Embed
     embed = discord.Embed(
         title="กิจกรรม",
         description="ลองดูลิงก์ที่มีประโยชน์เหล่านี้เพื่อดูกิจกรรมที่เกี่ยวข้องกับ Ku",
         color=discord.Color.dark_teal()
     )
     
-    # ตั้งค่า Author ของ Embed
     embed.set_author(
         name="KuBot",
         url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot",
         icon_url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
     )
 
-    # ตั้งค่า Thumbnail ของ Embed
     embed.set_thumbnail(
         url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
     )
 
-    # สร้าง View ที่มีปุ่มต่าง ๆ
     view = discord.ui.View()
 
-    # เพิ่มปุ่ม 'ปฏิทินการศึกษา'
     view.add_item(
         discord.ui.Button(
             label="ปฏิทินการศึกษา", 
@@ -397,7 +365,6 @@ async def activity(interaction: discord.Interaction):
         )
     )
 
-    # เพิ่มปุ่ม 'ประเมินการเรียนการสอน'
     view.add_item(
         discord.ui.Button(
             label="ประเมินการเรียนการสอน", 
@@ -406,7 +373,6 @@ async def activity(interaction: discord.Interaction):
         )
     )
 
-    # ส่ง Embed พร้อม View ที่มีปุ่มไปยังผู้ใช้
     await interaction.response.send_message(embed=embed, view=view)
 
 @bot.tree.command(name="server", description="ดูข้อมูลเซิร์ฟเวอร์ปัจจุบัน")
@@ -424,14 +390,12 @@ async def server(interaction: discord.Interaction):
     
 @bot.tree.command(name="help", description="ดูวิธีเริ่มต้นใช้งาน KuBot!")
 async def help_command(interaction: discord.Interaction):
-    # สร้าง Embed เพื่อนำเสนอข้อมูล
     embed = discord.Embed(
         title="ช่วยเหลือ",
         description="ลองดูลิงก์ที่มีประโยชน์เหล่านี้เพื่อเริ่มต้นใช้งาน KuBot!",
         color=discord.Color.dark_teal()
     )
     
-    # ตั้งค่า Author และ Thumbnail ของ Embed
     embed.set_author(
         name="KuBot",
         url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot",
@@ -441,28 +405,23 @@ async def help_command(interaction: discord.Interaction):
         url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
     )
 
-    # สร้าง View สำหรับปุ่ม
     view = discord.ui.View()
     
-    # ปุ่มเว็บไซต์
     button_website = discord.ui.Button(
         label="เว็บไซต์", 
         style=discord.ButtonStyle.link, 
         url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     )
     
-    # ปุ่มเชิญบอท
     button_invite = discord.ui.Button(
         label="เชิญ", 
         style=discord.ButtonStyle.link, 
         url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot"
     )
     
-    # เพิ่มปุ่มลงใน View
     view.add_item(button_website)
     view.add_item(button_invite)
 
-    # ส่ง Embed พร้อมกับปุ่ม
     await interaction.response.send_message(embed=embed, view=view)
 
 

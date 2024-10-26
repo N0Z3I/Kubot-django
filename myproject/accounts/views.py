@@ -198,6 +198,22 @@ class DiscordProfileView(APIView):
             return Response(data, status=200)
         except DiscordProfile.DoesNotExist:
             return Response({"error": "ไม่พบบัญชี Discord ที่เชื่อมต่อ"}, status=404)
+        
+class DiscordLogoutView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensure only authenticated users can access
+
+    def post(self, request):
+        try:
+            # Delete the Discord profile associated with the user
+            profile = DiscordProfile.objects.get(user=request.user)
+            profile.delete()
+
+            return Response({"message": "Successfully disconnected from Discord"}, status=200)
+        except DiscordProfile.DoesNotExist:
+            return Response({"error": "Discord profile not found"}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+
 
 class MykuLoginView(GenericAPIView):
     serializer_class = LoginWithMykuSerializer
