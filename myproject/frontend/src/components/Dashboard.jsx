@@ -51,12 +51,21 @@ const Dashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    Cookies.remove("access");
-    Cookies.remove("refresh");
-    Cookies.remove("user");
-    toast.success("Logout successful.");
-    navigate("/login");
+  const handleKuLogout = async () => {
+    try {
+      // เรียก API เพื่อลบข้อมูลผู้ใช้
+      await axiosInstance.delete("/auth/delete-myku-data/");
+      toast.success("Your data has been deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting data:", error);
+      toast.error("Failed to delete your data.");
+    } finally {
+      // ลบ cookies และนำไปที่หน้า login
+      Cookies.remove("access");
+      Cookies.remove("refresh");
+      Cookies.remove("user");
+      navigate("/profile");
+    }
   };
 
   const semesterNames = { 0: "ฤดูร้อน", 1: "ภาคต้น", 2: "ภาคปลาย" };
@@ -85,7 +94,13 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <header className="d-flex justify-content-between align-items-center mb-4">
         <h4>Student Information</h4>
-        <button onClick={handleLogout} className="btn btn-danger logout-btn">
+        <button
+          onClick={() => navigate("/connections")}
+          className="connections-btn"
+        >
+          Connections
+        </button>
+        <button onClick={handleKuLogout} className="btn btn-danger logout-btn">
           Logout
         </button>
       </header>

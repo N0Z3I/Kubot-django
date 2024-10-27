@@ -167,7 +167,7 @@ class DiscordCallbackView(APIView):
             }
         )
 
-        return redirect('http://localhost:5173/profile?discord_connected=true')
+        return redirect('http://localhost:5173/connections?discord_connected=true')
 
     def get_authenticated_user(self, token):
         # ตรวจสอบ JWT token เพื่อดึงผู้ใช้ที่ล็อกอิน
@@ -430,7 +430,28 @@ class MykuDataView(GenericAPIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+class DeleteMykuDataView(APIView):
+    permission_classes = [IsAuthenticated]
 
+    def delete(self, request):
+        try:
+            user = request.user
+            student_profile = StudentProfile.objects.get(user=user)
+
+            # ลบข้อมูลที่เกี่ยวข้องทั้งหมด
+            student_profile.delete()  # ลบโปรไฟล์ของผู้ใช้ ซึ่งจะ cascade ไปยังข้อมูลที่เกี่ยวข้อง
+
+            return Response(
+                {"detail": "Your data has been deleted successfully."},
+                status=status.HTTP_200_OK
+            )
+        except StudentProfile.DoesNotExist:
+            return Response(
+                {"error": "Profile not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class RegisterUserView(GenericAPIView):

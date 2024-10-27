@@ -124,6 +124,27 @@ label {
   transform: scale(1.05);
 }
 
+.connections-btn {
+  padding: 10px 22px;
+  outline: none;
+  width: 350spx;
+  height: 50px;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #000000;
+  margin: 1rem;
+  border: none;
+  color: #ebeefd;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.connections-btn:hover {
+  transform: scale(1.05);
+}
+
 .loginmyku-btn {
   padding: 10px 22px;
   outline: none;
@@ -264,13 +285,116 @@ footer {
 header {
   position: fixed;
   top: 0;
-  left: 0;
-  width: 90%;
-  padding: 20px 100px;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 0px 0px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 99;
+}
+
+.header-btn {
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 200ms ease-in-out;
+}
+
+.header-btn.connection {
+  background-color: #0a6765;
+  color: #ebeefd;
+  margin-right: 15px;
+}
+
+.header-btn.logout {
+  background-color: #ff2400;
+  color: #fff;
+}
+
+.header-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-top: 120px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  background-color: #ddd;
+  border: none;
+  margin: 0 10px;
+  border-radius: 10px;
+  transition: background-color 200ms ease-in-out;
+}
+
+.tab-btn.active {
+  background-color: #0a6765;
+  color: #fff;
+}
+
+.tab-btn:hover {
+  background-color: #50b498;
+  color: #fff;
+}
+
+/* Tab Content */
+.tab-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 20px;
+  background-color: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.connection-section h4 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.connection-button {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  margin: 10px auto;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #5865f2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 200ms ease-in-out;
+}
+
+.connection-button:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tab-btn {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+
+  .connection-button {
+    font-size: 16px;
+  }
 }
 
 .logo {

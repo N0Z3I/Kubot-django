@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView, ResendOtpView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
-from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView, DiscordProfileView, StudentDataView, DiscordLogoutView
+from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView, DiscordProfileView, StudentDataView, DiscordLogoutView, DeleteMykuDataView
 
 urlpatterns=[
     path('register/', RegisterUserView.as_view(), name = 'register'),
@@ -16,6 +16,7 @@ urlpatterns=[
     path('logout/', LogoutUserView.as_view(), name = 'logout'),
     path('myku-login/', MykuLoginView.as_view(), name='myku-login'),
     path('myku-data/', MykuDataView.as_view(), name='myku-data'),
+    path('delete-myku-data/', DeleteMykuDataView.as_view(), name='delete-myku-data'),
     path('discord/connect/', DiscordConnectView.as_view(), name='discord-connect'),
     path('discord/callback/', DiscordCallbackView.as_view(), name='discord-callback'),
     path('discord/profile/', DiscordProfileView.as_view(), name='discord-profile'),

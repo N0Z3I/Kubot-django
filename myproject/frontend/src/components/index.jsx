@@ -7,6 +7,7 @@ import VerifyEmail from "./VerifyEmail";
 import LinkMyKU from "./LinkMyKU";
 import Dashboard from "./Dashboard";
 import ProtectedRoute from "./ProtectedRoute";
+import Connections from "./Connections";
 
 export {
   Signup,
@@ -18,4 +19,5 @@ export {
   LinkMyKU,
   Dashboard,
   ProtectedRoute,
+  Connections,
 };

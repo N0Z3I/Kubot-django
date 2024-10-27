@@ -11,6 +11,7 @@ import {
   LinkMyKU,
   Dashboard,
   ProtectedRoute,
+  Connections,
 } from "./components";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -28,6 +29,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/" element={<ProtectedRoute />}>
             <Route path="profile" element={<Profile />} />
+            <Route path="/connections" element={<Connections />} />
             <Route path="/link-myku" element={<LinkMyKU />} />
             <Route path="/dashboard" element={<Dashboard />} />
           </Route>
