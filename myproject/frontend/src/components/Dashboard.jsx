@@ -13,6 +13,9 @@ const Dashboard = () => {
   const [gpaxData, setGpaxData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState({});
+
   const navigate = useNavigate();
   const accessToken = Cookies.get("access");
 
@@ -51,23 +54,6 @@ const Dashboard = () => {
     }
   };
 
-  const handleKuLogout = async () => {
-    try {
-      // เรียก API เพื่อลบข้อมูลผู้ใช้
-      await axiosInstance.delete("/auth/delete-myku-data/");
-      toast.success("Your data has been deleted successfully.");
-    } catch (error) {
-      console.error("Error deleting data:", error);
-      toast.error("Failed to delete your data.");
-    } finally {
-      // ลบ cookies และนำไปที่หน้า login
-      Cookies.remove("access");
-      Cookies.remove("refresh");
-      Cookies.remove("user");
-      navigate("/profile");
-    }
-  };
-
   const semesterNames = { 0: "ฤดูร้อน", 1: "ภาคต้น", 2: "ภาคปลาย" };
 
   // ฟังก์ชันเรียงปีการศึกษาและภาคเรียนจากใหม่ไปเก่า
@@ -90,6 +76,43 @@ const Dashboard = () => {
     return sorted;
   };
 
+  useEffect(() => {
+    if (studentProfile) {
+      setEditData(studentProfile); // ตั้งค่าเริ่มต้นให้ editData จาก studentProfile
+    }
+  }, [studentProfile]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prevData) => ({ ...prevData, [name]: value }));
+  };
+
+  const handleSaveField = async (key) => {
+    try {
+      const updatedField = { [key]: editData[key] };
+      const res = await axiosInstance.put(
+        "/auth/update-profile/",
+        updatedField,
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
+
+      if (res.status === 200) {
+        toast.success("Field updated successfully!");
+        setStudentProfile((prev) => ({ ...prev, ...updatedField }));
+        setIsEditing(false);
+      }
+    } catch (error) {
+      toast.error("Failed to update field. Please try again.");
+    }
+  };
+
+  const handleCancelEdit = (key) => {
+    setIsEditing((prev) => ({ ...prev, [key]: false }));
+    setEditData(studentProfile); // รีเซ็ตข้อมูลกลับไปเป็นข้อมูลเดิม
+  };
+
   return (
     <div className="dashboard-container">
       <header className="d-flex justify-content-between align-items-center mb-4">
@@ -99,9 +122,6 @@ const Dashboard = () => {
           className="connections-btn"
         >
           Connections
-        </button>
-        <button onClick={handleKuLogout} className="btn btn-danger logout-btn">
-          Logout
         </button>
       </header>
 
@@ -115,24 +135,112 @@ const Dashboard = () => {
             <div className="col-lg-6 col-md-8 mx-auto">
               <div className="profile-cards shadow-sm text-center p-4">
                 <h4 className="card-title mb-4">Personal Information</h4>
+
                 <p>
                   <strong>ชื่อ-นามสกุล (TH):</strong> {studentProfile.name_th}
                 </p>
                 <p>
                   <strong>ชื่อ-นามสกุล (EN):</strong> {studentProfile.name_en}
                 </p>
-                <p>
-                  <strong>เพศ:</strong> {studentProfile.gender}
-                </p>
-                <p>
-                  <strong>รหัสนิสิต:</strong> {studentProfile.std_code}
-                </p>
-                <p>
-                  <strong>เบอร์โทร:</strong> {studentProfile.phone}
-                </p>
-                <p>
-                  <strong>Email:</strong> {studentProfile.email}
-                </p>
+
+                <div className="form-group mb-3">
+                  <div className="d-flex align-items-center justify-content-between">
+                    <p>
+                      <strong>เบอร์โทร:</strong>
+
+                      {isEditing.phone ? (
+                        <>
+                          <input
+                            type="text"
+                            name="phone"
+                            value={editData.phone || ""}
+                            onChange={handleInputChange}
+                            className="form-control"
+                            style={{
+                              flex: 1,
+                              marginLeft: "10px",
+                              marginRight: "10px",
+                            }}
+                          />
+                          <button
+                            onClick={() => handleSaveField("phone")}
+                            className="btn btn-success me-2"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => handleCancelEdit("phone")}
+                            className="btn btn-secondary"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ flex: 1, marginLeft: "10px" }}>
+                            {studentProfile.phone || "ยังไม่เพิ่ม"}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setIsEditing((prev) => ({ ...prev, phone: true }))
+                            }
+                            className="btn btn-link"
+                          >
+                            Edit
+                          </button>
+                        </>
+                      )}
+                    </p>
+                    <p>
+                      <strong>KU Email:</strong>
+                      {isEditing.ku_email ? (
+                        <>
+                          <input
+                            type="email"
+                            name="ku_email"
+                            value={editData.ku_email || ""}
+                            onChange={handleInputChange}
+                            className="form-control"
+                            style={{
+                              flex: 1,
+                              marginLeft: "10px",
+                              marginRight: "10px",
+                            }}
+                          />
+                          <button
+                            onClick={() => handleSaveField("ku_email")}
+                            className="btn btn-success me-2"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => handleCancelEdit("ku_email")}
+                            className="btn btn-secondary"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <span style={{ flex: 1, marginLeft: "10px" }}>
+                            {studentProfile.ku_email || "ยังไม่เพิ่ม"}
+                          </span>
+                          <button
+                            onClick={() =>
+                              setIsEditing((prev) => ({
+                                ...prev,
+                                ku_email: true,
+                              }))
+                            }
+                            className="btn btn-link"
+                          >
+                            Edit
+                          </button>
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
 
                 {studentEducationData && (
                   <>
@@ -193,7 +301,6 @@ const Dashboard = () => {
                             >
                               <div className="d-flex flex-column">
                                 <span>{course.subject_code}</span>
-                                <br></br>
                                 <span className="text-muted">
                                   {course.subject_name_th} /{" "}
                                   {course.subject_name_en || "N/A"}
@@ -205,7 +312,6 @@ const Dashboard = () => {
                                 </span>
                                 <span>เกรด: {course.grade}</span>
                               </div>
-                              <br></br>
                             </div>
                           ))}
                         </div>

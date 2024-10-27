@@ -25,7 +25,7 @@ from django.utils.timezone import now, timedelta
 import logging
 logger = logging.getLogger(__name__)
 
-from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer
+from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer, StudentProfileSerializer
 
 User = get_user_model()
 import requests
@@ -601,3 +601,18 @@ class LogoutUserView(GenericAPIView):
         response.delete_cookie('refresh')
         response.delete_cookie('access')
         return response
+    
+class UpdateProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        try:
+            student_profile = request.user.student_profile  # ดึงข้อมูลโปรไฟล์จากผู้ใช้
+        except StudentProfile.DoesNotExist:
+            return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = StudentProfileSerializer(student_profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

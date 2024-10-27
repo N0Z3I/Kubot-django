@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, StudentProfile
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -221,3 +221,17 @@ class LogoutUserSerializer(serializers.Serializer):
             token.blacklist()
         except TokenError:
             return self.fail('bad_token')
+        
+class StudentProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentProfile
+        fields = [
+            'std_id', 'std_code', 'name_th', 'name_en', 
+            'phone', 'email', 'ku_email'  # เพิ่ม ku_email
+        ]
+
+    def update(self, instance, validated_data):
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        return instance

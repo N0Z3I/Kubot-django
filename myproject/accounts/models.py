@@ -57,9 +57,10 @@ class StudentProfile(models.Model):
     religion = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     email = models.EmailField()
+    ku_email = models.EmailField(blank=True, null=True)  # เพิ่มฟิลด์นี้
 
     def __str__(self):
-        return f"{self.std_id} - {self.name_th}"
+        return f"{self.std_code} - {self.name_en}"
 
 
 class Schedule(models.Model):

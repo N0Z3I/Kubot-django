@@ -634,3 +634,15 @@ h6 {
 .resend-button:hover {
   transform: scale(1.05);
 }
+
+.form-group {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.form-control {
+  width: 100%;
+  max-width: 300px;
+}
