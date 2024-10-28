@@ -11,10 +11,10 @@ except Exception as e:
 import discord
 import asyncio
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 from accounts.models import DiscordProfile, StudentProfile, GPAX, StudentEducation, Schedule, GroupCourse
 import concurrent.futures
-
+import datetime
 
 intents = discord.Intents.default()
 intents.members = True
@@ -31,6 +31,72 @@ async def on_ready():
         print(f"Synced {len(synced)} commands.")
     except Exception as e:
         print(f"Error syncing commands: {e}")
+        
+@bot.tree.command(name="reminder", description="แจ้งเตือนตารางเรียนตามช่วงที่เลือก")
+async def reminder(interaction: discord.Interaction, period: str):
+    """
+    period: "today", "tomorrow", "this_week", "next_week"
+    """
+    await interaction.response.defer(ephemeral=True)
+
+    try:
+        discord_profile = await run_in_thread(lambda: DiscordProfile.objects.get(discord_id=str(interaction.user.id)))
+        student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user=discord_profile.user))
+
+        # กำหนดวันตาม period ที่เลือก
+        today = datetime.date.today()
+        if period == "today":
+            target_dates = [today]
+        elif period == "tomorrow":
+            target_dates = [today + datetime.timedelta(days=1)]
+        elif period == "this_week":
+            target_dates = [today + datetime.timedelta(days=i) for i in range(7 - today.weekday())]
+        elif period == "next_week":
+            start_of_next_week = today + datetime.timedelta(days=(7 - today.weekday()))
+            target_dates = [start_of_next_week + datetime.timedelta(days=i) for i in range(7)]
+        else:
+            await interaction.followup.send("กรุณาระบุช่วงเวลาเป็น: today, tomorrow, this_week หรือ next_week", ephemeral=True)
+            return
+
+        # ดึงข้อมูลตารางเรียนสำหรับช่วงวันที่ที่เลือก
+        group_courses = await run_in_thread(lambda: list(GroupCourse.objects.filter(student_profile=student_profile)))
+
+        relevant_courses = [
+            course for course in group_courses
+            if datetime.datetime.strptime(course.period_date, "%Y-%m-%d").date() in target_dates
+        ]
+
+        if not relevant_courses:
+            await interaction.followup.send(f"ไม่มีข้อมูลตารางเรียนสำหรับช่วง {period}", ephemeral=True)
+            return
+
+        embed = discord.Embed(title=f"แจ้งเตือนตารางเรียนสำหรับ {period}", color=discord.Color.green())
+        for course in relevant_courses:
+            embed.add_field(
+                name=f"{course.subject_name} ({course.subject_code})",
+                value=(
+                    f"ผู้สอน: {course.teacher_name}\n"
+                    f"เวลา: {course.time_from} - {course.time_to}\n"
+                    f"วัน: {course.day_w.strip()}\n"
+                    f"ห้อง: {course.room_name_th}"
+                ),
+                inline=False,
+            )
+
+        await interaction.followup.send(embed=embed)
+
+    except DiscordProfile.DoesNotExist:
+        await interaction.followup.send("ไม่พบนิสิตที่เชื่อมกับบัญชีนี้", ephemeral=True)
+    except StudentProfile.DoesNotExist:
+        await interaction.followup.send("ไม่พบข้อมูลนิสิตในระบบ", ephemeral=True)
+    except Exception as e:
+        await interaction.followup.send(f"เกิดข้อผิดพลาด: {str(e)}", ephemeral=True)
+
+# ฟังก์ชันการรันใน Thread แยก
+async def run_in_thread(func):
+    loop = asyncio.get_running_loop()
+    with concurrent.futures.ThreadPoolExecutor() as pool:
+        return await loop.run_in_executor(pool, func)
         
 @bot.tree.command(name="schedule", description="แสดงตารางเรียนของนิสิตพร้อมรายละเอียดวิชา")
 async def schedule(interaction: discord.Interaction):
@@ -294,48 +360,48 @@ async def clear(interaction: discord.Interaction, amount: int = 5):
 
 user_reminder_tasks = {}
 
-@bot.tree.command(name="reminder", description="ตั้งการแจ้งเตือนเป็นระยะ")
-@app_commands.describe(time="เวลาระหว่างแจ้งเตือน (นาที)", msg="ข้อความที่จะแจ้งเตือน")
-async def reminder(interaction: discord.Interaction, time: int, msg: str):
-    user = interaction.user
+# @bot.tree.command(name="reminder", description="ตั้งการแจ้งเตือนเป็นระยะ")
+# @app_commands.describe(time="เวลาระหว่างแจ้งเตือน (นาที)", msg="ข้อความที่จะแจ้งเตือน")
+# async def reminder(interaction: discord.Interaction, time: int, msg: str):
+#     user = interaction.user
 
-    if user.id in user_reminder_tasks:
-        await interaction.response.send_message(
-            "คุณมีการแจ้งเตือนที่กำลังรันอยู่แล้ว! กรุณาหยุดการแจ้งเตือนก่อนด้วยคำสั่ง `/stop_reminder`", 
-            ephemeral=True
-        )
-        return
+#     if user.id in user_reminder_tasks:
+#         await interaction.response.send_message(
+#             "คุณมีการแจ้งเตือนที่กำลังรันอยู่แล้ว! กรุณาหยุดการแจ้งเตือนก่อนด้วยคำสั่ง `/stop_reminder`", 
+#             ephemeral=True
+#         )
+#         return
 
-    await interaction.response.send_message(
-        f"การแจ้งเตือน `{msg}` จะถูกส่งไปยัง DM ทุกๆ {time} นาที", 
-        ephemeral=True
-    )
+#     await interaction.response.send_message(
+#         f"การแจ้งเตือน `{msg}` จะถูกส่งไปยัง DM ทุกๆ {time} นาที", 
+#         ephemeral=True
+#     )
 
-    dm_channel = await user.create_dm()
+#     dm_channel = await user.create_dm()
 
-    async def send_reminder():
-        while True:
-            await asyncio.sleep(60 * time)  # รอเป็นระยะเวลาที่กำหนด (วินาที)
-            await dm_channel.send(f"{user.mention}, {msg}")
+#     async def send_reminder():
+#         while True:
+#             await asyncio.sleep(60 * time)  # รอเป็นระยะเวลาที่กำหนด (วินาที)
+#             await dm_channel.send(f"{user.mention}, {msg}")
 
-    task = asyncio.create_task(send_reminder())
-    user_reminder_tasks[user.id] = task
+#     task = asyncio.create_task(send_reminder())
+#     user_reminder_tasks[user.id] = task
 
-@bot.tree.command(name="stop_reminder", description="หยุดการแจ้งเตือนที่ตั้งไว้")
-async def stop_reminder(interaction: discord.Interaction):
-    user = interaction.user
+# @bot.tree.command(name="stop_reminder", description="หยุดการแจ้งเตือนที่ตั้งไว้")
+# async def stop_reminder(interaction: discord.Interaction):
+#     user = interaction.user
 
-    if user.id not in user_reminder_tasks:
-        await interaction.response.send_message(
-            "คุณไม่มีการแจ้งเตือนที่กำลังรันอยู่!", 
-            ephemeral=True
-        )
-        return
+#     if user.id not in user_reminder_tasks:
+#         await interaction.response.send_message(
+#             "คุณไม่มีการแจ้งเตือนที่กำลังรันอยู่!", 
+#             ephemeral=True
+#         )
+#         return
 
-    task = user_reminder_tasks.pop(user.id)
-    task.cancel()
+#     task = user_reminder_tasks.pop(user.id)
+#     task.cancel()
 
-    await interaction.response.send_message("การแจ้งเตือนของคุณถูกหยุดเรียบร้อยแล้ว", ephemeral=True)
+#     await interaction.response.send_message("การแจ้งเตือนของคุณถูกหยุดเรียบร้อยแล้ว", ephemeral=True)
 
 @bot.tree.command(name="activity", description="ดูข้อมูลกิจกรรมของ Ku")
 async def activity(interaction: discord.Interaction):
