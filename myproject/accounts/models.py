@@ -22,9 +22,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
-    myku_username = models.CharField(max_length=255, blank=True, null=True)
-    myku_password = models.CharField(max_length=255, blank=True, null=True)
-    myku_student_data = models.JSONField(blank=True, null=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
@@ -62,7 +59,16 @@ class StudentProfile(models.Model):
     def __str__(self):
         return f"{self.std_code} - {self.name_en}"
 
+class TeacherProfile(models.Model):
+    """โปรไฟล์ของอาจารย์"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='teacher_profile')
+    full_name = models.CharField(max_length=255)  # ชื่อที่ต้องตรงกับ teacher_name ใน GroupCourse
+    department = models.CharField(max_length=100)
+    phone = models.CharField(max_length=15, blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.full_name} - {self.department}"
+    
 class Schedule(models.Model):
     student_profile = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='schedules')
     academic_year = models.IntegerField()
@@ -96,13 +102,16 @@ class GroupCourse(models.Model):
     subject_code = models.CharField(max_length=20)
     subject_name = models.CharField(max_length=255)
     teacher_name = models.CharField(max_length=255)
-    time_from = models.CharField(max_length=10)  
-    time_to = models.CharField(max_length=10)  
-    day_w = models.CharField(max_length=20)    
-    room_name_th = models.CharField(max_length=255)  
+    teacher = models.ForeignKey(
+        TeacherProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='group_courses'
+    )  # เชื่อมกับ TeacherProfile เมื่อสร้างบัญชีอาจารย์แล้ว
+    time_from = models.CharField(max_length=10)
+    time_to = models.CharField(max_length=10)
+    day_w = models.CharField(max_length=20)
+    room_name_th = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"GroupCourse for {self.student_profile.std_id} - {self.subject_name}"
+        return f"{self.subject_name} - {self.teacher_name}"
 
 
 class StudentEducation(models.Model):
@@ -157,3 +166,5 @@ class DiscordProfile(models.Model):
 
     def __str__(self):
         return f"{self.discord_username}#{self.discord_discriminator}"
+    
+
