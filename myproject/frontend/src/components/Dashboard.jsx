@@ -288,7 +288,8 @@ const Dashboard = () => {
                         <div className="d-flex justify-content-between align-items-center">
                           <h5>{`${semesterName} ${year}`}</h5>
                           <p>
-                          <strong>หน่วยกิตรวม:</strong> {total_credits || "N/A"} |<strong> GPA:{" "}</strong>
+                            <strong>หน่วยกิตรวม:</strong>{" "}
+                            {total_credits || "N/A"} |<strong> GPA: </strong>
                             {gpa || "N/A"}
                           </p>
                         </div>
@@ -300,17 +301,25 @@ const Dashboard = () => {
                               className="d-flex justify-content-between align-items-center course-item mb-2 p-2"
                             >
                               <div className="d-flex flex-column">
-                              <strong><span>({course.subject_code}) :</span></strong>
-                              <strong><span className="text-muted">
-                                  {course.subject_name_th} /{" "}
-                                  {course.subject_name_en || "N/A"}
-                                </span></strong>
+                                <strong>
+                                  <span>({course.subject_code}) :</span>
+                                </strong>
+                                <strong>
+                                  <span className="text-muted">
+                                    {course.subject_name_th} /{" "}
+                                    {course.subject_name_en || "N/A"}
+                                  </span>
+                                </strong>
                               </div>
                               <div className="d-flex align-items-center">
-                                <strong><span className="me-3">
-                                  หน่วยกิต: {course.credit}
-                                </span></strong>
-                                <strong><span>เกรด: {course.grade}</span></strong>
+                                <strong>
+                                  <span className="me-3">
+                                    หน่วยกิต: {course.credit}
+                                  </span>
+                                </strong>
+                                <strong>
+                                  <span>เกรด: {course.grade}</span>
+                                </strong>
                               </div>
                             </div>
                           ))}

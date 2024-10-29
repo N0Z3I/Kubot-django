@@ -173,7 +173,7 @@ label {
   height: 50px;
   font-size: 20px;
   font-weight: bold;
-  background-color: #5865f2;
+  background-color: #0a6765;
   margin: 1rem;
   border: none;
   color: #ebeefd;
@@ -364,6 +364,7 @@ header {
   border-radius: 20px;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
   justify-content: center;
+  text-align: center;
 }
 
 .connection-section h4 {
@@ -373,19 +374,20 @@ header {
 }
 
 .connection-button {
-  display: block;
-  width: 100%;
-  max-width: 300px;
-  margin: 10px auto;
-  padding: 15px;
-  font-size: 18px;
+  padding: 10px 22px;
+  outline: none;
+  width: 350spx;
+  height: 50px;
+  font-size: 20px;
   font-weight: bold;
   background-color: #5865f2;
-  color: #fff;
+  margin: 1rem;
   border: none;
-  border-radius: 8px;
+  color: #ebeefd;
+  border-radius: 10px;
   cursor: pointer;
-  transition: transform 200ms ease-in-out;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
 }
 
 .connection-button:hover {
@@ -530,6 +532,7 @@ body {
   border-radius: 5%;
   margin-top: 3px;
   margin-bottom: 20px;
+  margin-right: 70px;
   object-fit: cover;
   border: 2px solid rgba(255, 255, 255, 0.5);
 }

@@ -113,114 +113,112 @@ const Connections = () => {
   return (
     <div className="form-container">
       <div style={{ width: "30%" }} name="wrapper">
-      <div className="tabs-vertical">
-        <button
-          className={`tab-btn ${activeTab === "nontri" ? "active" : ""}`}
-          onClick={() => setActiveTab("nontri")}
-        >
-          Nontri
-        </button>
-        <button
-          className={`tab-btn ${activeTab === "discord" ? "active" : ""}`}
-          onClick={() => setActiveTab("discord")}
-        >
-          Discord
-        </button>
-      </div>
-      <br />
-      <div className="tab-content mt-4">
-        {activeTab === "nontri" ? (
-          <div>
-            <h4>Nontri Account</h4>
-            {studentProfile ? (
-              <div>
-                <p>
-                  <strong>Name (TH):</strong> {studentProfile.name_th}
-                </p>
-                <p>
-                  <strong>Name (EN):</strong> {studentProfile.name_en}
-                </p>
-                <p>
-                  <strong>Student ID:</strong> {studentProfile.std_code}
-                </p>
+        <div className="tabs-vertical">
+          <button
+            className={`tab-btn ${activeTab === "nontri" ? "active" : ""}`}
+            onClick={() => setActiveTab("nontri")}
+          >
+            Nontri
+          </button>
+          <button
+            className={`tab-btn ${activeTab === "discord" ? "active" : ""}`}
+            onClick={() => setActiveTab("discord")}
+          >
+            Discord
+          </button>
+        </div>
+        <br />
+        <div className="tab-content mt-4">
+          {activeTab === "nontri" ? (
+            <div>
+              <h4>Nontri Account</h4>
+              {studentProfile ? (
+                <div>
+                  <p>
+                    <strong>Name (TH):</strong> {studentProfile.name_th}
+                  </p>
+                  <p>
+                    <strong>Name (EN):</strong> {studentProfile.name_en}
+                  </p>
+                  <p>
+                    <strong>Student ID:</strong> {studentProfile.std_code}
+                  </p>
+                  <button
+                    onClick={() => navigate("/dashboard")}
+                    className="connections-btn"
+                  >
+                    Go to Dashboard
+                  </button>
+                  <button onClick={handleKuLogout} className="logout-btn">
+                    Logout
+                  </button>
+                </div>
+              ) : isLinkingKu ? (
+                <form onSubmit={handleMykuSubmit} className="mt-4">
+                  <div className="form-group">
+                    <input
+                      type="text"
+                      name="username"
+                      value={mykuData.username}
+                      onChange={handleOnChange}
+                      placeholder="MyKU Username"
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <input
+                      type="password"
+                      name="password"
+                      value={mykuData.password}
+                      onChange={handleOnChange}
+                      placeholder="MyKU Password"
+                      required
+                    />
+                  </div>
+                  <input
+                    type="submit"
+                    value="Link Account"
+                    className="submitButton"
+                  />
+                </form>
+              ) : (
                 <button
-                  onClick={() => navigate("/dashboard")}
+                  onClick={() => setIsLinkingKu(true)}
                   className="connections-btn"
                 >
-                  Go to Dashboard
+                  Link Nontri Account
                 </button>
-                <button
-                  onClick={handleKuLogout}
-                  className="logout-btn"
-                >
-                  Logout
-                </button>
-              </div>
-            ) : isLinkingKu ? (
-              <form onSubmit={handleMykuSubmit} className="mt-4">
-                <div className="form-group">
-                  <input
-                    type="text"
-                    name="username"
-                    value={mykuData.username}
-                    onChange={handleOnChange}
-                    placeholder="MyKU Username"
-                    required
+              )}
+            </div>
+          ) : (
+            <div>
+              <h4>Discord Profile</h4>
+              {discordProfile ? (
+                <div className="profile-content">
+                  <img
+                    src={discordProfile.avatar_url}
+                    alt="Discord Avatar"
+                    className="profile-avatar"
                   />
+                  <p>
+                    <strong>Username:</strong> {discordProfile.discord_username}
+                  </p>
+                  <button onClick={handleDiscordLogout} className="logout-btn">
+                    Logout
+                  </button>
                 </div>
-                <div className="form-group">
-                  <input
-                    type="password"
-                    name="password"
-                    value={mykuData.password}
-                    onChange={handleOnChange}
-                    placeholder="MyKU Password"
-                    required
-                  />
-                </div>
-                <input type="submit" value="Link Account" className="submitButton" />
-              </form>
-            ) : (
-              <button
-                onClick={() => setIsLinkingKu(true)}
-                className="connections-btn"
-              >
-                Link Nontri Account
-              </button>
-            )}
-          </div>
-        ) : (
-          <div>
-            <h4>Discord Profile</h4>
-            {discordProfile ? (
-              <div className="profile-content">
-                <img
-                  src={discordProfile.avatar_url}
-                  alt="Discord Avatar"
-                  className="profile-avatar"
-                />
-                <p>
-                  <strong>Username:</strong> {discordProfile.discord_username}
-                </p>
+              ) : (
                 <button
-                  onClick={handleDiscordLogout}
-                  className="logout-btn"
+                  onClick={handleDiscordConnect}
+                  className="connection-button"
                 >
-                  Logout
+                  Connect to Discord
                 </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleDiscordConnect}
-                className="connections-btn"
-              >
-                Connect to Discord
-              </button>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 };

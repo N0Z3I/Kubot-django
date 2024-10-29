@@ -86,8 +86,8 @@ const Signup = () => {
     <div className="form-container">
       <div style={{ width: "30%" }} className="wrapper">
         <form onSubmit={handleSubmit}>
-        <h4>Sign Up</h4>
-        <div className="form-group">
+          <h4>Sign Up</h4>
+          <div className="form-group">
             <input
               placeholder="Email"
               type="text"
