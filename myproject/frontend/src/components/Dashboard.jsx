@@ -144,105 +144,107 @@ const Dashboard = () => {
                 <p>
                   <strong>ชื่อ-นามสกุล (EN):</strong> {studentProfile.name_en}
                 </p>
+                <p>
+                  <strong>รหัสนิสิต:</strong> {studentProfile.std_code}
+                </p>
+                <p>
+                  <strong>เบอร์โทร:</strong>
 
-                <div className="form-group mb-3">
-                  <div className="d-flex align-items-center justify-content-between">
-                    <p>
-                      <strong>เบอร์โทร:</strong>
-
-                      {isEditing.phone ? (
-                        <>
-                          <input
-                            type="text"
-                            name="phone"
-                            value={editData.phone || ""}
-                            onChange={handleInputChange}
-                            className="form-control"
-                            style={{
-                              flex: 1,
-                              marginLeft: "10px",
-                              marginRight: "10px",
-                            }}
-                          />
-                          <button
-                            onClick={() => handleSaveField("phone")}
-                            className="btn btn-success me-2"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => handleCancelEdit("phone")}
-                            className="btn btn-secondary"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <span style={{ flex: 1, marginLeft: "10px" }}>
-                            {studentProfile.phone || "ยังไม่เพิ่ม"}
-                          </span>
-                          <button
-                            onClick={() =>
-                              setIsEditing((prev) => ({ ...prev, phone: true }))
-                            }
-                            className="btn btn-link"
-                          >
-                            Edit
-                          </button>
-                        </>
-                      )}
-                    </p>
-                    <p>
-                      <strong>KU Email:</strong>
-                      {isEditing.ku_email ? (
-                        <>
-                          <input
-                            type="email"
-                            name="ku_email"
-                            value={editData.ku_email || ""}
-                            onChange={handleInputChange}
-                            className="form-control"
-                            style={{
-                              flex: 1,
-                              marginLeft: "10px",
-                              marginRight: "10px",
-                            }}
-                          />
-                          <button
-                            onClick={() => handleSaveField("ku_email")}
-                            className="btn btn-success me-2"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => handleCancelEdit("ku_email")}
-                            className="btn btn-secondary"
-                          >
-                            Cancel
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <span style={{ flex: 1, marginLeft: "10px" }}>
-                            {studentProfile.ku_email || "ยังไม่เพิ่ม"}
-                          </span>
-                          <button
-                            onClick={() =>
-                              setIsEditing((prev) => ({
-                                ...prev,
-                                ku_email: true,
-                              }))
-                            }
-                            className="btn btn-link"
-                          >
-                            Edit
-                          </button>
-                        </>
-                      )}
-                    </p>
-                  </div>
-                </div>
+                  {isEditing.phone ? (
+                    <>
+                      <input
+                        type="text"
+                        name="phone"
+                        value={editData.phone || ""}
+                        onChange={handleInputChange}
+                        className="form-control"
+                        style={{
+                          flex: 1,
+                          marginLeft: "10px",
+                          marginRight: "10px",
+                        }}
+                      />
+                      <button
+                        onClick={() => handleSaveField("phone")}
+                        className="btn btn-success me-2"
+                      >
+                        Save
+                      </button>
+                      &nbsp;&nbsp;
+                      <button
+                        onClick={() => handleCancelEdit("phone")}
+                        className="btn btn-secondary"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ flex: 1, marginLeft: "10px" }}>
+                        {studentProfile.phone || "ยังไม่เพิ่ม"}
+                      </span>
+                      &nbsp;&nbsp;
+                      <button
+                        onClick={() =>
+                          setIsEditing((prev) => ({ ...prev, phone: true }))
+                        }
+                        className="btn btn-link"
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </p>
+                <p>
+                  <strong>KU Email:</strong>
+                  {isEditing.ku_email ? (
+                    <>
+                      <input
+                        type="email"
+                        name="ku_email"
+                        value={editData.ku_email || ""}
+                        onChange={handleInputChange}
+                        className="form-control"
+                        style={{
+                          flex: 1,
+                          marginLeft: "10px",
+                          marginRight: "10px",
+                        }}
+                      />
+                      <button
+                        onClick={() => handleSaveField("ku_email")}
+                        className="btn btn-success me-2"
+                      >
+                        Save
+                      </button>
+                      &nbsp;&nbsp;
+                      <button
+                        onClick={() => handleCancelEdit("ku_email")}
+                        className="btn btn-secondary"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span style={{ flex: 1, marginLeft: "10px" }}>
+                        {studentProfile.ku_email || "ยังไม่เพิ่ม"}
+                      </span>
+                      &nbsp;&nbsp;
+                      <button
+                        onClick={() =>
+                          setIsEditing((prev) => ({
+                            ...prev,
+                            ku_email: true,
+                          }))
+                        }
+                        className="btn btn-link"
+                      >
+                        Edit
+                      </button>
+                    </>
+                  )}
+                </p>
 
                 {studentEducationData && (
                   <>
@@ -267,10 +269,11 @@ const Dashboard = () => {
 
                 {gpaxData && (
                   <div className="card shadow-sm text-center p-4">
-                    <h4>Grade Result</h4>
                     <h4>
-                      <strong>หน่วยกิตสะสม:</strong> {gpaxData.total_credit}
-                      <strong>เกรดเฉลี่ยสะสม:</strong> {gpaxData.gpax}
+                      Grade Result <br />
+                      <strong>หน่วยกิตสะสม&nbsp;: &nbsp;</strong>{" "}
+                      {gpaxData.total_credit}&nbsp;&nbsp;&nbsp;&nbsp;
+                      <strong>เกรดเฉลี่ยสะสม&nbsp;: &nbsp;</strong> {gpaxData.gpax}
                     </h4>
                   </div>
                 )}
@@ -288,9 +291,9 @@ const Dashboard = () => {
                         <div className="d-flex justify-content-between align-items-center">
                           <h5>{`${semesterName} ${year}`}</h5>
                           <p>
-                            <strong>หน่วยกิตรวม:</strong>{" "}
-                            {total_credits || "N/A"} |<strong> GPA: </strong>
-                            {gpa || "N/A"}
+                            <strong>หน่วยกิตรวม&nbsp;:{" "}
+                            {total_credits || "N/A"} | GPA&nbsp;: &nbsp;
+                            {gpa || "N/A"}</strong>
                           </p>
                         </div>
 
@@ -302,23 +305,13 @@ const Dashboard = () => {
                             >
                               <div className="d-flex flex-column">
                                 <strong>
-                                  <span>({course.subject_code}) :</span>
-                                </strong>
-                                <strong>
-                                  <span className="text-muted">
-                                    {course.subject_name_th} /{" "}
-                                    {course.subject_name_en || "N/A"}
-                                  </span>
-                                </strong>
-                              </div>
-                              <div className="d-flex align-items-center">
-                                <strong>
-                                  <span className="me-3">
-                                    หน่วยกิต: {course.credit}
-                                  </span>
-                                </strong>
-                                <strong>
-                                  <span>เกรด: {course.grade}</span>
+                                  <p>
+                                  <strong>{course.subject_code} :&nbsp;{" "}</strong>
+                                  <strong>{course.subject_name_th} <br /></strong>
+                                  <strong>{course.subject_name_en || "N/A"} <br /></strong>
+                                  <strong>หน่วยกิต&nbsp;: &nbsp;{course.credit}&nbsp;&nbsp;</strong>
+                                  <strong>เกรด&nbsp;: &nbsp;{" "}{course.grade}</strong>
+                                  </p>
                                 </strong>
                               </div>
                             </div>

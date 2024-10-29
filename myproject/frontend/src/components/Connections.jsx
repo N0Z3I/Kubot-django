@@ -135,13 +135,13 @@ const Connections = () => {
               {studentProfile ? (
                 <div>
                   <p>
-                    <strong>Name (TH):</strong> {studentProfile.name_th}
+                    <strong>ชื่อ-นามสกุล (TH):</strong> {studentProfile.name_th}
                   </p>
                   <p>
-                    <strong>Name (EN):</strong> {studentProfile.name_en}
+                    <strong>ชื่อ-นามสกุล (EN):</strong> {studentProfile.name_en}
                   </p>
                   <p>
-                    <strong>Student ID:</strong> {studentProfile.std_code}
+                    <strong>รหัสนิสิต:</strong> {studentProfile.std_code}
                   </p>
                   <button
                     onClick={() => navigate("/dashboard")}
