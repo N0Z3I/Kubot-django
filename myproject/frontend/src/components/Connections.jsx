@@ -112,6 +112,17 @@ const Connections = () => {
 
   return (
     <div className="form-container">
+      <header>
+        <h5 className="logo"></h5>
+        <nav className="navigation">
+          <button
+            onClick={() => navigate("/profile")}
+            className="connections-btn"
+          >
+            Home
+          </button>
+        </nav>
+      </header>
       <div style={{ width: "30%" }} name="wrapper">
         <div className="tabs-vertical">
           <button

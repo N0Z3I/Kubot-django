@@ -124,6 +124,12 @@ const Dashboard = () => {
           >
             Connections
           </button>
+          <button
+            onClick={() => navigate("/profile")}
+            className="connections-btn"
+          >
+            Home
+          </button>
         </nav>
       </header>
 
