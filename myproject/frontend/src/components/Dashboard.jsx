@@ -334,26 +334,26 @@ const Dashboard = () => {
                     {scheduleData.map((schedule, index) => (
                       <div key={index}>
                         <h5>
-                          ปีการศึกษา: {schedule.academic_year}, ภาคการศึกษา:{" "}
+                          ปีการศึกษา :&nbsp;{schedule.academic_year}, ภาคการศึกษา :&nbsp;{" "}
                           {schedule.semester}
                         </h5>
                         {groupCourseData.map((course, idx) => (
                           <div key={idx}>
                             <p>
-                              <strong>วิชา:</strong> {course.subject_name}
+                              <strong>วิชา :</strong> {course.subject_name}
                             </p>
                             <p>
-                              <strong>อาจารย์:</strong> {course.teacher_name}
+                              <strong>อาจารย์ :</strong> {course.teacher_name}
                             </p>
                             <p>
-                              <strong>วัน:</strong> {course.day_w}
+                              <strong>วัน :</strong> {course.day_w}
                             </p>
                             <p>
-                              <strong>เวลา:</strong> {course.time_from} -{" "}
+                              <strong>เวลา :</strong> {course.time_from} -{" "}
                               {course.time_to}
                             </p>
                             <p>
-                              <strong>ห้อง:</strong> {course.room_name_th}
+                              <strong>ห้อง :</strong> {course.room_name_th}
                             </p>
                             <hr />
                           </div>
