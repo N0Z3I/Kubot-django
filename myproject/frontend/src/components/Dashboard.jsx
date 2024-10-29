@@ -145,16 +145,16 @@ const Dashboard = () => {
                 <h4 className="card-title mb-4">Personal Information</h4>
 
                 <p>
-                  <strong>ชื่อ-นามสกุล (TH):</strong> {studentProfile.name_th}
+                  <strong>ชื่อ-นามสกุล (TH) :</strong> {studentProfile.name_th}
                 </p>
                 <p>
-                  <strong>ชื่อ-นามสกุล (EN):</strong> {studentProfile.name_en}
+                  <strong>ชื่อ-นามสกุล (EN) :</strong> {studentProfile.name_en}
                 </p>
                 <p>
-                  <strong>รหัสนิสิต:</strong> {studentProfile.std_code}
+                  <strong>รหัสนิสิต :</strong> {studentProfile.std_code}
                 </p>
                 <p>
-                  <strong>เบอร์โทร:</strong>
+                  <strong>เบอร์โทร :</strong>
 
                   {isEditing.phone ? (
                     <>
@@ -202,7 +202,7 @@ const Dashboard = () => {
                   )}
                 </p>
                 <p>
-                  <strong>KU Email:</strong>
+                  <strong>KU Email :</strong>
                   {isEditing.ku_email ? (
                     <>
                       <input
@@ -256,18 +256,18 @@ const Dashboard = () => {
                   <>
                     <h4>Educational Information</h4>
                     <p>
-                      <strong>สถานภาพ:</strong> {studentEducationData.status}
+                      <strong>สถานภาพ :</strong> {studentEducationData.status}
                     </p>
                     <p>
-                      <strong>ชื่อปริญญา:</strong>{" "}
+                      <strong>ชื่อปริญญา :</strong>{" "}
                       {studentEducationData.degree_name}
                     </p>
                     <p>
-                      <strong>คณะ:</strong>{" "}
+                      <strong>คณะ :</strong>{" "}
                       {studentEducationData.faculty_name_th}
                     </p>
                     <p>
-                      <strong>สาขา:</strong>{" "}
+                      <strong>สาขา :</strong>{" "}
                       {studentEducationData.major_name_th}
                     </p>
                   </>
@@ -298,7 +298,7 @@ const Dashboard = () => {
                           <h5>{`${semesterName} ${year}`}</h5>
                           <p>
                             <strong>หน่วยกิตรวม&nbsp;:{" "}
-                            {total_credits || "N/A"} | GPA&nbsp;: &nbsp;
+                            {total_credits || "N/A"} &nbsp;|&nbsp; GPA&nbsp;: &nbsp;
                             {gpa || "N/A"}</strong>
                           </p>
                         </div>
@@ -315,7 +315,7 @@ const Dashboard = () => {
                                   <strong>{course.subject_code} :&nbsp;{" "}</strong>
                                   <strong>{course.subject_name_th} <br /></strong>
                                   <strong>{course.subject_name_en || "N/A"} <br /></strong>
-                                  <strong>หน่วยกิต&nbsp;: &nbsp;{course.credit}&nbsp;&nbsp;</strong>
+                                  <strong>หน่วยกิต&nbsp;: &nbsp;{course.credit}&nbsp;&nbsp;</strong>&nbsp;
                                   <strong>เกรด&nbsp;: &nbsp;{" "}{course.grade}</strong>
                                   </p>
                                 </strong>
