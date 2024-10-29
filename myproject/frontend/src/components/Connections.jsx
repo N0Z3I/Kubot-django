@@ -111,8 +111,8 @@ const Connections = () => {
   }, []);
 
   return (
-    <div className="container mt-5">
-      <h1>Connection Center</h1>
+    <div className="form-container">
+      <div style={{ width: "30%" }} name="wrapper">
       <div className="tabs-vertical">
         <button
           className={`tab-btn ${activeTab === "nontri" ? "active" : ""}`}
@@ -127,11 +127,11 @@ const Connections = () => {
           Discord
         </button>
       </div>
-
+      <br />
       <div className="tab-content mt-4">
         {activeTab === "nontri" ? (
           <div>
-            <h2>Nontri Account</h2>
+            <h4>Nontri Account</h4>
             {studentProfile ? (
               <div>
                 <p>
@@ -145,13 +145,13 @@ const Connections = () => {
                 </p>
                 <button
                   onClick={() => navigate("/dashboard")}
-                  className="btn btn-primary me-2"
+                  className="connections-btn"
                 >
                   Go to Dashboard
                 </button>
                 <button
                   onClick={handleKuLogout}
-                  className="btn btn-danger mt-3"
+                  className="logout-btn"
                 >
                   Logout
                 </button>
@@ -178,14 +178,12 @@ const Connections = () => {
                     required
                   />
                 </div>
-                <button type="submit" className="btn btn-success">
-                  Link Account
-                </button>
+                <input type="submit" value="Link Account" className="submitButton" />
               </form>
             ) : (
               <button
                 onClick={() => setIsLinkingKu(true)}
-                className="btn btn-primary"
+                className="connections-btn"
               >
                 Link Nontri Account
               </button>
@@ -193,7 +191,7 @@ const Connections = () => {
           </div>
         ) : (
           <div>
-            <h2>Discord Profile</h2>
+            <h4>Discord Profile</h4>
             {discordProfile ? (
               <div className="profile-content">
                 <img
@@ -206,7 +204,7 @@ const Connections = () => {
                 </p>
                 <button
                   onClick={handleDiscordLogout}
-                  className="btn btn-danger"
+                  className="logout-btn"
                 >
                   Logout
                 </button>
@@ -214,7 +212,7 @@ const Connections = () => {
             ) : (
               <button
                 onClick={handleDiscordConnect}
-                className="btn btn-primary"
+                className="connections-btn"
               >
                 Connect to Discord
               </button>
@@ -222,6 +220,7 @@ const Connections = () => {
           </div>
         )}
       </div>
+    </div>
     </div>
   );
 };

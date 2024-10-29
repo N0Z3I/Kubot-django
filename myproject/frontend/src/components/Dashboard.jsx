@@ -114,15 +114,17 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="dashboard-container">
-      <header className="d-flex justify-content-between align-items-center mb-4">
-        <h4>Student Information</h4>
-        <button
-          onClick={() => navigate("/connections")}
-          className="connections-btn"
-        >
-          Connections
-        </button>
+    <div>
+      <header>
+        <h5 className="logo"></h5>
+        <nav className="navigation">
+          <button
+            onClick={() => navigate("/connections")}
+            className="connections-btn"
+          >
+            Connections
+          </button>
+        </nav>
       </header>
 
       {isLoading ? (
@@ -266,12 +268,10 @@ const Dashboard = () => {
                 {gpaxData && (
                   <div className="card shadow-sm text-center p-4">
                     <h4>Grade Result</h4>
-                    <p>
+                    <h4>
                       <strong>หน่วยกิตสะสม:</strong> {gpaxData.total_credit}
-                    </p>
-                    <p>
                       <strong>เกรดเฉลี่ยสะสม:</strong> {gpaxData.gpax}
-                    </p>
+                    </h4>
                   </div>
                 )}
 
@@ -288,7 +288,7 @@ const Dashboard = () => {
                         <div className="d-flex justify-content-between align-items-center">
                           <h5>{`${semesterName} ${year}`}</h5>
                           <p>
-                            หน่วยกิตรวม: {total_credits || "N/A"} | GPA:{" "}
+                          <strong>หน่วยกิตรวม:</strong> {total_credits || "N/A"} |<strong> GPA:{" "}</strong>
                             {gpa || "N/A"}
                           </p>
                         </div>
@@ -300,17 +300,17 @@ const Dashboard = () => {
                               className="d-flex justify-content-between align-items-center course-item mb-2 p-2"
                             >
                               <div className="d-flex flex-column">
-                                <span>{course.subject_code}</span>
-                                <span className="text-muted">
+                              <strong><span>({course.subject_code}) :</span></strong>
+                              <strong><span className="text-muted">
                                   {course.subject_name_th} /{" "}
                                   {course.subject_name_en || "N/A"}
-                                </span>
+                                </span></strong>
                               </div>
                               <div className="d-flex align-items-center">
-                                <span className="me-3">
+                                <strong><span className="me-3">
                                   หน่วยกิต: {course.credit}
-                                </span>
-                                <span>เกรด: {course.grade}</span>
+                                </span></strong>
+                                <strong><span>เกรด: {course.grade}</span></strong>
                               </div>
                             </div>
                           ))}

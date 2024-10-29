@@ -68,8 +68,8 @@ const ResetPassword = () => {
       <div className="form-container">
         <div className="wrapper" style={{ width: "100%" }}>
           <form action="" onSubmit={handleSubmit}>
+          <h4>Set New Password</h4>
             <div className="form-group">
-              <h4>Set New Password</h4>
               <input
                 placeholder="New Password"
                 type="password"

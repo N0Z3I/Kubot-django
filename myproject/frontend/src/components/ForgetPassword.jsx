@@ -30,8 +30,8 @@ const ForgetPassword = () => {
           <div>{message}</div>
         ) : (
           <form onSubmit={handleSubmit}>
+          <h4>Reset Password</h4>
             <div className="form-group">
-              <h4>Reset Password</h4>
               <input
                 placeholder="Enter your email address"
                 type="text"
