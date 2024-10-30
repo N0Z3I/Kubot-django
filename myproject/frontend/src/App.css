@@ -660,3 +660,29 @@ h6 {
 .tabs-vertical {
   text-align: center;
 }
+
+select.form-control {
+  width: 100%;
+  max-width: 150px;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #495057;
+  appearance: none; /* ซ่อนลูกศรของเบราว์เซอร์ */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+select.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+  outline: none;
+}
+
+select.form-control option {
+  padding: 8px;
+}

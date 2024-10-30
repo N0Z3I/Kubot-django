@@ -16,6 +16,9 @@ const Dashboard = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({});
 
+  const [yearTermOptions, setYearTermOptions] = useState([]);
+  const [selectedYearTerm, setSelectedYearTerm] = useState(null);
+
   const navigate = useNavigate();
   const accessToken = Cookies.get("access");
 
@@ -32,17 +35,29 @@ const Dashboard = () => {
     try {
       setIsLoading(true);
       const res = await axiosInstance.get("/auth/myku-data/");
-      console.log("API Response: ", res.data);
-
       if (res.status === 200) {
         const data = res.data;
-
         setStudentProfile(data.student_profile || null);
         setScheduleData(data.schedule_data || []);
         setGroupCourseData(data.group_course_data || []);
         setGradesData(data.grades_data || []);
         setStudentEducationData(data.student_education_data || null);
         setGpaxData(data.gpax_data || null);
+        // สร้างตัวเลือกปีและภาคเรียนจากข้อมูลเกรด
+        setYearTermOptions(
+          Object.keys(data.grades_data).sort((a, b) => {
+            const [yearA, termA] = a
+              .match(/(\d+)\/(\d)/)
+              .slice(1, 3)
+              .map(Number);
+            const [yearB, termB] = b
+              .match(/(\d+)\/(\d)/)
+              .slice(1, 3)
+              .map(Number);
+            if (yearA !== yearB) return yearB - yearA;
+            return termB - termA;
+          })
+        );
       } else {
         toast.error("Failed to load data.");
       }
@@ -56,24 +71,8 @@ const Dashboard = () => {
 
   const semesterNames = { 0: "ฤดูร้อน", 1: "ภาคต้น", 2: "ภาคปลาย" };
 
-  // ฟังก์ชันเรียงปีการศึกษาและภาคเรียนจากใหม่ไปเก่า
-  const sortGradesData = (gradesData) => {
-    const sorted = Object.entries(gradesData).sort(([keyA], [keyB]) => {
-      const [yearA, termA] = keyA
-        .match(/(\d+)\/(\d)/)
-        .slice(1, 3)
-        .map(Number);
-      const [yearB, termB] = keyB
-        .match(/(\d+)\/(\d)/)
-        .slice(1, 3)
-        .map(Number);
-
-      // เรียงตามปีจากใหม่ไปเก่า จากนั้นเรียงภาคจากภาคปลายไปต้น
-      if (yearA !== yearB) return yearB - yearA;
-      return termB - termA;
-    });
-
-    return sorted;
+  const handleYearTermChange = (e) => {
+    setSelectedYearTerm(e.target.value);
   };
 
   useEffect(() => {
@@ -279,53 +278,70 @@ const Dashboard = () => {
                       Grade Result <br />
                       <strong>หน่วยกิตสะสม&nbsp;: &nbsp;</strong>{" "}
                       {gpaxData.total_credit}&nbsp;&nbsp;&nbsp;&nbsp;
-                      <strong>เกรดเฉลี่ยสะสม&nbsp;: &nbsp;</strong> {gpaxData.gpax}
+                      <strong>เกรดเฉลี่ยสะสม&nbsp;: &nbsp;</strong>{" "}
+                      {gpaxData.gpax}
                     </h4>
                   </div>
                 )}
 
-                {sortGradesData(gradesData).map(
-                  ([key, { gpa, total_credits, courses }], index) => {
-                    const [year, term] = key.match(/(\d+)\/(\d)/).slice(1, 3);
-                    const semesterName = semesterNames[parseInt(term, 10)];
+                <div className="form-group">
+                  <select
+                    id="yearTermSelect"
+                    value={selectedYearTerm || ""}
+                    onChange={handleYearTermChange}
+                    className="form-control"
+                  >
+                    <option value="">เลือกปีและภาคการศึกษา</option>
+                    {yearTermOptions.map((yearTerm) => (
+                      <option key={yearTerm} value={yearTerm}>
+                        {`${
+                          semesterNames[parseInt(yearTerm.split("/")[1], 10)]
+                        } ${yearTerm.split("/")[0]}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                    return (
-                      <div
-                        key={index}
-                        className="semester-card mb-4 p-3 shadow-sm"
-                      >
-                        <div className="d-flex justify-content-between align-items-center">
-                          <h5>{`${semesterName} ${year}`}</h5>
-                          <p>
-                            <strong>หน่วยกิตรวม&nbsp;:{" "}
-                            {total_credits || "N/A"} &nbsp;|&nbsp; GPA&nbsp;: &nbsp;
-                            {gpa || "N/A"}</strong>
-                          </p>
-                        </div>
+                {selectedYearTerm && gradesData[selectedYearTerm] && (
+                  <div className="semester-card mb-4 p-3 shadow-sm">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <h5>{`${
+                        semesterNames[
+                          parseInt(selectedYearTerm.split("/")[1], 10)
+                        ]
+                      } ${selectedYearTerm.split("/")[0]}`}</h5>
+                      <p>
+                        <strong>
+                          หน่วยกิตรวม&nbsp;:{" "}
+                          {gradesData[selectedYearTerm].total_credits || "N/A"}{" "}
+                          &nbsp;|&nbsp; GPA&nbsp;:{" "}
+                          {gradesData[selectedYearTerm].gpa || "N/A"}
+                        </strong>
+                      </p>
+                    </div>
 
-                        <div className="course-list mt-3">
-                          {courses.map((course, cIdx) => (
-                            <div
-                              key={cIdx}
-                              className="d-flex justify-content-between align-items-center course-item mb-2 p-2"
-                            >
-                              <div className="d-flex flex-column">
-                                <strong>
-                                  <p>
-                                  <strong>{course.subject_code} :&nbsp;{" "}</strong>
-                                  <strong>{course.subject_name_th} <br /></strong>
-                                  <strong>{course.subject_name_en || "N/A"} <br /></strong>
-                                  <strong>หน่วยกิต&nbsp;: &nbsp;{course.credit}&nbsp;&nbsp;</strong>&nbsp;
-                                  <strong>เกรด&nbsp;: &nbsp;{" "}{course.grade}</strong>
-                                  </p>
-                                </strong>
-                              </div>
+                    <div className="course-list mt-3">
+                      {gradesData[selectedYearTerm].courses.map(
+                        (course, cIdx) => (
+                          <div
+                            key={cIdx}
+                            className="d-flex justify-content-between align-items-center course-item mb-2 p-2"
+                          >
+                            <div className="d-flex flex-column">
+                              <p>
+                                <strong>{course.subject_code} : </strong>
+                                {course.subject_name_th} <br />
+                                {course.subject_name_en || "N/A"} <br />
+                                <strong>หน่วยกิต :</strong> {course.credit}{" "}
+                                &nbsp;
+                                <strong>เกรด :</strong> {course.grade}
+                              </p>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  }
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
                 )}
 
                 {scheduleData.length > 0 && (
@@ -334,8 +350,8 @@ const Dashboard = () => {
                     {scheduleData.map((schedule, index) => (
                       <div key={index}>
                         <h5>
-                          ปีการศึกษา :&nbsp;{schedule.academic_year}, ภาคการศึกษา :&nbsp;{" "}
-                          {schedule.semester}
+                          ปีการศึกษา :&nbsp;{schedule.academic_year},
+                          ภาคการศึกษา :&nbsp; {schedule.semester}
                         </h5>
                         {groupCourseData.map((course, idx) => (
                           <div key={idx}>
