@@ -235,3 +235,13 @@ class StudentProfileSerializer(serializers.ModelSerializer):
             setattr(instance, key, value)
         instance.save()
         return instance
+    
+class TeacherRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'password']
+
+    def create(self, validated_data):
+        return User.objects.create_teacher(**validated_data)

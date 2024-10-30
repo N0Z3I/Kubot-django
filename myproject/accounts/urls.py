@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView, ResendOtpView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
-from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView, DiscordProfileView, StudentDataView, DiscordLogoutView, DeleteMykuDataView, UpdateProfileView
+from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView, DiscordProfileView, StudentDataView, DiscordLogoutView, DeleteMykuDataView, UpdateProfileView, AdminCreateTeacherView
 
 urlpatterns=[
     path('register/', RegisterUserView.as_view(), name = 'register'),
@@ -25,4 +25,5 @@ urlpatterns=[
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('student-data/', StudentDataView.as_view(), name='student-data'),
     path('update-profile/', UpdateProfileView.as_view(), name='update-profile'),
+    path('admin/create-teacher/', AdminCreateTeacherView.as_view(), name='admin_create_teacher'),
 ]

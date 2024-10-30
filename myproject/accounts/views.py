@@ -25,7 +25,7 @@ from django.utils.timezone import now, timedelta
 import logging
 logger = logging.getLogger(__name__)
 
-from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer, StudentProfileSerializer
+from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer, StudentProfileSerializer, TeacherRegistrationSerializer
 
 User = get_user_model()
 import requests
@@ -615,4 +615,12 @@ class UpdateProfileView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class AdminCreateTeacherView(APIView):
+    def post(self, request):
+        serializer = TeacherRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({"message": "Teacher account created and linked to courses."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
