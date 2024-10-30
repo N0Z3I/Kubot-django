@@ -46,10 +46,10 @@ const Connections = () => {
       const res = await axiosInstance.get("/auth/myku-data/");
       if (res.status === 200) {
         setStudentProfile(res.data.student_profile);
-        localStorage.setItem(
-          "studentProfile",
-          JSON.stringify(res.data.student_profile)
-        );
+        // localStorage.setItem(
+        //   "studentProfile",
+        //   JSON.stringify(res.data.student_profile)
+        // );
       }
     } catch (error) {
       toast.error("Unable to fetch student data.");
@@ -78,7 +78,7 @@ const Connections = () => {
       const response = await axiosInstance.get("/auth/discord/profile/");
       if (response.status === 200) {
         setDiscordProfile(response.data);
-        localStorage.setItem("discordProfile", JSON.stringify(response.data));
+        // localStorage.setItem("discordProfile", JSON.stringify(response.data));
       }
     } catch {
       setDiscordProfile(null);

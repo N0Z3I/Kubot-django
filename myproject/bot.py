@@ -12,7 +12,7 @@ import discord
 import asyncio
 from discord import app_commands
 from discord.ext import commands, tasks
-from accounts.models import DiscordProfile, StudentProfile, GPAX, StudentEducation, Schedule, GroupCourse
+from accounts.models import DiscordProfile, StudentProfile, GPAX, StudentEducation, Schedule, GroupCourse, TeacherProfile
 import concurrent.futures
 import datetime
 
@@ -31,6 +31,39 @@ async def on_ready():
         print(f"Synced {len(synced)} commands.")
     except Exception as e:
         print(f"Error syncing commands: {e}")
+        
+@bot.tree.command(name="my_courses", description="แสดงรายวิชาที่สอน (เฉพาะอาจารย์)")
+async def my_courses(interaction: discord.Interaction):
+    try:
+        # ดึง TeacherProfile ของผู้ใช้ Discord
+        teacher_profile = await run_in_thread(lambda: TeacherProfile.objects.get(user__discordprofile__discord_id=str(interaction.user.id)))
+        
+        # ดึงรายวิชาที่อาจารย์สอน
+        courses = await run_in_thread(lambda: list(GroupCourse.objects.filter(teacher=teacher_profile)))
+
+        if not courses:
+            await interaction.response.send_message("คุณไม่มีรายวิชาที่สอน", ephemeral=True)
+            return
+
+        # สร้าง Embed สำหรับแสดงรายวิชา
+        embed = discord.Embed(title="รายวิชาที่สอน", color=discord.Color.blue())
+        for course in courses:
+            embed.add_field(
+                name=course.subject_name,
+                value=f"รหัสวิชา: {course.subject_code}\nวัน: {course.day_w}\nเวลา: {course.time_from} - {course.time_to}",
+                inline=False
+            )
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+    except TeacherProfile.DoesNotExist:
+        await interaction.response.send_message(
+            "คำสั่งนี้สามารถใช้ได้เฉพาะอาจารย์เท่านั้น", ephemeral=True
+        )
+
+async def run_in_thread(func):
+    loop = asyncio.get_running_loop()
+    with ThreadPoolExecutor() as pool:
+        return await loop.run_in_executor(pool, func)
         
 @bot.tree.command(name="reminder", description="แจ้งเตือนตารางเรียนตามช่วงที่เลือก")
 async def reminder(interaction: discord.Interaction, period: str):
