@@ -37,12 +37,17 @@ const Dashboard = () => {
       const res = await axiosInstance.get("/auth/myku-data/");
       if (res.status === 200) {
         const data = res.data;
+
+        // กำหนดค่า studentProfile ให้มีข้อมูลล่าสุดจากฐานข้อมูล
         setStudentProfile(data.student_profile || null);
+
+        // โหลดข้อมูลอื่นๆ
         setScheduleData(data.schedule_data || []);
         setGroupCourseData(data.group_course_data || []);
         setGradesData(data.grades_data || []);
         setStudentEducationData(data.student_education_data || null);
         setGpaxData(data.gpax_data || null);
+
         // สร้างตัวเลือกปีและภาคเรียนจากข้อมูลเกรด
         setYearTermOptions(
           Object.keys(data.grades_data).sort((a, b) => {
@@ -99,7 +104,10 @@ const Dashboard = () => {
 
       if (res.status === 200) {
         toast.success("Field updated successfully!");
-        setStudentProfile((prev) => ({ ...prev, ...updatedField }));
+
+        // ดึงข้อมูลใหม่ทั้งหมดหลังการบันทึกสำเร็จ
+        await fetchAllData();
+
         setIsEditing(false);
       }
     } catch (error) {

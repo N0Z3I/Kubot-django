@@ -392,6 +392,7 @@ class MykuDataView(GenericAPIView):
                     'religion': student_profile.religion,
                     'phone': student_profile.phone,
                     'email': student_profile.email,
+                    'ku_email': student_profile.ku_email or "",
                 },
                 'grades_data': sorted_grades,
                 'schedule_data': [
@@ -499,10 +500,17 @@ class VerifyUserEmail(GenericAPIView):
             user = User.objects.get(email=email, is_verified=False)
             otp_record = OneTimePassword.objects.get(user=user, code=otp)
 
+            # Check OTP expiration
+            expiration_time = otp_record.created_at + timedelta(minutes=5)
+            if now() > expiration_time:
+                otp_record.delete()  # Delete expired OTP
+                return Response({'message': 'OTP has expired.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            # OTP is valid, proceed with verification
             user.is_verified = True
-            user.is_active = True  # เปิดใช้งานผู้ใช้
+            user.is_active = True  # Activate user
             user.save()
-            otp_record.delete()  # ลบ OTP หลังจากยืนยัน
+            otp_record.delete()  # Delete OTP after verification
 
             return Response({'message': 'Email verified successfully.'}, status=status.HTTP_200_OK)
 
