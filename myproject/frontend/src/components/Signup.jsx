@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const OTP_EXPIRATION_TIME = 600; // 10 นาที (600 วินาที)
+const OTP_EXPIRATION_TIME = 300; // 5 นาที (300 วินาที)
 
 const Signup = () => {
   const navigate = useNavigate();

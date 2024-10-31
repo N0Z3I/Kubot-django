@@ -3,8 +3,8 @@ import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
-const OTP_EXPIRATION_TIME = 600; // 10 นาที (600 วินาที)
-const COOLDOWN_TIME = 300; // 5 นาที (300 วินาที)
+const OTP_EXPIRATION_TIME = 300; // 5 นาที (300 วินาที)
+const COOLDOWN_TIME = 60; // 1 นาที (60 วินาที)
 
 const VerifyEmail = () => {
   const [otp, setOtp] = useState("");
