@@ -663,9 +663,9 @@ h6 {
 
 select.form-control {
   width: 100%;
-  max-width: 150px;
+  max-width: 190px;
   padding: 8px 12px;
-  font-size: 16px;
+  font-size: 14px;
   border: 1px solid #ced4da;
   border-radius: 4px;
   background-color: #fff;
@@ -674,6 +674,10 @@ select.form-control {
   -webkit-appearance: none;
   -moz-appearance: none;
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTAiIHZpZXdCb3g9IjAgMCAxNiAxMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMTBMMyAwSDExTDggMTBaIiBmaWxsPSIjNTA1MDUwIi8+Cjwvc3ZnPgo='); /* Arrow icon */
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 20px;
   cursor: pointer;
 }
 
