@@ -289,38 +289,6 @@ async def run_in_thread(func):
     with concurrent.futures.ThreadPoolExecutor() as pool:
         return await loop.run_in_executor(pool, func)
 
-# @bot.tree.command(name="login", description="เข้าสู่ระบบ KuBot และเชื่อมบัญชี Discord")
-# async def login(interaction: discord.Interaction):
-#     user = interaction.user
-
-#     oauth_url = (
-#         f"https://discord.com/api/oauth2/authorize?client_id={env('DISCORD_CLIENT_ID')}"
-#         f"&redirect_uri=http://localhost:8000/api/v1/auth/discord/callback/"
-#         f"&response_type=code&scope=identify%20email"
-#     )
-
-#     # ส่งลิงก์ OAuth2 ไปยัง DM ของผู้ใช้
-#     dm_channel = await user.create_dm()
-#     await dm_channel.send(
-#         f"สวัสดี {user.name}! กรุณาคลิกที่ลิงก์นี้เพื่อลงชื่อเข้าใช้และเชื่อมบัญชีของคุณ:\n{oauth_url}"
-#     )
-
-#     await interaction.response.send_message("ลิงก์การเข้าสู่ระบบถูกส่งไปยัง DM ของคุณ", ephemeral=True)
-    
-# @bot.tree.command(name="check_login", description="ตรวจสอบสถานะการเชื่อมต่อบัญชี Discord")
-# async def check_login(interaction: discord.Interaction):
-#     user = interaction.user
-
-#     try:
-#         profile = DiscordProfile.objects.get(discord_id=user.id)
-#         await interaction.response.send_message(
-#             f"คุณเชื่อมต่อบัญชีกับ KuBot เรียบร้อยแล้วในชื่อ: {profile.discord_username}#{profile.discord_discriminator}"
-#         )
-#     except DiscordProfile.DoesNotExist:
-#         await interaction.response.send_message(
-#             "คุณยังไม่ได้เชื่อมต่อบัญชี กรุณาใช้คำสั่ง `/login` เพื่อเชื่อมบัญชี", ephemeral=True
-#         )
-
 @bot.tree.command(name="hello", description="ทักทาย Hello World!")
 async def hello(interaction: discord.Interaction):
     await interaction.response.send_message("Hello World!")
@@ -392,49 +360,6 @@ async def clear(interaction: discord.Interaction, amount: int = 5):
     await interaction.response.send_message(f"ลบข้อความ {amount} ข้อความเรียบร้อยแล้ว", ephemeral=True)
 
 user_reminder_tasks = {}
-
-# @bot.tree.command(name="reminder", description="ตั้งการแจ้งเตือนเป็นระยะ")
-# @app_commands.describe(time="เวลาระหว่างแจ้งเตือน (นาที)", msg="ข้อความที่จะแจ้งเตือน")
-# async def reminder(interaction: discord.Interaction, time: int, msg: str):
-#     user = interaction.user
-
-#     if user.id in user_reminder_tasks:
-#         await interaction.response.send_message(
-#             "คุณมีการแจ้งเตือนที่กำลังรันอยู่แล้ว! กรุณาหยุดการแจ้งเตือนก่อนด้วยคำสั่ง `/stop_reminder`", 
-#             ephemeral=True
-#         )
-#         return
-
-#     await interaction.response.send_message(
-#         f"การแจ้งเตือน `{msg}` จะถูกส่งไปยัง DM ทุกๆ {time} นาที", 
-#         ephemeral=True
-#     )
-
-#     dm_channel = await user.create_dm()
-
-#     async def send_reminder():
-#         while True:
-#             await asyncio.sleep(60 * time)  # รอเป็นระยะเวลาที่กำหนด (วินาที)
-#             await dm_channel.send(f"{user.mention}, {msg}")
-
-#     task = asyncio.create_task(send_reminder())
-#     user_reminder_tasks[user.id] = task
-
-# @bot.tree.command(name="stop_reminder", description="หยุดการแจ้งเตือนที่ตั้งไว้")
-# async def stop_reminder(interaction: discord.Interaction):
-#     user = interaction.user
-
-#     if user.id not in user_reminder_tasks:
-#         await interaction.response.send_message(
-#             "คุณไม่มีการแจ้งเตือนที่กำลังรันอยู่!", 
-#             ephemeral=True
-#         )
-#         return
-
-#     task = user_reminder_tasks.pop(user.id)
-#     task.cancel()
-
-#     await interaction.response.send_message("การแจ้งเตือนของคุณถูกหยุดเรียบร้อยแล้ว", ephemeral=True)
 
 @bot.tree.command(name="activity", description="ดูข้อมูลกิจกรรมของ Ku")
 async def activity(interaction: discord.Interaction):
@@ -526,14 +451,14 @@ async def help_command(interaction: discord.Interaction):
 @bot.tree.command(name="tuition_due", description="ตรวจสอบวันชำระเงินค่าธรรมเนียมการศึกษา")
 async def tuition_due(interaction: discord.Interaction):
     embed = discord.Embed(
-        title="วันชำระเงินค่าธรรมเนียมการศึกษา",
+        title="📅 วันชำระเงินค่าธรรมเนียมการศึกษา",
         color=discord.Color.dark_teal()
     )
     
     # เพิ่มข้อมูลวันชำระเงินตามภาคการศึกษา
-    embed.add_field(name="ภาคต้น", value="จ. 3 - อา. 16 มิ.ย. 67", inline=True)
-    embed.add_field(name="ภาคปลาย", value="จ. 4 - อา. 17 พ.ย. 67", inline=False)
-    embed.add_field(name="ภาคฤดูร้อน ปี พ.ศ. 2568", value="จ. 7 - พฤ. 10 เม.ย. 68", inline=True)
+    embed.add_field(name="📘 ภาคต้น", value="จ. 3 - อา. 16 มิ.ย. 67", inline=True)
+    embed.add_field(name="📙 ภาคปลาย", value="จ. 4 - อา. 17 พ.ย. 67", inline=False)
+    embed.add_field(name="📗 ภาคฤดูร้อน ปี พ.ศ. 2568", value="จ. 7 - พฤ. 10 เม.ย. 68", inline=True)
 
     # ส่ง Embed ไปยังแชท
     await interaction.response.send_message(embed=embed)
@@ -753,7 +678,7 @@ async def exam_schedule(interaction: discord.Interaction):
         name="📘 ภาคต้น",
         value=(
             "• **สอบกลางภาค**: ส. 10 - อา. 18 ส.ค. 67\n"
-            "• **สอบปลายภาค**: ส. 11 - อา.19 ม.ค. 68"
+            "• **สอบปลายภาค**: ส. 11 - อา. 19 ม.ค. 68"
         ),
         inline=False
     )
@@ -804,7 +729,7 @@ async def evaluation(interaction: discord.Interaction):
         name="📘 ภาคต้น",
         value=(
             "• **ครั้งที่ 1**: จ. 5 - ศ. 9 ส.ค. 67\n"
-            "• **ครั้งที่ 2**: จ. 14 - ศ.18 ต.ค. 67"
+            "• **ครั้งที่ 2**: จ. 14 - ศ. 18 ต.ค. 67"
         ),
         inline=False
     )
@@ -832,4 +757,44 @@ async def evaluation(interaction: discord.Interaction):
     # ส่ง Embed พร้อมปุ่มไปยังแชท
     await interaction.response.send_message(embed=embed, view=view)
 
+# Dictionary to store form names and file paths
+form_files = {
+    "ใบลงทะเบียน KU3 Add-Drop Form": "D:/Github/Kubot-django/myproject/frontend/public/KU3 Add-Drop form.pdf",
+    "ใบลงทะเบียน KU1 Registration Form": "D:/Github/Kubot-django/myproject/frontend/public/KU1 Registration Form.pdf",
+    "คำร้องขอลงทะเบียนเรียน Request for Resignation": "D:/Github/Kubot-django/myproject/frontend/public/Request for Resignation.pdf",
+    "คำร้องทั่วไป General Request": "D:/Github/Kubot-django/myproject/frontend/public/General Request.pdf",
+    "ใบลาพักการศึกษา Request fpr Leave of Absence Request": "D:/Github/Kubot-django/myproject/frontend/public/Request fpr Leave of Absence Request.pdf",
+    "ใบลาออก Resignation Form": "D:/Github/Kubot-django/myproject/frontend/public/Resignation Form.pdf"
+}
+
+@bot.tree.command(name="download_form", description="ดาวน์โหลดเอกสารแบบฟอร์มคำร้องต่างๆที่ต้องการ")
+async def download_form(interaction: discord.Interaction):
+    # Create the main embed message
+    embed = discord.Embed(
+        title="ดาวน์โหลดแบบฟอร์มคำร้องต่างๆ",
+        description="กดที่ปุ่มเพื่อดาวน์โหลดเอกสารแบบฟอร์มคำร้องต่างๆ",
+        color=discord.Color.dark_teal()
+    )
+    view = discord.ui.View()
+
+    # Arrange buttons in rows
+    row_index = 0
+    for i, (form_name, file_path) in enumerate(form_files.items()):
+        # Define a callback function for each button that captures the specific file_path
+        async def send_file_callback(interaction: discord.Interaction, path=file_path, name=form_name):
+            with open(path, "rb") as file:
+                await interaction.response.send_message(file=discord.File(file, filename=name + ".pdf"), ephemeral=True)
+
+        # Create a button and set its callback to the send_file_callback function
+        button = discord.ui.Button(label=form_name, style=discord.ButtonStyle.primary, row=row_index)
+        button.callback = send_file_callback  # Set callback directly without lambda
+        view.add_item(button)
+
+        # Update row index for the next button to organize them in rows of 3
+        if (i + 1) % 3 == 0:
+            row_index += 1
+
+    await interaction.response.send_message(embed=embed, view=view)
+
+        
 bot.run(os.getenv("DISCORD_BOT_TOKEN"))
