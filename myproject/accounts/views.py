@@ -25,7 +25,7 @@ from django.utils.timezone import now, timedelta
 import logging
 logger = logging.getLogger(__name__)
 
-from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer, StudentProfileSerializer, TeacherRegistrationSerializer
+from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer, StudentProfileSerializer, TeacherRegistrationSerializer, UserProfileSerializer, GroupCourseSerializer  
 
 User = get_user_model()
 import requests
@@ -33,14 +33,24 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        serializer = UserProfileSerializer(user)
+        print("User role:", user.role)  # Debug: พิมพ์ค่า role ที่ได้ออกมา
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class StudentDataView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        if request.user.role != 'student':
+            return Response({"error": "Only students can access this data."}, status=status.HTTP_403_FORBIDDEN)
+        
         try:
-            # ดึงข้อมูลโปรไฟล์นิสิตที่เชื่อมต่อกับผู้ใช้ปัจจุบัน
             student_profile = StudentProfile.objects.get(user=request.user)
-
             data = {
                 "std_id": student_profile.std_id,
                 "name_th": student_profile.name_th,
@@ -49,10 +59,9 @@ class StudentDataView(APIView):
                 "gender": student_profile.gender,
                 "email": student_profile.email,
             }
-
-            return Response(data, status=200)
+            return Response(data, status=status.HTTP_200_OK)
         except StudentProfile.DoesNotExist:
-            return Response({"error": "Student profile not found."}, status=404)
+            return Response({"error": "Student profile not found."}, status=status.HTTP_404_NOT_FOUND)
 
 class DiscordConnectView(APIView):
     permission_classes = [IsAuthenticated]
@@ -431,19 +440,21 @@ class MykuDataView(GenericAPIView):
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-class DeleteMykuDataView(APIView):
+class DisconnectMykuDataView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request):
+    def post(self, request):
         try:
             user = request.user
             student_profile = StudentProfile.objects.get(user=user)
 
-            # ลบข้อมูลที่เกี่ยวข้องทั้งหมด
-            student_profile.delete()  # ลบโปรไฟล์ของผู้ใช้ ซึ่งจะ cascade ไปยังข้อมูลที่เกี่ยวข้อง
+            # ตั้งค่าโปรไฟล์เป็นว่างแทนการลบข้อมูลเพื่อไม่ให้มีการเชื่อมโยงกับระบบอีกต่อไป
+            student_profile.std_id = ""
+            student_profile.std_code = ""
+            student_profile.save()
 
             return Response(
-                {"detail": "Your data has been deleted successfully."},
+                {"detail": "Your Nontri connection has been successfully disconnected."},
                 status=status.HTTP_200_OK
             )
         except StudentProfile.DoesNotExist:
@@ -542,14 +553,13 @@ class LoginUserView(GenericAPIView):
         serializer = self.serializer_class(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
 
-        # ดึง refresh และ access tokens จาก serializer
-        refresh = serializer.validated_data.get('refresh_token')
-        access = serializer.validated_data.get('access_token')
+        validated_data = serializer.validated_data
+        refresh = validated_data.get('refresh_token')
+        access = validated_data.get('access_token')
+        role = validated_data.get('role')
 
-        # สร้าง response พร้อมข้อมูล
-        response = Response(serializer.data, status=status.HTTP_200_OK)
-
-        # ตั้งคุกกี้สำหรับ refresh และ access tokens
+        response = Response(validated_data, status=status.HTTP_200_OK)
+        
         response.set_cookie('refresh', refresh, httponly=True)
         response.set_cookie('access', access, httponly=True)
 
@@ -626,9 +636,41 @@ class UpdateProfileView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 class AdminCreateTeacherView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
+        if not request.user.is_staff:
+            return Response({"error": "Only admin can create teacher accounts."}, status=status.HTTP_403_FORBIDDEN)
+        
         serializer = TeacherRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            return Response({"message": "Teacher account created and linked to courses."}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Teacher account created successfully."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class GroupCourseCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # ตรวจสอบบทบาทผู้ใช้ หากไม่ใช่อาจารย์จะปฏิเสธการเข้าถึง
+        if request.user.role != 'teacher':
+            return Response({"error": "Only teachers can create group courses."}, status=status.HTTP_403_FORBIDDEN)
+        
+        # ใช้ Serializer จัดการข้อมูลที่รับมา
+        serializer = GroupCourseSerializer(data=request.data)
+        if serializer.is_valid():
+            group_course = serializer.save()
+
+            # เชื่อมโยง teacher โดยอัตโนมัติหลังจากสร้าง
+            if group_course.teacher_name:
+                try:
+                    teacher_profile = TeacherProfile.objects.get(full_name=group_course.teacher_name)
+                    group_course.teacher = teacher_profile
+                    group_course.save()
+                except TeacherProfile.DoesNotExist:
+                    pass  # หากไม่พบ TeacherProfile จะข้ามไป
+            
+            return Response({"message": "GroupCourse created successfully"}, status=status.HTTP_201_CREATED)
+        
+        # กรณีข้อมูลไม่ถูกต้อง
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

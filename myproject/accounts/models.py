@@ -5,6 +5,8 @@ from .manager import UserManager
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from django.utils.timezone import now
+from django.core.exceptions import ObjectDoesNotExist
+
 
 
 
@@ -13,6 +15,12 @@ from django.utils.timezone import now
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    ROLE_CHOICES = [
+        ('student', 'Student'),
+        ('teacher', 'Teacher'),
+        ('admin', 'Admin'), 
+    ]
+    
     email = models.EmailField(max_length=255, unique=True, verbose_name=_("Email Address"))
     first_name = models.CharField(max_length=100, verbose_name=_("First Name"))
     last_name = models.CharField(max_length=100, verbose_name=_("Last Name"))
@@ -22,6 +30,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(auto_now=True)
+    
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='student') 
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
@@ -41,6 +51,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
+
 
 
 class StudentProfile(models.Model):
@@ -102,16 +113,24 @@ class GroupCourse(models.Model):
     subject_code = models.CharField(max_length=20)
     subject_name = models.CharField(max_length=255)
     teacher_name = models.CharField(max_length=255)
-    teacher = models.ForeignKey(
-        TeacherProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='group_courses'
-    )  # เชื่อมกับ TeacherProfile เมื่อสร้างบัญชีอาจารย์แล้ว
-    time_from = models.CharField(max_length=10)
-    time_to = models.CharField(max_length=10)
-    day_w = models.CharField(max_length=20)
-    room_name_th = models.CharField(max_length=255)
+    teacher = models.ForeignKey('TeacherProfile', on_delete=models.SET_NULL, null=True, blank=True, related_name='group_courses')
+    time_from = models.CharField(max_length=10)  
+    time_to = models.CharField(max_length=10)  
+    day_w = models.CharField(max_length=20)    
+    room_name_th = models.CharField(max_length=255)  
 
-    def __str__(self):
-        return f"{self.subject_name} - {self.teacher_name}"
+    def save(self, *args, **kwargs):
+        # เชื่อมโยง TeacherProfile โดยการค้นหาจาก teacher_name
+        if self.teacher_name:
+            try:
+                # ค้นหา TeacherProfile ที่มี full_name ตรงกับ teacher_name
+                teacher_profile = TeacherProfile.objects.get(full_name=self.teacher_name)
+                self.teacher = teacher_profile
+            except ObjectDoesNotExist:
+                # ตั้งค่าเป็น None หากไม่พบ TeacherProfile ที่ตรงกัน
+                self.teacher = None  
+
+        super().save(*args, **kwargs)  # บันทึก instance ปัจจุบัน
 
 
 class StudentEducation(models.Model):

@@ -23,6 +23,7 @@ class UserManager(BaseUserManager):
         if not last_name:
             raise ValueError(_("You must provide a last name."))
         
+        extra_fields.setdefault('role', 'student') 
         user = self.model(email=email, first_name=first_name, last_name=last_name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
@@ -30,13 +31,12 @@ class UserManager(BaseUserManager):
     
     def create_teacher(self, email, first_name, last_name, password=None, **extra_fields):
         """สร้างบัญชีอาจารย์พร้อม TeacherProfile"""
-        extra_fields.setdefault('is_staff', True)  # ให้สิทธิ์ staff โดยอัตโนมัติ
+        extra_fields.setdefault('is_staff', True) 
         extra_fields.setdefault('is_verified', True)
+        extra_fields.setdefault('role', 'teacher')  
 
-        # สร้าง user ใหม่
         user = self.create_user(email, first_name, last_name, password, **extra_fields)
         
-        # นำเข้า TeacherProfile และสร้างโปรไฟล์สำหรับอาจารย์
         from .models import TeacherProfile
         TeacherProfile.objects.create(user=user, full_name=f"{first_name} {last_name}")
 
@@ -46,7 +46,8 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_verified', True)
-        
+        extra_fields.setdefault('role', 'admin')  # กำหนด role เป็น admin
+
         if extra_fields.get("is_staff") is not True:
             raise ValueError(_("Superuser must have is_staff=True."))
         

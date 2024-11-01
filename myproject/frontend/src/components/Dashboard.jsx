@@ -103,21 +103,20 @@ const Dashboard = () => {
       );
 
       if (res.status === 200) {
-        toast.success("Field updated successfully!");
+        toast.success("Updated successfully!");
 
-        // ดึงข้อมูลใหม่ทั้งหมดหลังการบันทึกสำเร็จ
         await fetchAllData();
 
         setIsEditing(false);
       }
     } catch (error) {
-      toast.error("Failed to update field. Please try again.");
+      toast.error("Failed to update field. Please try again with full e-mail.");
     }
   };
 
   const handleCancelEdit = (key) => {
     setIsEditing((prev) => ({ ...prev, [key]: false }));
-    setEditData(studentProfile); // รีเซ็ตข้อมูลกลับไปเป็นข้อมูลเดิม
+    setEditData(studentProfile);
   };
 
   return (

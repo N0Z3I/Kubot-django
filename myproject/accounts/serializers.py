@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, StudentProfile
+from .models import User, StudentProfile, GroupCourse
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -15,6 +15,24 @@ from datetime import datetime
 import json
 import pymyku
 import requests as req_lib  # ใช้สำหรับจัดการ exceptions
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'role']
+
+    def get_role(self, obj):
+        # ตรวจสอบว่าผู้ใช้มี student_profile หรือ teacher_profile และตั้งค่า role
+        if hasattr(obj, 'student_profile'):
+            return 'student'
+        elif hasattr(obj, 'teacher_profile'):
+            return 'teacher'
+        return 'unknown'  # กรณีไม่มี profile ที่ตรงกัน
+        
+class GroupCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupCourse
+        fields = ['student_profile', 'period_date', 'subject_code', 'subject_name', 'teacher_name', 'time_from', 'time_to', 'day_w', 'room_name_th']
 
 
 class DiscordConnectSerializer(serializers.Serializer):
@@ -111,32 +129,31 @@ class LoginUserSerializer(serializers.ModelSerializer):
     full_name = serializers.CharField(max_length=255, read_only=True)
     access_token = serializers.CharField(max_length=255, read_only=True)
     refresh_token = serializers.CharField(max_length=255, read_only=True)
-    
+    role = serializers.CharField(max_length=20, read_only=True) 
+
     class Meta:
         model = User
-        fields = ['email', 'password', 'full_name', 'access_token', 'refresh_token']
-        
+        fields = ['email', 'password', 'full_name', 'access_token', 'refresh_token', 'role']
+
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
         request = self.context.get('request')
 
-        # ตรวจสอบข้อมูลล็อกอิน
         user = authenticate(request, email=email, password=password)
         if not user:
             raise AuthenticationFailed("Invalid credentials, try again.")
         if not user.is_verified:
             raise AuthenticationFailed("Email is not verified.")
 
-        # ดึง JWT tokens จาก user
         user_tokens = user.tokens()
 
-        # คืนค่าข้อมูล
         return {
             'email': user.email,
             'full_name': user.get_full_name,
             'access_token': str(user_tokens.get('access')),
-            'refresh_token': str(user_tokens.get('refresh'))
+            'refresh_token': str(user_tokens.get('refresh')),
+            'role': user.role  
         }
 
 class PasswordResetRequestSerializer(serializers.Serializer):

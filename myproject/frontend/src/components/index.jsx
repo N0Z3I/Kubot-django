@@ -8,6 +8,7 @@ import LinkMyKU from "./LinkMyKU";
 import Dashboard from "./Dashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import Connections from "./Connections";
+import AdminCreater from "./AdminCreater";
 
 export {
   Signup,
@@ -20,4 +21,5 @@ export {
   Dashboard,
   ProtectedRoute,
   Connections,
+  AdminCreater,
 };

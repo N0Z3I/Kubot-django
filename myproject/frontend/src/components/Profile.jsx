@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
@@ -12,11 +11,18 @@ const Profile = () => {
   const refresh = Cookies.get("refresh");
   const [discordProfile, setDiscordProfile] = useState(null);
 
+  useEffect(() => {
+    if (jwt_access) {
+      getSomeData();
+    }
+  }, []);
+
   const getSomeData = async () => {
     try {
       const resp = await axiosInstance.get("/auth/profile/");
       if (resp.status === 200) {
         console.log(resp.data);
+        setUser(resp.data);
       }
     } catch (error) {
       console.error(error);
@@ -32,6 +38,7 @@ const Profile = () => {
         Cookies.remove("access");
         Cookies.remove("refresh");
         Cookies.remove("user");
+        setUser(null);
         navigate("/login");
         toast.success("Logout successful");
       }
@@ -46,15 +53,23 @@ const Profile = () => {
       <header>
         <h5 className="logo"></h5>
         <nav className="navigation">
-          <button
-            onClick={() => navigate("/connections")}
-            className="connections-btn"
-          >
-            Connections
-          </button>
-          <button onClick={handleLogout} className="logout-btn">
-            Logout
-          </button>
+          {jwt_access ? (
+            <>
+              <button
+                onClick={() => navigate("/connections")}
+                className="connections-btn"
+              >
+                Connections
+              </button>
+              <button onClick={handleLogout} className="logout-btn">
+                Logout
+              </button>
+            </>
+          ) : (
+            <button onClick={() => navigate("/login")} className="login-btn">
+              Login
+            </button>
+          )}
         </nav>
       </header>
       <section id="hero">
@@ -67,8 +82,8 @@ const Profile = () => {
             <a
               href="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot"
               target="_blank"
+              rel="noopener noreferrer"
             >
-              {" "}
               <button className="hover">Add to discord</button>
             </a>
           </h1>

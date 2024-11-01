@@ -41,17 +41,25 @@ const Login = () => {
       const user = {
         email: response.email,
         names: response.full_name,
+        role: response.role, // ควรจะส่ง role จาก backend
       };
 
+      console.log("User data fetched:", user); // ตรวจสอบข้อมูลที่ได้รับจาก API
+
       if (res.status === 200) {
+        // เก็บข้อมูลผู้ใช้และ token ลงใน Cookies
         Cookies.set("user", JSON.stringify(user), { expires: 1 });
         Cookies.set("access", response.access_token, { expires: 1 });
         Cookies.set("refresh", response.refresh_token, { expires: 7 });
 
-        setTimeout(() => {
-          toast.success("Login successful");
-          navigate("/profile");
-        }, 100); // เล็กน้อยเพื่อให้ cookies ถูกเซ็ต
+        toast.success("Login successful");
+
+        // ตรวจสอบ role ของผู้ใช้เพื่อเปลี่ยนเส้นทาง
+        if (user.role === "admin") {
+          navigate("/admin/create-teacher"); // ส่งไปยังหน้า admin
+        } else {
+          navigate("/profile"); // ส่งไปหน้า profile
+        }
       }
     } catch (error) {
       setIsLoading(false);
@@ -66,6 +74,7 @@ const Login = () => {
         <form onSubmit={handleSubmit}>
           <h4>Login</h4>
           {isLoading && <p>Loading...</p>}
+          {error && <p className="error">{error}</p>}
           <div className="form-group">
             <input
               placeholder="Email"

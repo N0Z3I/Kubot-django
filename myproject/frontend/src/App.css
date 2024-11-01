@@ -284,7 +284,7 @@ footer {
 
 header {
   position: fixed;
-  top: 0;
+  top: 10px;
   right: 50px;
   width: 100%;
   background-color: none;
@@ -312,7 +312,7 @@ header {
 }
 
 .header-btn.logout {
-  background-color: #ff2400;
+  background-color: #ff0033;
   color: #fff;
 }
 
@@ -419,7 +419,7 @@ header {
   height: 50px;
   font-size: 20px;
   font-weight: bold;
-  background-color: #ff2400;
+  background-color: #ff0033;
   margin: 1rem;
   border: none;
   color: #ebeefd;
@@ -553,7 +553,7 @@ body {
   height: 50px;
   font-size: 18px;
   font-weight: bold;
-  background-color: #ff2400;
+  background-color: #ff0033;
   margin-top: 2px;
   border: none;
   color: #ebeefd;
@@ -593,7 +593,7 @@ body {
   height: 50px;
   font-size: 20px;
   font-weight: bold;
-  background-color: #ff2400;
+  background-color: #ff0033;
   margin: 1rem;
   border: none;
   color: #ebeefd;
@@ -674,7 +674,7 @@ select.form-control {
   -webkit-appearance: none;
   -moz-appearance: none;
   transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE0LjQwMjUgNC4yOTI1TDEwIDguNzkyNUw1LjU5NzUgNC4yOTI1SDEyLjYwMjVMMTQuNDAyNSA0LjI5MjVaIiBmaWxsPSIjNTA1MDUwIiBzdHJva2U9IiM1MDUwNTAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==');
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE0LjQwMjUgNC4yOTI1TDEwIDguNzkyNUw1LjU5NzUgNC4yOTI1SDEyLjYwMjVMMTQuNDAyNSA0LjI5MjVaIiBmaWxsPSIjNTA1MDUwIiBzdHJva2U9IiM1MDUwNTAiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==");
   background-repeat: no-repeat;
   background-position: right 11px center;
   padding-right: 20px;
@@ -689,4 +689,25 @@ select.form-control:focus {
 
 select.form-control option {
   padding: 8px;
+}
+
+.login-btn {
+  padding: 10px 22px;
+  outline: none;
+  width: 350spx;
+  height: 50px;
+  font-size: 20px;
+  font-weight: bold;
+  background-color: #0a6765;
+  margin: 1rem;
+  border: none;
+  color: #ebeefd;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.25);
+  transition: box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+}
+
+.login-btn:hover {
+  transform: scale(1.05);
 }

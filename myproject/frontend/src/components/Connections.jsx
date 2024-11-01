@@ -14,7 +14,22 @@ const Connections = () => {
   const [studentProfile, setStudentProfile] = useState(
     JSON.parse(localStorage.getItem("studentProfile")) || null
   );
+  const [role, setRole] = useState(null); // เพิ่มสถานะ role ของผู้ใช้
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // ดึงข้อมูลผู้ใช้เพื่อเช็ค role
+    const fetchUserRole = async () => {
+      try {
+        const response = await axiosInstance.get("/auth/user-profile/");
+        setRole(response.data.role); // ตั้งค่า role จากข้อมูลที่ดึงมา
+      } catch (error) {
+        console.error("Failed to fetch user role:", error);
+      }
+    };
+
+    fetchUserRole();
+  }, []);
 
   const handleOnChange = (e) => {
     setMykuData({ ...mykuData, [e.target.name]: e.target.value });
@@ -42,28 +57,27 @@ const Connections = () => {
   };
 
   const fetchStudentData = async () => {
-    try {
-      const res = await axiosInstance.get("/auth/myku-data/");
-      if (res.status === 200) {
-        setStudentProfile(res.data.student_profile);
-        // localStorage.setItem(
-        //   "studentProfile",
-        //   JSON.stringify(res.data.student_profile)
-        // );
+    if (role === "student") {
+      try {
+        const res = await axiosInstance.get("/auth/myku-data/");
+        if (res.status === 200) {
+          setStudentProfile(res.data.student_profile);
+          console.log("Student profile data:", res.data.student_profile); // ตรวจสอบข้อมูลที่ดึงมา
+        }
+      } catch (error) {
+        toast.error("Unable to fetch student data.");
+        console.error("Error fetching student data:", error);
       }
-    } catch (error) {
-      toast.error("Unable to fetch student data.");
     }
   };
 
   const handleKuLogout = async () => {
     try {
-      await axiosInstance.delete("/auth/delete-myku-data/");
-      toast.success("Your data has been deleted successfully.");
+      await axiosInstance.post("/auth/disconnect-myku-data/");
+      toast.success("Nontri account disconnected successfully.");
       setStudentProfile(null);
-      localStorage.removeItem("studentProfile");
     } catch (error) {
-      toast.error("Failed to delete your data.");
+      toast.error("Failed to disconnect your Nontri account.");
     }
   };
 
@@ -78,7 +92,6 @@ const Connections = () => {
       const response = await axiosInstance.get("/auth/discord/profile/");
       if (response.status === 200) {
         setDiscordProfile(response.data);
-        // localStorage.setItem("discordProfile", JSON.stringify(response.data));
       }
     } catch {
       setDiscordProfile(null);
@@ -105,9 +118,23 @@ const Connections = () => {
   };
 
   useEffect(() => {
-    // ถ้าไม่มีข้อมูลใน localStorage จะเรียกข้อมูลจาก API ใหม่
     if (!discordProfile) getDiscordProfile();
-    if (!studentProfile && !isLinkingKu) fetchStudentData();
+    if (role === "student" && !studentProfile && !isLinkingKu)
+      fetchStudentData();
+  }, [role]);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      try {
+        const response = await axiosInstance.get("/auth/user-profile/");
+        console.log("User data fetched:", response.data); // Debug: พิมพ์ข้อมูล user
+        setRole(response.data.role);
+      } catch (error) {
+        console.error("Failed to fetch user role:", error);
+      }
+    };
+
+    fetchUserRole();
   }, []);
 
   return (
@@ -125,12 +152,14 @@ const Connections = () => {
       </header>
       <div style={{ width: "30%" }} name="wrapper">
         <div className="tabs-vertical">
-          <button
-            className={`tab-btn ${activeTab === "nontri" ? "active" : ""}`}
-            onClick={() => setActiveTab("nontri")}
-          >
-            Nontri
-          </button>
+          {role === "student" && (
+            <button
+              className={`tab-btn ${activeTab === "nontri" ? "active" : ""}`}
+              onClick={() => setActiveTab("nontri")}
+            >
+              Nontri
+            </button>
+          )}
           <button
             className={`tab-btn ${activeTab === "discord" ? "active" : ""}`}
             onClick={() => setActiveTab("discord")}
@@ -140,7 +169,7 @@ const Connections = () => {
         </div>
         <br />
         <div className="tab-content mt-4">
-          {activeTab === "nontri" ? (
+          {activeTab === "nontri" && role === "student" ? (
             <div>
               <h4>Nontri Account</h4>
               {studentProfile ? (
