@@ -6,7 +6,7 @@ import Cookies from "js-cookie";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null); // จัดการข้อมูลผู้ใช้ใน State
+  const [user, setUser] = useState(null);
   const jwt_access = Cookies.get("access");
   const refresh = Cookies.get("refresh");
   const [discordProfile, setDiscordProfile] = useState(null);
