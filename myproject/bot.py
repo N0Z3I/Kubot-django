@@ -1,5 +1,6 @@
 import os
 import django
+import json
 
 try:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myproject.settings")
@@ -796,5 +797,43 @@ async def download_form(interaction: discord.Interaction):
 
     await interaction.response.send_message(embed=embed, view=view)
 
+# โหลดข้อมูลจากไฟล์ JSON เมื่อบอทเริ่มทำงาน
+with open("D:\Github\Kubot-django\myproject\pdf.json", "r", encoding="utf-8") as json_file:
+    calendar_data = json.load(json_file)
+
+@bot.tree.command(name="calendar", description="แสดงเนื้อหาปฏิทินการศึกษาจาก PDF")
+@app_commands.describe(page_number="หมายเลขหน้าที่ต้องการดู")
+async def calendar(interaction: discord.Interaction, page_number: int):
+    try:
+        # ตรวจสอบว่าหมายเลขหน้าถูกต้อง
+        total_pages = calendar_data["document"]["total_pages"]
+        if page_number < 1 or page_number > total_pages:
+            await interaction.response.send_message(
+                f"กรุณาระบุหมายเลขหน้าระหว่าง 1 และ {total_pages}", ephemeral=True
+            )
+            return
+
+        # ดึงข้อมูลเนื้อหาของหน้าที่ผู้ใช้ระบุ
+        page_content = next(
+            (page["content"] for page in calendar_data["document"]["pages"] if page["page_number"] == page_number),
+            None
+        )
+
+        if page_content:
+            # ปรับรูปแบบข้อความให้ดูอ่านง่ายขึ้น
+            formatted_content = page_content.replace("•", "\n•").replace(":", ":\n")
+
+            # ส่งข้อความเนื้อหาของหน้าไปยัง Discord
+            embed = discord.Embed(
+                title=f"{calendar_data['document']['title']} - Page {page_number}",
+                description=formatted_content,
+                color=discord.Color.dark_teal()
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        else:
+            await interaction.response.send_message("ไม่พบเนื้อหาของหน้าที่ระบุ", ephemeral=True)
+
+    except Exception as e:
+        await interaction.response.send_message(f"เกิดข้อผิดพลาด: {str(e)}", ephemeral=True)
         
 bot.run(os.getenv("DISCORD_BOT_TOKEN"))
