@@ -416,11 +416,11 @@ async def server(interaction: discord.Interaction):
 @bot.tree.command(name="help", description="ดูวิธีเริ่มต้นใช้งาน KuBot!")
 async def help_command(interaction: discord.Interaction):
     embed = discord.Embed(
-        title="ช่วยเหลือ",
-        description="ลองดูลิงก์ที่มีประโยชน์เหล่านี้เพื่อเริ่มต้นใช้งาน KuBot!",
+        title="คำสั่ง KuBot",
+        description="รายชื่อคำสั่งทั้งหมดที่คุณสามารถใช้กับ KuBot",
         color=discord.Color.dark_teal()
     )
-    
+
     embed.set_author(
         name="KuBot",
         url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot",
@@ -430,22 +430,48 @@ async def help_command(interaction: discord.Interaction):
         url="https://media.discordapp.net/attachments/881215262307786822/1235961567313657959/Your_paragraph_text.png?ex=66364668&is=6634f4e8&hm=d275a5557acfcf8fb9ce3926e8b798434a2cf231f0b248521db5dc836c1bd84a&=&format=webp&quality=lossless&width=640&height=640"
     )
 
+    # เพิ่มข้อมูลคำสั่งทั้งหมดที่บอทมี
+    commands = {
+        "/my_courses": "แสดงรายวิชาที่สอน (เฉพาะอาจารย์)",
+        "/reminder": "แจ้งเตือนตารางเรียนตามช่วงที่เลือก",
+        "/schedule": "แสดงตารางเรียนของนิสิตพร้อมรายละเอียดวิชา",
+        "/kuprofile": "แสดงข้อมูลโปรไฟล์นิสิต",
+        "/kugpax": "แสดงหน่วยกิตกับเกรดเฉลี่ยของนิสิต",
+        "/kueducation": "แสดงข้อมูลการศึกษาของนิสิต",
+        "/hello": "ทักทาย Hello World!",
+        "/invite": "รับลิงก์เชิญบอท KuBot",
+        "/ping": "ตรวจสอบ ping ของบอท",
+        "/avatar": "ดู Avatar ของผู้ใช้",
+        "/profile": "ดูโปรไฟล์ของผู้ใช้",
+        "/clear": "ลบข้อความในช่องแชท",
+        "/activity": "ดูข้อมูลกิจกรรมของ Ku",
+        "/server": "ดูข้อมูลเซิร์ฟเวอร์ปัจจุบัน",
+        "/help": "ดูวิธีเริ่มต้นใช้งาน KuBot!",
+        "/tuition_due": "ตรวจสอบวันชำระเงินค่าธรรมเนียมการศึกษา",
+        "/regdate": "ตรวจสอบวันลงทะเบียนการศึกษา",
+        "/opendate": "ตรวจสอบวันเปิดภาคการศึกษา",
+        "/late_reg": "วันลงทะเบียนสำหรับนิสิตที่ชำระเงินล่าช้าหรือลงทะเบียนไม่ทัน",
+        "/withdraw_no_w": "ตรวจสอบวันขอถอนรายวิชาโดยไม่บันทึกอักษร W",
+        "/withdraw_with_w": "ตรวจสอบวันขอถอนรายวิชา (บันทึกอักษร W)",
+        "/exam_schedule": "ตรวจสอบวันสอบกลางภาคและปลายภาค",
+        "/evaluation": "ตรวจสอบวันกรอกแบบประเมินการสอน",
+        "/download_form": "ดาวน์โหลดเอกสารแบบฟอร์มคำร้องต่างๆที่ต้องการ",
+        "/calendar": "แสดงเนื้อหาปฏิทินการศึกษาจาก PDF"
+    }
+
+    # เพิ่มคำสั่งทั้งหมดใน embed
+    for command, description in commands.items():
+        embed.add_field(name=command, value=description, inline=False)
+
+    # ปุ่มลิงก์
     view = discord.ui.View()
-    
-    button_website = discord.ui.Button(
-        label="เว็บไซต์", 
-        style=discord.ButtonStyle.link, 
-        url="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    view.add_item(
+        discord.ui.Button(
+            label="เชิญ KuBot",
+            style=discord.ButtonStyle.link,
+            url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot"
+        )
     )
-    
-    button_invite = discord.ui.Button(
-        label="เชิญ", 
-        style=discord.ButtonStyle.link, 
-        url="https://discord.com/oauth2/authorize?client_id=1295415714144059405&permissions=8&integration_type=0&scope=bot"
-    )
-    
-    view.add_item(button_website)
-    view.add_item(button_invite)
 
     await interaction.response.send_message(embed=embed, view=view)
 
