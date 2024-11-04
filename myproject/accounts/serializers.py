@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, StudentProfile, GroupCourse
+from .models import User, StudentProfile, GroupCourse, Event, TeacherAnnouncement
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -262,3 +262,19 @@ class TeacherRegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_teacher(**validated_data)
+    
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = '__all__'
+        
+class TeacherAnnouncementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeacherAnnouncement
+        fields = ['id', 'course', 'teacher', 'message', 'due_date', 'created_at']
+        read_only_fields = ['teacher', 'created_at']
+
+    def create(self, validated_data):
+        # ดึงข้อมูลของอาจารย์จาก context ของการ request เพื่อเพิ่มข้อมูลให้อัตโนมัติ
+        teacher = self.context['request'].user.teacher_profile
+        return TeacherAnnouncement.objects.create(teacher=teacher, **validated_data)

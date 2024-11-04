@@ -3,10 +3,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from .serializers import UserRegisterSerializer, LoginUserSerializer, SetNewPasswordSerializer, PasswordResetRequestSerializer, LogoutUserSerializer, EmailSerializer, VerifyOtpSerializer
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .utils import send_code_to_user
-from .models import OneTimePassword, User, StudentProfile, Schedule, Grade, GroupCourse, StudentEducation, GPAX, Announcement, DiscordProfile
+from .models import OneTimePassword, User, StudentProfile, Schedule, Grade, GroupCourse, StudentEducation, GPAX, Announcement, DiscordProfile, TeachingSchedule, Event, TeacherAnnouncement  
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -25,7 +25,7 @@ from django.utils.timezone import now, timedelta
 import logging
 logger = logging.getLogger(__name__)
 
-from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer, StudentProfileSerializer, TeacherRegistrationSerializer, UserProfileSerializer, GroupCourseSerializer  
+from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer, StudentProfileSerializer, TeacherRegistrationSerializer, UserProfileSerializer, GroupCourseSerializer, EventSerializer, TeacherAnnouncementSerializer
 
 User = get_user_model()
 import requests
@@ -674,3 +674,51 @@ class GroupCourseCreateView(APIView):
         
         # กรณีข้อมูลไม่ถูกต้อง
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EventCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = EventSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class EventListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        events = Event.objects.all()
+        serializer = EventSerializer(events, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class TeacherAnnouncementsView(APIView):
+    def get(self, request, course_id):
+        announcements = TeacherAnnouncement.objects.filter(course__id=course_id)
+        serialized_data = TeacherAnnouncementSerializer(announcements, many=True)
+        return Response(serialized_data.data)
+
+    def post(self, request):
+        serializer = TeacherAnnouncementSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(teacher=request.user.teacher_profile)  # อ้างอิงจากอาจารย์ที่ล็อกอิน
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+    
+class TeacherAnnouncementListCreateView(generics.ListCreateAPIView):
+    serializer_class = TeacherAnnouncementSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return TeacherAnnouncement.objects.filter(teacher=self.request.user.teacher_profile)
+
+    def perform_create(self, serializer):
+        serializer.save(teacher=self.request.user.teacher_profile)
+
+class TeacherAnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = TeacherAnnouncementSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return TeacherAnnouncement.objects.filter(teacher=self.request.user.teacher_profile)

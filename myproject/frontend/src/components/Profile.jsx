@@ -61,6 +61,14 @@ const Profile = () => {
               >
                 Connections
               </button>
+              {user?.role === "teacher" && (
+                <button
+                  onClick={() => navigate("/teacher-dashboard")}
+                  className="dashboard-btn"
+                >
+                  Teacher Dashboard
+                </button>
+              )}
               <button onClick={handleLogout} className="logout-btn">
                 Logout
               </button>

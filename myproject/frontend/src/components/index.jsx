@@ -9,6 +9,7 @@ import Dashboard from "./Dashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import Connections from "./Connections";
 import AdminCreater from "./AdminCreater";
+import TeacherCreater from "./TeacherCreater";
 
 export {
   Signup,
@@ -22,4 +23,5 @@ export {
   ProtectedRoute,
   Connections,
   AdminCreater,
+  TeacherCreater,
 };

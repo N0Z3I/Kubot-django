@@ -186,4 +186,36 @@ class DiscordProfile(models.Model):
     def __str__(self):
         return f"{self.discord_username}#{self.discord_discriminator}"
     
+# ใน models.py
 
+class TeachingSchedule(models.Model):
+    teacher = models.ForeignKey(TeacherProfile, on_delete=models.CASCADE, related_name='schedules')
+    course = models.ForeignKey(GroupCourse, on_delete=models.CASCADE)
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+class Event(models.Model):
+    EVENT_TYPES = [
+        ('assignment', 'Assignment'),
+        ('announcement', 'Announcement'),
+        ('makeup_class', 'Makeup Class'),
+    ]
+    schedule = models.ForeignKey(TeachingSchedule, on_delete=models.CASCADE, related_name='events')
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPES)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    date = models.DateField()
+    due_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.event_type}"
+
+class TeacherAnnouncement(models.Model):  # แยกชื่อเป็น TeacherAnnouncement
+    course = models.ForeignKey(GroupCourse, on_delete=models.CASCADE, related_name='teacher_announcements')
+    teacher = models.ForeignKey(TeacherProfile, on_delete=models.CASCADE, related_name='teacher_announcements')
+    message = models.TextField()
+    due_date = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Announcement by {self.teacher.full_name} for {self.course.subject_name}"

@@ -2,6 +2,7 @@ from django.urls import path, include
 from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView, ResendOtpView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView, DiscordProfileView, StudentDataView, DiscordLogoutView, DisconnectMykuDataView, UpdateProfileView, AdminCreateTeacherView, UserProfileView
+from .views import EventCreateView, EventListView, TeacherAnnouncementListCreateView, TeacherAnnouncementDetailView
 
 urlpatterns=[
     path('register/', RegisterUserView.as_view(), name = 'register'),
@@ -27,4 +28,8 @@ urlpatterns=[
     path('update-profile/', UpdateProfileView.as_view(), name='update-profile'),
     path('admin/create-teacher/', AdminCreateTeacherView.as_view(), name='admin_create_teacher'),
     path('user-profile/', UserProfileView.as_view(), name='user-profile'),
+    path('event/create/', EventCreateView.as_view(), name="create_event"),
+    path('event/list/', EventListView.as_view(), name="list_events"),
+    path('teacher/announcements/', TeacherAnnouncementListCreateView.as_view(), name='teacher_announcements'),
+    path('teacher/announcements/<int:pk>/', TeacherAnnouncementDetailView.as_view(), name='teacher_announcement_detail'),
 ]
