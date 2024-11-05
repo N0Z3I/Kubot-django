@@ -15,6 +15,8 @@ axiosInstance.interceptors.request.use(async (req) => {
 
   if (token) {
     req.headers.Authorization = `Bearer ${token}`;
+    console.log("Authorization Token Set:", req.headers.Authorization); // สำหรับตรวจสอบ
+
     const decodedToken = jwtDecode(token);
     const isExpired = dayjs.unix(decodedToken.exp).diff(dayjs()) < 1;
 
@@ -27,6 +29,7 @@ axiosInstance.interceptors.request.use(async (req) => {
         if (res.status === 200) {
           Cookies.set("access", res.data.access, { expires: 1 });
           req.headers.Authorization = `Bearer ${res.data.access}`;
+          console.log("Token Refreshed and Set:", req.headers.Authorization);
         } else {
           await handleLogout();
         }
@@ -34,6 +37,8 @@ axiosInstance.interceptors.request.use(async (req) => {
         await handleLogout();
       }
     }
+  } else {
+    console.warn("No Access Token Found");
   }
 
   return req;
@@ -43,6 +48,7 @@ const handleLogout = async () => {
   Cookies.remove("access");
   Cookies.remove("refresh");
   Cookies.remove("user");
+  alert("Session expired. Please log in again.");
   window.location.href = "/login";
 };
 

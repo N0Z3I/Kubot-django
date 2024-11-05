@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, StudentProfile, GroupCourse, Event, TeacherAnnouncement
+from .models import User, StudentProfile, GroupCourse, TeachingSchedule, Event, Announcement
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed, ValidationError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -63,6 +63,7 @@ class LoginWithMykuSerializer(serializers.Serializer):
             announce_data = client.fetch_announce()
             grades_data = client.fetch_grades()
             group_course_data = client.fetch_group_course()
+            print("Group course data fetched:", group_course_data)
             student_education_data = client.fetch_student_education()
             gpax_data = client.fetch_gpax()
 
@@ -84,6 +85,11 @@ class LoginWithMykuSerializer(serializers.Serializer):
             attrs['group_course_data'] = group_course_data
             attrs['student_education_data'] = student_education_data
             attrs['gpax_data'] = gpax_data
+            
+            print("Group course data:", group_course_data)
+
+            # ข้อมูลอื่นๆ
+            attrs['group_course_data'] = group_course_data
 
         except Exception as e:
             raise serializers.ValidationError(f"Failed to log in to MyKU: {str(e)}")
@@ -263,18 +269,31 @@ class TeacherRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return User.objects.create_teacher(**validated_data)
     
+class TeachingScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeachingSchedule
+        fields = '__all__'
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        teacher = request.user if request else None
+        validated_data["teacher"] = teacher
+        return super().create(validated_data)
+
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = '__all__'
-        
-class TeacherAnnouncementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TeacherAnnouncement
-        fields = ['id', 'course', 'teacher', 'message', 'due_date', 'created_at']
-        read_only_fields = ['teacher', 'created_at']
+        fields = [
+            'id', 'course', 'event_type', 'title', 'description',
+            'start_date', 'end_date', 'start_time', 'end_time', 'created_at'
+        ]
 
-    def create(self, validated_data):
-        # ดึงข้อมูลของอาจารย์จาก context ของการ request เพื่อเพิ่มข้อมูลให้อัตโนมัติ
-        teacher = self.context['request'].user.teacher_profile
-        return TeacherAnnouncement.objects.create(teacher=teacher, **validated_data)
+class AnnouncementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Announcement
+        fields = '__all__'
+    
+class GroupCourseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GroupCourse
+        fields = ['id', 'subject_code', 'subject_name', 'period_date', 'day_w', 'time_from', 'time_to', 'room_name_th']

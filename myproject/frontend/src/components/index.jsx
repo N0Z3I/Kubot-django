@@ -5,11 +5,11 @@ import ForgetPassword from "./ForgetPassword";
 import ResetPassword from "./ResetPassword";
 import VerifyEmail from "./VerifyEmail";
 import LinkMyKU from "./LinkMyKU";
-import Dashboard from "./Dashboard";
+import UserDashboard from "./UserDashboard";
 import ProtectedRoute from "./ProtectedRoute";
 import Connections from "./Connections";
-import AdminCreater from "./AdminCreater";
-import TeacherCreater from "./TeacherCreater";
+import AdminDashboard from "./AdminDashboard";
+import TeacherDashboard from "./TeacherDashboard";
 
 export {
   Signup,
@@ -19,9 +19,9 @@ export {
   ResetPassword,
   VerifyEmail,
   LinkMyKU,
-  Dashboard,
+  UserDashboard,
   ProtectedRoute,
   Connections,
-  AdminCreater,
-  TeacherCreater,
+  AdminDashboard,
+  TeacherDashboard,
 };

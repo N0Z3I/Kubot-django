@@ -2,7 +2,7 @@ from django.urls import path, include
 from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView, ResendOtpView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView, DiscordProfileView, StudentDataView, DiscordLogoutView, DisconnectMykuDataView, UpdateProfileView, AdminCreateTeacherView, UserProfileView
-from .views import EventCreateView, EventListView, TeacherAnnouncementListCreateView, TeacherAnnouncementDetailView
+from .views import TeachingScheduleListCreateView, TeachingScheduleDetailView, EventListCreateView, AnnouncementListCreateView, TeacherCourseListView, EventCreateView
 
 urlpatterns=[
     path('register/', RegisterUserView.as_view(), name = 'register'),
@@ -28,8 +28,11 @@ urlpatterns=[
     path('update-profile/', UpdateProfileView.as_view(), name='update-profile'),
     path('admin/create-teacher/', AdminCreateTeacherView.as_view(), name='admin_create_teacher'),
     path('user-profile/', UserProfileView.as_view(), name='user-profile'),
-    path('event/create/', EventCreateView.as_view(), name="create_event"),
-    path('event/list/', EventListView.as_view(), name="list_events"),
-    path('teacher/announcements/', TeacherAnnouncementListCreateView.as_view(), name='teacher_announcements'),
-    path('teacher/announcements/<int:pk>/', TeacherAnnouncementDetailView.as_view(), name='teacher_announcement_detail'),
+    path('schedules/', TeachingScheduleListCreateView.as_view(), name='schedule-list-create'),
+    path('schedules/<int:pk>/', TeachingScheduleDetailView.as_view(), name='schedule-detail'),
+    path('event/', EventListCreateView.as_view(), name='event-list-create'),
+    path('schedules/<int:schedule_id>/announcements/', AnnouncementListCreateView.as_view(), name='announcement-list-create'),
+    path('teacher/courses/', TeacherCourseListView.as_view(), name='teacher_courses'),
+    path('event/create/', EventCreateView.as_view(), name='event-create'),
 ]
+

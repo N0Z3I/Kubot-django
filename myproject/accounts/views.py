@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .utils import send_code_to_user
-from .models import OneTimePassword, User, StudentProfile, Schedule, Grade, GroupCourse, StudentEducation, GPAX, Announcement, DiscordProfile, TeachingSchedule, Event, TeacherAnnouncement  
+from .models import OneTimePassword, User, StudentProfile, Schedule, Grade, GroupCourse, StudentEducation, GPAX, Announcement, DiscordProfile, TeacherProfile, TeachingSchedule, Event, Announcement
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import smart_str, DjangoUnicodeDecodeError
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -25,7 +25,7 @@ from django.utils.timezone import now, timedelta
 import logging
 logger = logging.getLogger(__name__)
 
-from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer, StudentProfileSerializer, TeacherRegistrationSerializer, UserProfileSerializer, GroupCourseSerializer, EventSerializer, TeacherAnnouncementSerializer
+from .serializers import LoginWithMykuSerializer, DiscordConnectSerializer, StudentProfileSerializer, TeacherRegistrationSerializer, UserProfileSerializer, GroupCourseSerializer, TeachingScheduleSerializer, EventSerializer, AnnouncementSerializer
 
 User = get_user_model()
 import requests
@@ -299,13 +299,14 @@ class MykuLoginView(GenericAPIView):
                 # บันทึกข้อมูลกลุ่มวิชา (GroupCourse)
                 if group_course_data and 'results' in group_course_data:
                     for group in group_course_data['results']:
-                        for course in group['course']:
+                        period_date = group.get('peroid_date', 'N/A')  # กำหนดค่า default หากไม่มีข้อมูล
+                        for course in group.get('course', []):  # ตรวจสอบว่ามี course ใน group ก่อนดำเนินการ
                             GroupCourse.objects.update_or_create(
                                 student_profile=student_profile,
-                                subject_code=course['subject_code'],
+                                subject_code=course.get('subject_code', 'N/A'),  # กำหนดค่า default หากไม่มีข้อมูล
                                 defaults={
-                                    'period_date': group['peroid_date'],
-                                    'subject_name': course['subject_name_th'],
+                                    'period_date': period_date,
+                                    'subject_name': course.get('subject_name_th', 'N/A'),
                                     'teacher_name': course.get('teacher_name', 'N/A'),
                                     'day_w': course.get('day_w', 'N/A'),
                                     'room_name_th': course.get('room_name_th', 'N/A'),
@@ -341,6 +342,7 @@ class MykuLoginView(GenericAPIView):
                 return Response({
                     'student_data': student_data,
                     'std_code': std_code,
+                    'group_course_data': group_course_data,
                     'message': 'Successfully linked MyKU and saved all data.'
                 }, status=status.HTTP_200_OK)
 
@@ -569,8 +571,11 @@ class TestAuthenticationView(GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        user = request.user
         data = {
-            'msg': 'its works'
+            'email': user.email,
+            'full_name': f"{user.first_name} {user.last_name}",
+            'role': user.role,  # assuming 'role' is a field in your User model
         }
         return Response(data, status=status.HTTP_200_OK)
 
@@ -675,50 +680,59 @@ class GroupCourseCreateView(APIView):
         # กรณีข้อมูลไม่ถูกต้อง
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class EventCreateView(APIView):
+class TeachingScheduleListCreateView(generics.ListCreateAPIView):
+    queryset = TeachingSchedule.objects.all()
+    serializer_class = TeachingScheduleSerializer
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
-        serializer = EventSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
 
-class EventListView(APIView):
+class TeachingScheduleDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = TeachingSchedule.objects.all()
+    serializer_class = TeachingScheduleSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        events = Event.objects.all()
-        serializer = EventSerializer(events, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-class TeacherAnnouncementsView(APIView):
-    def get(self, request, course_id):
-        announcements = TeacherAnnouncement.objects.filter(course__id=course_id)
-        serialized_data = TeacherAnnouncementSerializer(announcements, many=True)
-        return Response(serialized_data.data)
-
-    def post(self, request):
-        serializer = TeacherAnnouncementSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(teacher=request.user.teacher_profile)  # อ้างอิงจากอาจารย์ที่ล็อกอิน
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status=400)
-    
-class TeacherAnnouncementListCreateView(generics.ListCreateAPIView):
-    serializer_class = TeacherAnnouncementSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_queryset(self):
-        return TeacherAnnouncement.objects.filter(teacher=self.request.user.teacher_profile)
+class EventListCreateView(generics.ListCreateAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(teacher=self.request.user.teacher_profile)
+        schedule_id = self.request.data.get("schedule")
+        try:
+            schedule = TeachingSchedule.objects.get(id=schedule_id, teacher=self.request.user)
+            serializer.save(schedule=schedule)
+        except TeachingSchedule.DoesNotExist:
+            raise serializers.ValidationError({"schedule": "Invalid or unauthorized schedule selection."})
 
-class TeacherAnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = TeacherAnnouncementSerializer
-    permission_classes = [permissions.IsAuthenticated]
+class AnnouncementListCreateView(generics.ListCreateAPIView):
+    serializer_class = AnnouncementSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return TeacherAnnouncement.objects.filter(teacher=self.request.user.teacher_profile)
+        schedule_id = self.kwargs['schedule_id']
+        return Announcement.objects.filter(schedule_id=schedule_id)
+
+    def perform_create(self, serializer):
+        schedule = TeachingSchedule.objects.get(id=self.kwargs['schedule_id'])
+        serializer.save(schedule=schedule)
+
+class TeacherCourseListView(generics.ListAPIView):
+    serializer_class = GroupCourseSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # ใช้ TeacherProfile ของผู้ใช้ที่ล็อกอินอยู่
+        teacher_profile = TeacherProfile.objects.get(user=self.request.user)
+        return GroupCourse.objects.filter(teacher=teacher_profile)
+    
+class EventCreateView(generics.CreateAPIView):
+    queryset = Event.objects.all()
+    serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save()

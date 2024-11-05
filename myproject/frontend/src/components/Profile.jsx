@@ -9,23 +9,24 @@ const Profile = () => {
   const [user, setUser] = useState(null);
   const jwt_access = Cookies.get("access");
   const refresh = Cookies.get("refresh");
-  const [discordProfile, setDiscordProfile] = useState(null);
 
   useEffect(() => {
     if (jwt_access) {
       getSomeData();
     }
-  }, []);
+  }, [jwt_access]);
 
   const getSomeData = async () => {
     try {
       const resp = await axiosInstance.get("/auth/profile/");
+      console.log("API response data:", resp.data); // ตรวจสอบข้อมูลจาก API อย่างละเอียด
+
       if (resp.status === 200) {
-        console.log(resp.data);
         setUser(resp.data);
+        console.log("User data set in state:", resp.data); // ตรวจสอบข้อมูลหลังการตั้งค่าใน state
       }
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching user data:", error);
     }
   };
 
@@ -48,6 +49,10 @@ const Profile = () => {
     }
   };
 
+  if (!user) {
+    return <p>Loading user profile...</p>;
+  }
+
   return (
     <div>
       <header>
@@ -61,14 +66,14 @@ const Profile = () => {
               >
                 Connections
               </button>
-              {user?.role === "teacher" && (
+              {user && user.role === "teacher" ? (
                 <button
                   onClick={() => navigate("/teacher-dashboard")}
                   className="dashboard-btn"
                 >
                   Teacher Dashboard
                 </button>
-              )}
+              ) : null}
               <button onClick={handleLogout} className="logout-btn">
                 Logout
               </button>

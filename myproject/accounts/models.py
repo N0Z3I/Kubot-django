@@ -6,10 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings
 from django.utils.timezone import now
 from django.core.exceptions import ObjectDoesNotExist
-
-
-
-
+from django.utils import timezone
 
 # Create your models here.
 
@@ -186,36 +183,69 @@ class DiscordProfile(models.Model):
     def __str__(self):
         return f"{self.discord_username}#{self.discord_discriminator}"
     
-# ใน models.py
-
 class TeachingSchedule(models.Model):
-    teacher = models.ForeignKey(TeacherProfile, on_delete=models.CASCADE, related_name='schedules')
-    course = models.ForeignKey(GroupCourse, on_delete=models.CASCADE)
+    # ตารางสอนของอาจารย์ที่เชื่อมกับ GroupCourse โดยตรง
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='schedules'
+    )
+    group_course = models.ForeignKey(
+        GroupCourse, on_delete=models.CASCADE, related_name='teaching_schedules', null=True, blank=True
+    )
+    subject_code = models.CharField(max_length=20)  # เพิ่ม subject_code เพื่อใช้จับคู่ GroupCourse
     start_date = models.DateField()
     end_date = models.DateField()
+    days_of_week = models.CharField(max_length=50, default="Monday")  # เช่น "Monday, Wednesday"
+    start_time = models.TimeField(default="00:00")
+    end_time = models.TimeField(default="00:00")
+
+    def save(self, *args, **kwargs):
+        # เชื่อมโยง GroupCourse ที่ตรงกับ subject_code และ teacher
+        if not self.group_course:
+            try:
+                # หา GroupCourse ที่ตรงกันตาม subject_code และ teacher
+                teacher_profile = self.teacher.teacher_profile
+                group_course = GroupCourse.objects.get(
+                    subject_code=self.subject_code,
+                    teacher=teacher_profile
+                )
+                self.group_course = group_course
+            except ObjectDoesNotExist:
+                raise ValueError("ไม่พบ GroupCourse ที่ตรงกับ subject_code และ teacher")
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.group_course.subject_name} - {self.teacher.get_full_name()}"
 
 class Event(models.Model):
     EVENT_TYPES = [
+        ('makeup_class', 'Makeup Class'),
         ('assignment', 'Assignment'),
         ('announcement', 'Announcement'),
-        ('makeup_class', 'Makeup Class'),
     ]
-    schedule = models.ForeignKey(TeachingSchedule, on_delete=models.CASCADE, related_name='events')
+
+    course = models.ForeignKey(GroupCourse, on_delete=models.CASCADE, related_name="events", null=True, blank=True)
     event_type = models.CharField(max_length=20, choices=EVENT_TYPES)
     title = models.CharField(max_length=255)
     description = models.TextField()
-    date = models.DateField()
-    due_date = models.DateField(null=True, blank=True)
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(default=timezone.now)
+    start_time = models.TimeField(default=timezone.now)
+    end_time = models.TimeField(default=timezone.now)
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"{self.title} - {self.event_type}"
-
-class TeacherAnnouncement(models.Model):  # แยกชื่อเป็น TeacherAnnouncement
-    course = models.ForeignKey(GroupCourse, on_delete=models.CASCADE, related_name='teacher_announcements')
-    teacher = models.ForeignKey(TeacherProfile, on_delete=models.CASCADE, related_name='teacher_announcements')
+        return f"{self.title} - {self.get_event_type_display()} ({self.course.subject_name})"
+    
+class TeachingAnnouncement(models.Model):
+    # ประกาศจากอาจารย์ที่เกี่ยวกับคอร์สเรียน
+    schedule = models.ForeignKey(
+        TeachingSchedule, on_delete=models.CASCADE, related_name='teaching_announcements'
+    )
+    title = models.CharField(max_length=255)
     message = models.TextField()
-    due_date = models.DateField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    due_date = models.DateField(null=True, blank=True)  # วันที่ประกาศหมดอายุ
+    created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Announcement by {self.teacher.full_name} for {self.course.subject_name}"
+        return f"{self.title} - Announcement"

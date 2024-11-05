@@ -4,7 +4,7 @@ import axiosInstance from "../utils/axiosInstance";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 
-const Dashboard = () => {
+const UserDashboard = () => {
   const [studentProfile, setStudentProfile] = useState(null);
   const [scheduleData, setScheduleData] = useState([]);
   const [groupCourseData, setGroupCourseData] = useState([]);
@@ -360,6 +360,8 @@ const Dashboard = () => {
                           ปีการศึกษา :&nbsp;{schedule.academic_year},
                           ภาคการศึกษา :&nbsp; {schedule.semester}
                         </h5>
+
+                        {/* Display all groupCourseData */}
                         {groupCourseData.map((course, idx) => (
                           <div key={idx}>
                             <p>
@@ -394,4 +396,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default UserDashboard;

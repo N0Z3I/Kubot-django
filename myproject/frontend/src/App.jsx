@@ -9,10 +9,11 @@ import {
   ForgetPassword,
   ResetPassword,
   LinkMyKU,
-  Dashboard,
+  UserDashboard,
   ProtectedRoute,
   Connections,
-  AdminCreater,
+  AdminDashboard,
+  TeacherDashboard,
 } from "./components";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -30,10 +31,15 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/" element={<ProtectedRoute />}>
             <Route path="profile" element={<Profile />} />
-            <Route path="/admin/create-teacher" element={<AdminCreater />} />
+            <Route path="/admin/create-teacher" element={<AdminDashboard />} />
             <Route path="/connections" element={<Connections />} />
             <Route path="/link-myku" element={<LinkMyKU />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/user-dashboard" element={<UserDashboard />} />
+            <Route
+              path="/teacher-dashboard"
+              element={<TeacherDashboard />}
+            />{" "}
+            {/* เปลี่ยนเส้นทาง */}
           </Route>
           <Route path="/otp/verify" element={<VerifyEmail />} />
           <Route path="/forget_password" element={<ForgetPassword />} />

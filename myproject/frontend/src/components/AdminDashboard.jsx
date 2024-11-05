@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import axiosInstance from "../utils/axiosInstance";
 import { toast } from "react-toastify";
 
-const AdminCreater = () => {
+const AdminDashboard = () => {
   const [formData, setFormData] = useState({
     email: "",
     first_name: "",
@@ -76,4 +76,4 @@ const AdminCreater = () => {
   );
 };
 
-export default AdminCreater;
+export default AdminDashboard;

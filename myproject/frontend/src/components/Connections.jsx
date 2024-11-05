@@ -184,7 +184,7 @@ const Connections = () => {
                     <strong>รหัสนิสิต:</strong> {studentProfile.std_code}
                   </p>
                   <button
-                    onClick={() => navigate("/dashboard")}
+                    onClick={() => navigate("/user-dashboard")}
                     className="connections-btn"
                   >
                     Go to Dashboard
