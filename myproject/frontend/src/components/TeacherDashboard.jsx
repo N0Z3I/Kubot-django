@@ -108,7 +108,7 @@ const TeacherDashboard = () => {
     <div>
       <h2>Teacher Dashboard</h2>
 
-      <h3>Your Courses</h3>
+      <h4>Your Courses</h4>
       <ul>
         {courses.map((course) => (
           <li key={course.id}>
@@ -131,7 +131,7 @@ const TeacherDashboard = () => {
         ))}
       </ul>
 
-      <h3>Select Course for Announcement</h3>
+      <h4>Select Course for Announcement</h4>
       <select onChange={handleCourseSelect} value={selectedCourse}>
         <option value="">Select a course</option>
         {courses.map((course) => (
@@ -141,12 +141,12 @@ const TeacherDashboard = () => {
         ))}
       </select>
 
-      <h3 ref={editFormRef}>
-        {isEditing ? "Edit Announcement" : "Create Announcement"}
-      </h3>
       <form onSubmit={handleAnnouncementSubmit}>
+      <h4 ref={editFormRef}>
+        {isEditing ? "Edit Announcement" : "Create Announcement"}
+      </h4>
         <label>
-          Type:
+          Type:&nbsp;&nbsp;
           <select
             value={newAnnouncement.event_type}
             onChange={(e) =>
@@ -161,6 +161,7 @@ const TeacherDashboard = () => {
             <option value="assignment">Assignment</option>
           </select>
         </label>
+        <div className="form-group">
         <input
           type="text"
           placeholder="Title"
@@ -170,6 +171,8 @@ const TeacherDashboard = () => {
           }
           required
         />
+        </div>
+        <div className="form-group">
         <textarea
           placeholder="Description"
           value={newAnnouncement.description}
@@ -181,7 +184,7 @@ const TeacherDashboard = () => {
           }
           required
         ></textarea>
-
+        </div>
         <input
           type="date"
           placeholder="Start Date"
@@ -206,7 +209,6 @@ const TeacherDashboard = () => {
           }
           required
         />
-
         <input
           type="date"
           placeholder="End Date"
@@ -216,6 +218,7 @@ const TeacherDashboard = () => {
           }
           required
         />
+        <div className="form-group">
         <input
           type="time"
           placeholder="End Time"
@@ -225,13 +228,13 @@ const TeacherDashboard = () => {
           }
           required
         />
-
-        <button type="submit">
+        </div>
+        <button type="submit" className="vbtn">
           {isEditing ? "Update Announcement" : "Create Announcement"}
         </button>
       </form>
 
-      <h3>Existing Announcements</h3>
+      <h2>Existing Announcements</h2>
       <ul>
         {announcements.map((announcement) => (
           <li key={announcement.id}>

@@ -36,8 +36,10 @@ const AdminDashboard = () => {
 
   return (
     <div className="form-container">
-      <h2>Create Teacher Account</h2>
+      <div style={{ width: "30%" }} name="wrapper">
       <form onSubmit={handleSubmit}>
+      <h4>Create Teacher Account</h4>
+      <div className="form-group">
         <input
           type="email"
           name="email"
@@ -46,6 +48,8 @@ const AdminDashboard = () => {
           onChange={handleChange}
           required
         />
+      </div>
+      <div className="form-group">
         <input
           type="text"
           name="first_name"
@@ -54,6 +58,8 @@ const AdminDashboard = () => {
           onChange={handleChange}
           required
         />
+        </div>
+        <div className="form-group">
         <input
           type="text"
           name="last_name"
@@ -62,6 +68,8 @@ const AdminDashboard = () => {
           onChange={handleChange}
           required
         />
+        </div>
+        <div className="form-group">
         <input
           type="password"
           name="password"
@@ -70,8 +78,10 @@ const AdminDashboard = () => {
           onChange={handleChange}
           required
         />
-        <button type="submit">Create Teacher</button>
+        </div>
+        <button type="submit" className="vbtn">Create Teacher</button>
       </form>
+      </div>
     </div>
   );
 };
