@@ -30,7 +30,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/" element={<ProtectedRoute />}>
-            <Route path="profile" element={<Profile />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/admin/create-teacher" element={<AdminDashboard />} />
             <Route path="/connections" element={<Connections />} />
             <Route path="/link-myku" element={<LinkMyKU />} />

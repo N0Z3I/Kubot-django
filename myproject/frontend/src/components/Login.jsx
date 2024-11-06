@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import Cookies from "js-cookie";
@@ -16,6 +16,26 @@ const Login = () => {
   const handleOnChange = (e) => {
     setLoginData({ ...logindata, [e.target.name]: e.target.value });
   };
+
+  useEffect(() => {
+    // Function to check for an existing cookie indicating user authentication status
+    const checkCookie = () => {
+      const userCookie = Cookies.get("user");
+      const accessToken = Cookies.get("access");
+      if (userCookie && accessToken) {
+        // If cookies are present, automatically redirect the user
+        const user = JSON.parse(userCookie);
+        toast.info(`Welcome back, ${user.names}`);
+        // Redirect based on role
+        if (user.role === "admin") {
+          navigate("/admin/create-teacher");
+        } else {
+          navigate("/profile");
+        }
+      }
+    };
+    checkCookie();
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

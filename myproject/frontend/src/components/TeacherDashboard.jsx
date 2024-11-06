@@ -148,6 +148,7 @@ const TeacherDashboard = () => {
           </option>
         ))}
       </select>
+
       <form onSubmit={handleAnnouncementSubmit}>
       <h4 ref={editFormRef}>
         {isEditing ? "Edit Announcement" : "Create Announcement"}

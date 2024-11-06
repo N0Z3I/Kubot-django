@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import Cookies from "js-cookie";
 
 const OTP_EXPIRATION_TIME = 300; // 5 นาที (300 วินาที)
 
@@ -14,6 +15,26 @@ const Signup = () => {
     password: "",
     password2: "",
   });
+
+  useEffect(() => {
+    // Function to check for existing cookies when the component mounts
+    const checkCookie = () => {
+      const userCookie = Cookies.get("user");
+      const accessToken = Cookies.get("access");
+      if (userCookie && accessToken) {
+        // Parse and retrieve user details from the cookie
+        const user = JSON.parse(userCookie);
+        toast.info(`Welcome back, ${user.names}`);
+        // Automatically redirect based on role
+        if (user.role === "admin") {
+          navigate("/admin/create-teacher");
+        } else {
+          navigate("/profile");
+        }
+      }
+    };
+    checkCookie(); // Invoke the cookie check function
+  }, [navigate]);
 
   const handleOnChange = (e) => {
     setFormData({ ...formdata, [e.target.name]: e.target.value });

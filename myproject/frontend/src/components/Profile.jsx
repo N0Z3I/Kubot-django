@@ -9,12 +9,20 @@ const Profile = () => {
   const [user, setUser] = useState(null);
   const jwt_access = Cookies.get("access");
   const refresh = Cookies.get("refresh");
+  const userCookie = Cookies.get("user");
 
   useEffect(() => {
+    // Check for missing access and user cookies, and redirect to login if not found
+    if (!jwt_access || !userCookie) {
+      navigate("/login");
+      return;
+    }
+
+    // Fetch data if access token exists
     if (jwt_access) {
       getSomeData();
     }
-  }, [jwt_access]);
+  }, [jwt_access, userCookie, navigate]);
 
   const getSomeData = async () => {
     try {
