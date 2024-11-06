@@ -46,7 +46,7 @@ async def announcement(interaction: discord.Interaction):
             return
 
         # สร้าง Embed สำหรับแสดงประกาศ
-        embed = discord.Embed(title="📢 ประกาศกิจกรรมและชดเชยการสอน", color=discord.Color.blue())
+        embed = discord.Embed(title="📢 ประกาศกิจกรรมและชดเชยการสอน", color=discord.Color.dark_teal())
         
         for announcement in announcements:
             # เพิ่มประกาศใน Embed
