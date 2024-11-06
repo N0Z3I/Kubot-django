@@ -2,7 +2,7 @@ from django.urls import path, include
 from .views import RegisterUserView, VerifyUserEmail, LoginUserView, TestAuthenticationView, PasswordResetConfirm, PasswordResetRequestView, SetNewPasswordView, LogoutUserView, ResendOtpView
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 from .views import MykuLoginView, MykuDataView, DiscordConnectView, DiscordCallbackView, DiscordProfileView, StudentDataView, DiscordLogoutView, DisconnectMykuDataView, UpdateProfileView, AdminCreateTeacherView, UserProfileView
-from .views import TeachingScheduleListCreateView, TeachingScheduleDetailView, EventListCreateView, AnnouncementListCreateView, TeacherCourseListView, EventCreateView
+from .views import TeachingScheduleListCreateView, TeachingScheduleDetailView, EventListCreateView, AnnouncementListCreateView, TeacherCourseListView, EventListView, EventCreateView, EventUpdateView, EventDeleteView
 
 urlpatterns=[
     path('register/', RegisterUserView.as_view(), name = 'register'),
@@ -34,5 +34,8 @@ urlpatterns=[
     path('schedules/<int:schedule_id>/announcements/', AnnouncementListCreateView.as_view(), name='announcement-list-create'),
     path('teacher/courses/', TeacherCourseListView.as_view(), name='teacher_courses'),
     path('event/create/', EventCreateView.as_view(), name='event-create'),
+    path('event/list/', EventListView.as_view(), name='event-list'),
+    path('event/update/<int:pk>/', EventUpdateView.as_view(), name='event-update'),
+    path('event/delete/<int:pk>/', EventDeleteView.as_view(), name='event-delete'),
 ]
 

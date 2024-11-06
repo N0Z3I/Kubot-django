@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axiosInstance from "../utils/axiosInstance";
 
 const TeacherDashboard = () => {
   const [courses, setCourses] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState("");
+  const [announcements, setAnnouncements] = useState([]);
   const [newAnnouncement, setNewAnnouncement] = useState({
     event_type: "",
     title: "",
@@ -13,9 +14,13 @@ const TeacherDashboard = () => {
     start_time: "",
     end_time: "",
   });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const editFormRef = useRef(null); // Create a reference for the edit form
 
   useEffect(() => {
     fetchCourses();
+    fetchAnnouncements();
   }, []);
 
   const fetchCourses = async () => {
@@ -27,6 +32,15 @@ const TeacherDashboard = () => {
     }
   };
 
+  const fetchAnnouncements = async () => {
+    try {
+      const response = await axiosInstance.get("/auth/event/list/");
+      setAnnouncements(response.data);
+    } catch (error) {
+      console.error("Error fetching announcements:", error);
+    }
+  };
+
   const handleCourseSelect = (e) => {
     const courseId = e.target.value;
     setSelectedCourse(courseId);
@@ -35,12 +49,19 @@ const TeacherDashboard = () => {
   const handleAnnouncementSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axiosInstance.post("/auth/event/create/", {
-        ...newAnnouncement,
-        course: selectedCourse,
-      });
-      console.log("Announcement created:", response.data);
-      // Reset the form after submission
+      if (isEditing) {
+        await axiosInstance.put(`/auth/event/update/${editingId}/`, {
+          ...newAnnouncement,
+          course: selectedCourse,
+        });
+        setIsEditing(false);
+        setEditingId(null);
+      } else {
+        await axiosInstance.post("/auth/event/create/", {
+          ...newAnnouncement,
+          course: selectedCourse,
+        });
+      }
       setNewAnnouncement({
         event_type: "",
         title: "",
@@ -50,8 +71,36 @@ const TeacherDashboard = () => {
         start_time: "",
         end_time: "",
       });
+      fetchAnnouncements();
     } catch (error) {
-      console.error("Error creating announcement:", error);
+      console.error("Error creating/updating announcement:", error);
+    }
+  };
+
+  const handleEdit = (announcement) => {
+    setIsEditing(true);
+    setEditingId(announcement.id);
+    setSelectedCourse(announcement.course);
+    setNewAnnouncement({
+      event_type: announcement.event_type,
+      title: announcement.title,
+      description: announcement.description,
+      start_date: announcement.start_date,
+      end_date: announcement.end_date,
+      start_time: announcement.start_time,
+      end_time: announcement.end_time,
+    });
+
+    // Scroll to the edit form when an announcement is selected for editing
+    editFormRef.current.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axiosInstance.delete(`/auth/event/delete/${id}/`);
+      fetchAnnouncements();
+    } catch (error) {
+      console.error("Error deleting announcement:", error);
     }
   };
 
@@ -59,7 +108,6 @@ const TeacherDashboard = () => {
     <div>
       <h2>Teacher Dashboard</h2>
 
-      {/* รายการวิชาที่สอน */}
       <h3>Your Courses</h3>
       <ul>
         {courses.map((course) => (
@@ -83,7 +131,6 @@ const TeacherDashboard = () => {
         ))}
       </ul>
 
-      {/* เลือกวิชา */}
       <h3>Select Course for Announcement</h3>
       <select onChange={handleCourseSelect} value={selectedCourse}>
         <option value="">Select a course</option>
@@ -94,8 +141,9 @@ const TeacherDashboard = () => {
         ))}
       </select>
 
-      {/* ฟอร์มแจ้งวันชดเชย/ส่งงาน */}
-      <h3>Create Announcement</h3>
+      <h3 ref={editFormRef}>
+        {isEditing ? "Edit Announcement" : "Create Announcement"}
+      </h3>
       <form onSubmit={handleAnnouncementSubmit}>
         <label>
           Type:
@@ -107,7 +155,6 @@ const TeacherDashboard = () => {
                 event_type: e.target.value,
               })
             }
-            required
           >
             <option value="">Select type</option>
             <option value="makeup_class">Makeup Class</option>
@@ -135,7 +182,6 @@ const TeacherDashboard = () => {
           required
         ></textarea>
 
-        {/* กำหนดวันและเวลาสำหรับกิจกรรม */}
         <input
           type="date"
           placeholder="Start Date"
@@ -180,8 +226,34 @@ const TeacherDashboard = () => {
           required
         />
 
-        <button type="submit">Create Announcement</button>
+        <button type="submit">
+          {isEditing ? "Update Announcement" : "Create Announcement"}
+        </button>
       </form>
+
+      <h3>Existing Announcements</h3>
+      <ul>
+        {announcements.map((announcement) => (
+          <li key={announcement.id}>
+            <h4>{announcement.title}</h4>
+            <p>
+              <strong>Type:</strong> {announcement.event_type}
+            </p>
+            <p>
+              <strong>Description:</strong> {announcement.description}
+            </p>
+            <p>
+              <strong>Period:</strong> {announcement.start_date} -{" "}
+              {announcement.end_date} {announcement.start_time} -{" "}
+              {announcement.end_time}
+            </p>
+            <button onClick={() => handleEdit(announcement)}>Edit</button>
+            <button onClick={() => handleDelete(announcement.id)}>
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

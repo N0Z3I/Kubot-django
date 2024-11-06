@@ -13,7 +13,7 @@ import discord
 import asyncio
 from discord import app_commands
 from discord.ext import commands, tasks
-from accounts.models import DiscordProfile, StudentProfile, GPAX, StudentEducation, Schedule, GroupCourse, TeacherProfile
+from accounts.models import DiscordProfile, StudentProfile, GPAX, StudentEducation, Schedule, GroupCourse, TeacherProfile, Event
 import concurrent.futures
 import datetime
 
@@ -32,6 +32,39 @@ async def on_ready():
         print(f"Synced {len(synced)} commands.")
     except Exception as e:
         print(f"Error syncing commands: {e}")
+        
+@bot.tree.command(name="announcement", description="แสดงประกาศข้อมูลกิจกรรมหรือชดเชยการสอน")
+async def announcement(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    
+    try:
+        # ดึงข้อมูลประกาศทั้งหมดจากฐานข้อมูล
+        announcements = await run_in_thread(lambda: list(Event.objects.all()))
+        
+        if not announcements:
+            await interaction.followup.send("ไม่มีประกาศในขณะนี้", ephemeral=True)
+            return
+
+        # สร้าง Embed สำหรับแสดงประกาศ
+        embed = discord.Embed(title="📢 ประกาศกิจกรรมและชดเชยการสอน", color=discord.Color.blue())
+        
+        for announcement in announcements:
+            # เพิ่มประกาศใน Embed
+            embed.add_field(
+                name=announcement.title,
+                value=(
+                    f"ประเภท: {announcement.event_type}\n"
+                    f"รายละเอียด: {announcement.description}\n"
+                    f"วันที่: {announcement.start_date} ถึง {announcement.end_date}\n"
+                    f"เวลา: {announcement.start_time} - {announcement.end_time}\n"
+                ),
+                inline=False
+            )
+
+        await interaction.followup.send(embed=embed)
+
+    except Exception as e:
+        await interaction.followup.send(f"เกิดข้อผิดพลาด: {str(e)}", ephemeral=True)
         
 @bot.tree.command(name="my_courses", description="แสดงรายวิชาที่สอน (เฉพาะอาจารย์)")
 async def my_courses(interaction: discord.Interaction):
