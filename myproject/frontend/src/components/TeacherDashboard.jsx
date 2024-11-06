@@ -234,10 +234,12 @@ const TeacherDashboard = () => {
         </button>
       </form>
 
-      <h2>Existing Announcements</h2>
+      <div className="form-container">
+      <form>
+      <h4>Existing Announcements</h4>
       <ul>
         {announcements.map((announcement) => (
-          <li key={announcement.id}>
+          <p key={announcement.id}>
             <h4>{announcement.title}</h4>
             <p>
               <strong>Type:</strong> {announcement.event_type}
@@ -250,13 +252,15 @@ const TeacherDashboard = () => {
               {announcement.end_date} {announcement.start_time} -{" "}
               {announcement.end_time}
             </p>
-            <button onClick={() => handleEdit(announcement)}>Edit</button>
+            <button onClick={() => handleEdit(announcement)}>Edit</button>&nbsp;
             <button onClick={() => handleDelete(announcement.id)}>
               Delete
             </button>
-          </li>
+          </p>
         ))}
       </ul>
+      </form>
+    </div>
     </div>
   );
 };
