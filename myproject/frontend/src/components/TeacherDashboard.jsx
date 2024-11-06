@@ -132,14 +132,7 @@ const TeacherDashboard = () => {
       </ul>
 
       <h4>Select Course for Announcement</h4>
-      <select style={{
-    fontSize: "1.5em",
-    color: "#2c2c2c",
-    textAlign: "center",
-    fontFamily: "'Poppins', sans-serif",
-    fontStyle: "normal",
-    display: "flex", justifyContent: "center",alignItems: "center", marginLeft: "88vh"
-  }} onChange={handleCourseSelect} value={selectedCourse}>
+      <select onChange={handleCourseSelect} value={selectedCourse}>
         <option value="">Select a course</option>
         {courses.map((course) => (
           <option key={course.id} value={course.id}>
@@ -168,7 +161,7 @@ const TeacherDashboard = () => {
             <option value="assignment">Assignment</option>
           </select>
         </label>
-        <div className="form-group">
+         <div className="form-group">
         <input
           type="text"
           placeholder="Title"
@@ -216,6 +209,7 @@ const TeacherDashboard = () => {
           }
           required
         />
+
         <input
           type="date"
           placeholder="End Date"
@@ -236,14 +230,12 @@ const TeacherDashboard = () => {
           required
         />
         </div>
-        <button type="submit" className="vbtn">
+        <button type="submit" className="vbtn" >
           {isEditing ? "Update Announcement" : "Create Announcement"}
         </button>
       </form>
-
-      <div className="form-container">
-      <form>
-      <h4>Existing Announcements</h4>
+      <br />
+      <h2>Existing Announcements</h2>
       <ul>
         {announcements.map((announcement) => (
           <p key={announcement.id}>
@@ -266,8 +258,6 @@ const TeacherDashboard = () => {
           </p>
         ))}
       </ul>
-      </form>
-    </div>
     </div>
   );
 };
