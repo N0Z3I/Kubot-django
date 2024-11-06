@@ -63,7 +63,7 @@ class LoginWithMykuSerializer(serializers.Serializer):
             announce_data = client.fetch_announce()
             grades_data = client.fetch_grades()
             group_course_data = client.fetch_group_course()
-            print("Group course data fetched:", group_course_data)
+            print("Raw group_course_data response:", group_course_data)
             student_education_data = client.fetch_student_education()
             gpax_data = client.fetch_gpax()
 
@@ -86,11 +86,6 @@ class LoginWithMykuSerializer(serializers.Serializer):
             attrs['student_education_data'] = student_education_data
             attrs['gpax_data'] = gpax_data
             
-            print("Group course data:", group_course_data)
-
-            # ข้อมูลอื่นๆ
-            attrs['group_course_data'] = group_course_data
-
         except Exception as e:
             raise serializers.ValidationError(f"Failed to log in to MyKU: {str(e)}")
 

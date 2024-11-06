@@ -1,6 +1,7 @@
 import os
 import django
 import json
+import pytz
 
 try:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myproject.settings")
@@ -11,11 +12,14 @@ except Exception as e:
 
 import discord
 import asyncio
-from discord import app_commands
+from discord import app_commands, ui
 from discord.ext import commands, tasks
 from accounts.models import DiscordProfile, StudentProfile, GPAX, StudentEducation, Schedule, GroupCourse, TeacherProfile, Event
 import concurrent.futures
-import datetime
+from datetime import datetime, timedelta
+from asgiref.sync import sync_to_async
+
+timezone = pytz.timezone('Asia/Bangkok')  # กำหนด Timezone
 
 intents = discord.Intents.default()
 intents.members = True
@@ -23,6 +27,79 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
+last_announcement_id = None
+user_schedule_notifications = {}
+
+@tasks.loop(minutes=1)
+async def schedule_notification_task():
+    try:
+        for user_id, settings in user_schedule_notifications.items():
+            # Fetch course data
+            course = await run_in_thread(lambda: GroupCourse.objects.get(id=settings['course_id']))
+            current_time = datetime.now(timezone)
+
+            # Check time condition based on user preference
+            if settings['notification_time'] == '2_hours':
+                notify_time = course.time_from - timedelta(hours=2)
+            elif settings['notification_time'] == '1_day':
+                notify_time = course.time_from - timedelta(days=1)
+
+            # Send notification if the time is appropriate
+            if current_time >= notify_time:
+                user = await bot.fetch_user(int(user_id))
+                if user:
+                    await user.send(f"Reminder: Your class '{course.subject_name}' starts at {course.time_from}.")
+
+    except Exception as e:
+        print(f"Error in schedule notification task: {e}")
+
+# Start the background task when the bot is ready
+@bot.event
+async def on_ready():
+    schedule_notification_task.start()
+
+
+@tasks.loop(minutes=1)
+async def check_for_new_announcements():
+    global last_announcement_id
+    try:
+        # Fetch the latest announcement
+        latest_announcement = await sync_to_async(lambda: Event.objects.latest('id'))()
+
+        # Check if it is a new announcement
+        if last_announcement_id is None or latest_announcement.id > last_announcement_id:
+            # Update the last_announcement_id
+            last_announcement_id = latest_announcement.id
+
+            # Notify subscribed users (as previously implemented)
+            students = await sync_to_async(lambda: list(StudentProfile.objects.filter(group_courses__id=latest_announcement.course.id)))()
+
+            for student in students:
+                discord_profile = await sync_to_async(lambda: DiscordProfile.objects.get(user=student.user))()
+                user = await bot.fetch_user(int(discord_profile.discord_id))
+
+                if user:
+                    embed = discord.Embed(
+                        title=f"📢 New Announcement for {latest_announcement.title}",
+                        description=latest_announcement.description,
+                        color=discord.Color.dark_teal()
+                    )
+                    embed.add_field(name="Type", value=latest_announcement.event_type, inline=True)
+                    embed.add_field(name="Date", value=f"{latest_announcement.start_date} to {latest_announcement.end_date}", inline=True)
+                    embed.add_field(name="Time", value=f"{latest_announcement.start_time} - {latest_announcement.end_time}", inline=True)
+
+                    await user.send(embed=embed)
+    except Event.DoesNotExist:
+        # No announcements exist yet
+        pass
+    except Exception as e:
+        print(f"Error checking for new announcements: {e}")
+
+@bot.event
+async def on_ready():
+    if not check_for_new_announcements.is_running():
+        check_for_new_announcements.start()  # Start the task
+        
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game('/help'))
@@ -32,6 +109,7 @@ async def on_ready():
         print(f"Synced {len(synced)} commands.")
     except Exception as e:
         print(f"Error syncing commands: {e}")
+        
         
 @bot.tree.command(name="announcement", description="แสดงประกาศข้อมูลกิจกรรมหรือชดเชยการสอน")
 async def announcement(interaction: discord.Interaction):
@@ -63,6 +141,59 @@ async def announcement(interaction: discord.Interaction):
 
         await interaction.followup.send(embed=embed)
 
+    except Exception as e:
+        await interaction.followup.send(f"เกิดข้อผิดพลาด: {str(e)}", ephemeral=True)
+
+@bot.tree.command(name="set_announcement", description="ตั้งการแจ้งเตือนและรับการอัปเดตเมื่อมีประกาศใหม่")
+async def set_announcement(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    
+    try:
+        # Fetching the student's profile using run_in_thread
+        discord_id = str(interaction.user.id)
+        student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user__discordprofile__discord_id=discord_id))
+        
+        # Fetch the related group courses using run_in_thread
+        group_courses = await run_in_thread(lambda: list(GroupCourse.objects.filter(student_profile=student_profile)))
+        
+        if not group_courses:
+            await interaction.followup.send("ไม่พบวิชาในระบบที่เกี่ยวข้องกับบัญชีนี้", ephemeral=True)
+            return
+
+        # Creating options for course selection
+        options = [
+            discord.SelectOption(label=course.subject_name, description=course.subject_code, value=str(course.id))
+            for course in group_courses
+        ]
+
+        # Creating a dropdown menu for selecting courses
+        select = ui.Select(placeholder="เลือกวิชาสำหรับการรับประกาศ", options=options)
+        
+        async def select_callback(interaction: discord.Interaction):
+            selected_course_id = int(select.values[0])
+            selected_course = await run_in_thread(lambda: GroupCourse.objects.get(id=selected_course_id))
+            # Logic for subscribing the user to notifications for this course
+            await interaction.response.send_message(
+                f"คุณได้ตั้งค่าการแจ้งเตือนสำหรับวิชา {selected_course.subject_name} สำเร็จ", ephemeral=True
+            )
+        
+        select.callback = select_callback
+
+        # Button for closing notifications
+        async def close_notification(interaction: discord.Interaction):
+            # Logic for unsubscribing or stopping notifications can be placed here
+            await interaction.response.send_message("การแจ้งเตือนถูกปิดสำหรับวิชาที่คุณเลือก", ephemeral=True)
+
+        close_button = ui.Button(label="ปิดการแจ้งเตือน", style=discord.ButtonStyle.danger)
+        close_button.callback = close_notification
+
+        view = ui.View()
+        view.add_item(select)
+        view.add_item(close_button)
+        await interaction.followup.send("โปรดเลือกวิชาสำหรับการแจ้งเตือนหรือปิดการแจ้งเตือน:", view=view)
+
+    except StudentProfile.DoesNotExist:
+        await interaction.followup.send("ไม่พบนิสิตที่เชื่อมกับบัญชีนี้", ephemeral=True)
     except Exception as e:
         await interaction.followup.send(f"เกิดข้อผิดพลาด: {str(e)}", ephemeral=True)
         
@@ -99,71 +230,67 @@ async def run_in_thread(func):
     with ThreadPoolExecutor() as pool:
         return await loop.run_in_executor(pool, func)
         
-@bot.tree.command(name="reminder", description="แจ้งเตือนตารางเรียนตามช่วงที่เลือก")
-async def reminder(interaction: discord.Interaction, period: str):
-    """
-    period: "today", "tomorrow", "this_week", "next_week"
-    """
-    await interaction.response.defer(ephemeral=True)
-
+@bot.tree.command(name="set_schedule", description="ตั้งค่าการแจ้งเตือนสำหรับวิชา")
+async def set_notification(interaction: discord.Interaction):
     try:
-        discord_profile = await run_in_thread(lambda: DiscordProfile.objects.get(discord_id=str(interaction.user.id)))
-        student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user=discord_profile.user))
-
-        # กำหนดวันตาม period ที่เลือก
-        today = datetime.date.today()
-        if period == "today":
-            target_dates = [today]
-        elif period == "tomorrow":
-            target_dates = [today + datetime.timedelta(days=1)]
-        elif period == "this_week":
-            target_dates = [today + datetime.timedelta(days=i) for i in range(7 - today.weekday())]
-        elif period == "next_week":
-            start_of_next_week = today + datetime.timedelta(days=(7 - today.weekday()))
-            target_dates = [start_of_next_week + datetime.timedelta(days=i) for i in range(7)]
-        else:
-            await interaction.followup.send("กรุณาระบุช่วงเวลาเป็น: today, tomorrow, this_week หรือ next_week", ephemeral=True)
-            return
-
-        # ดึงข้อมูลตารางเรียนสำหรับช่วงวันที่ที่เลือก
+        discord_id = str(interaction.user.id)
+        student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user__discordprofile__discord_id=discord_id))
         group_courses = await run_in_thread(lambda: list(GroupCourse.objects.filter(student_profile=student_profile)))
 
-        relevant_courses = [
-            course for course in group_courses
-            if datetime.datetime.strptime(course.period_date, "%Y-%m-%d").date() in target_dates
+        course_options = [
+            discord.SelectOption(
+                label=course.subject_name,
+                description=f"{course.subject_code}",
+                value=str(course.id)
+            )
+            for course in group_courses
+        ]
+        notification_options = [
+            discord.SelectOption(label="แจ้งเตือนล่วงหน้า 2 ชั่วโมง", value="2_hours"),
+            discord.SelectOption(label="แจ้งเตือนล่วงหน้า 1 วัน", value="1_day")
         ]
 
-        if not relevant_courses:
-            await interaction.followup.send(f"ไม่มีข้อมูลตารางเรียนสำหรับช่วง {period}", ephemeral=True)
-            return
+        select_course = ui.Select(placeholder="เลือกวิชาสำหรับการแจ้งเตือน", options=course_options)
+        select_notification = ui.Select(placeholder="เลือกประเภทการแจ้งเตือน", options=notification_options)
 
-        embed = discord.Embed(title=f"แจ้งเตือนตารางเรียนสำหรับ {period}", color=discord.Color.green())
-        for course in relevant_courses:
-            embed.add_field(
-                name=f"{course.subject_name} ({course.subject_code})",
-                value=(
-                    f"ผู้สอน: {course.teacher_name}\n"
-                    f"เวลา: {course.time_from} - {course.time_to}\n"
-                    f"วัน: {course.day_w.strip()}\n"
-                    f"ห้อง: {course.room_name_th}"
-                ),
-                inline=False,
-            )
+        async def course_callback(interaction: discord.Interaction):
+            selected_course_id = int(select_course.values[0])
+            selected_course = await run_in_thread(lambda: GroupCourse.objects.get(id=selected_course_id))
+            await interaction.response.send_message(f"คุณเลือกวิชา {selected_course.subject_name}", ephemeral=True)
 
-        await interaction.followup.send(embed=embed)
+            # Store user preference
+            user_schedule_notifications[discord_id] = {
+                'course_id': selected_course_id,
+                'notification_time': user_schedule_notifications[discord_id].get('notification_time', '2_hours')
+            }
 
-    except DiscordProfile.DoesNotExist:
-        await interaction.followup.send("ไม่พบนิสิตที่เชื่อมกับบัญชีนี้", ephemeral=True)
-    except StudentProfile.DoesNotExist:
-        await interaction.followup.send("ไม่พบข้อมูลนิสิตในระบบ", ephemeral=True)
+        async def notification_callback(interaction: discord.Interaction):
+            selected_option = select_notification.values[0]
+            await interaction.response.send_message(f"ตั้งค่าการแจ้งเตือน: {selected_option}", ephemeral=True)
+
+            # Update user preference
+            if discord_id in user_schedule_notifications:
+                user_schedule_notifications[discord_id]['notification_time'] = selected_option
+
+        async def close_notification(interaction: discord.Interaction):
+            if discord_id in user_schedule_notifications:
+                del user_schedule_notifications[discord_id]
+            await interaction.response.send_message("การแจ้งเตือนถูกปิด", ephemeral=True)
+
+        close_button = ui.Button(label="ปิดการแจ้งเตือน", style=discord.ButtonStyle.danger)
+        close_button.callback = close_notification
+
+        select_course.callback = course_callback
+        select_notification.callback = notification_callback
+
+        view = ui.View()
+        view.add_item(select_course)
+        view.add_item(select_notification)
+        view.add_item(close_button)
+        await interaction.response.send_message("โปรดเลือกวิชาและประเภทการแจ้งเตือน หรือปิดการแจ้งเตือน:", view=view)
     except Exception as e:
-        await interaction.followup.send(f"เกิดข้อผิดพลาด: {str(e)}", ephemeral=True)
+        await interaction.response.send_message(f"เกิดข้อผิดพลาด: {str(e)}", ephemeral=True)
 
-# ฟังก์ชันการรันใน Thread แยก
-async def run_in_thread(func):
-    loop = asyncio.get_running_loop()
-    with concurrent.futures.ThreadPoolExecutor() as pool:
-        return await loop.run_in_executor(pool, func)
         
 @bot.tree.command(name="schedule", description="แสดงตารางเรียนของนิสิตพร้อมรายละเอียดวิชา")
 async def schedule(interaction: discord.Interaction):
@@ -183,12 +310,6 @@ async def schedule(interaction: discord.Interaction):
         embed = discord.Embed(title="ตารางเรียน", color=discord.Color.dark_teal())
 
         for schedule in schedules:
-            embed.add_field(
-                name=f"ปีการศึกษา {schedule.academic_year}, ภาคการศึกษา {schedule.semester}",
-                value="**รายละเอียดวิชา:**",
-                inline=False,
-            )
-
             relevant_courses = [
                 course for course in group_courses if str(schedule.academic_year) in course.period_date
             ]
