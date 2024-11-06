@@ -49,10 +49,6 @@ const Profile = () => {
     }
   };
 
-  if (!user) {
-    return <p>Loading user profile...</p>;
-  }
-
   return (
     <div>
       <header>
