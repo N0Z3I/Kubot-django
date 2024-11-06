@@ -356,10 +356,10 @@ const UserDashboard = () => {
                     <h4>Schedule</h4>
                     {scheduleData.map((schedule, index) => (
                       <div key={index}>
-                        <h5>
+                        {/* <h5>
                           ปีการศึกษา :&nbsp;{schedule.academic_year},
                           ภาคการศึกษา :&nbsp; {schedule.semester}
-                        </h5>
+                        </h5> */}
 
                         {/* Display all groupCourseData */}
                         {groupCourseData.map((course, idx) => (

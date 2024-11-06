@@ -343,6 +343,7 @@ class MykuLoginView(GenericAPIView):
                     'student_data': student_data,
                     'std_code': std_code,
                     'group_course_data': group_course_data,
+                    'schedule_data': schedule_data,
                     'message': 'Successfully linked MyKU and saved all data.'
                 }, status=status.HTTP_200_OK)
 
