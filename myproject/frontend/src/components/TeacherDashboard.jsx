@@ -132,7 +132,14 @@ const TeacherDashboard = () => {
       </ul>
 
       <h4>Select Course for Announcement</h4>
-      <select onChange={handleCourseSelect} value={selectedCourse}>
+      <select style={{
+    fontSize: "1.5em",
+    color: "#2c2c2c",
+    textAlign: "center",
+    fontFamily: "'Poppins', sans-serif",
+    fontStyle: "normal",
+    display: "flex", justifyContent: "center",alignItems: "center", marginLeft: "88vh"
+  }} onChange={handleCourseSelect} value={selectedCourse}>
         <option value="">Select a course</option>
         {courses.map((course) => (
           <option key={course.id} value={course.id}>
