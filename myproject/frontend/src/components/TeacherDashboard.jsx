@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axiosInstance";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import toastify CSS
@@ -18,7 +19,8 @@ const TeacherDashboard = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const editFormRef = useRef(null); // Create a reference for the edit form
+  const editFormRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCourses();
@@ -156,6 +158,17 @@ const TeacherDashboard = () => {
 
   return (
     <div>
+      <header>
+        <h5 className="logo"></h5>
+        <nav className="navigation">
+          <button
+            onClick={() => navigate("/profile")}
+            className="connections-btn"
+          >
+            Home
+          </button>
+        </nav>
+      </header>
       <ToastContainer /> {/* Add ToastContainer for notifications */}
       <h2>Teacher Dashboard</h2>
       <h4>Select Course for Announcement</h4>
