@@ -27,7 +27,6 @@ intents.message_content = True
 
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-last_announcement_id = None
 user_schedule_notifications = {}
 
 @tasks.loop(minutes=1)
@@ -53,11 +52,7 @@ async def schedule_notification_task():
     except Exception as e:
         print(f"Error in schedule notification task: {e}")
 
-# Start the background task when the bot is ready
-@bot.event
-async def on_ready():
-    schedule_notification_task.start()
-
+last_announcement_id = None  # Global variable to track the last sent announcement
 
 @tasks.loop(minutes=1)
 async def check_for_new_announcements():
@@ -95,11 +90,8 @@ async def check_for_new_announcements():
     except Exception as e:
         print(f"Error checking for new announcements: {e}")
 
-@bot.event
-async def on_ready():
-    if not check_for_new_announcements.is_running():
-        check_for_new_announcements.start()  # Start the task
-        
+
+
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game('/help'))
@@ -109,6 +101,12 @@ async def on_ready():
         print(f"Synced {len(synced)} commands.")
     except Exception as e:
         print(f"Error syncing commands: {e}")
+
+    # Start tasks if they are not already running
+    if not check_for_new_announcements.is_running():
+        check_for_new_announcements.start()
+    if not schedule_notification_task.is_running():
+        schedule_notification_task.start()
         
         
 @bot.tree.command(name="announcement", description="แสดงประกาศข้อมูลกิจกรรมหรือชดเชยการสอน")
@@ -149,24 +147,24 @@ async def set_announcement(interaction: discord.Interaction):
     await interaction.response.defer(ephemeral=True)
     
     try:
-        # Fetching the student's profile using run_in_thread
+        # Fetch the student's profile based on Discord ID
         discord_id = str(interaction.user.id)
         student_profile = await run_in_thread(lambda: StudentProfile.objects.get(user__discordprofile__discord_id=discord_id))
         
-        # Fetch the related group courses using run_in_thread
+        # Fetch related group courses
         group_courses = await run_in_thread(lambda: list(GroupCourse.objects.filter(student_profile=student_profile)))
         
         if not group_courses:
             await interaction.followup.send("ไม่พบวิชาในระบบที่เกี่ยวข้องกับบัญชีนี้", ephemeral=True)
             return
 
-        # Creating options for course selection
+        # Create options for course selection
         options = [
             discord.SelectOption(label=course.subject_name, description=course.subject_code, value=str(course.id))
             for course in group_courses
         ]
 
-        # Creating a dropdown menu for selecting courses
+        # Create a dropdown menu
         select = ui.Select(placeholder="เลือกวิชาสำหรับการรับประกาศ", options=options)
         
         async def select_callback(interaction: discord.Interaction):
@@ -181,12 +179,13 @@ async def set_announcement(interaction: discord.Interaction):
 
         # Button for closing notifications
         async def close_notification(interaction: discord.Interaction):
-            # Logic for unsubscribing or stopping notifications can be placed here
+            # Logic for unsubscribing or stopping notifications can go here
             await interaction.response.send_message("การแจ้งเตือนถูกปิดสำหรับวิชาที่คุณเลือก", ephemeral=True)
 
         close_button = ui.Button(label="ปิดการแจ้งเตือน", style=discord.ButtonStyle.danger)
         close_button.callback = close_notification
 
+        # Create the view and add elements
         view = ui.View()
         view.add_item(select)
         view.add_item(close_button)
@@ -196,6 +195,7 @@ async def set_announcement(interaction: discord.Interaction):
         await interaction.followup.send("ไม่พบนิสิตที่เชื่อมกับบัญชีนี้", ephemeral=True)
     except Exception as e:
         await interaction.followup.send(f"เกิดข้อผิดพลาด: {str(e)}", ephemeral=True)
+
         
 @bot.tree.command(name="my_courses", description="แสดงรายวิชาที่สอน (เฉพาะอาจารย์)")
 async def my_courses(interaction: discord.Interaction):
@@ -587,15 +587,14 @@ async def help_command(interaction: discord.Interaction):
     # เพิ่มข้อมูลคำสั่งทั้งหมดที่บอทมี
     commands = {
         "/my_courses": "แสดงรายวิชาที่สอน (เฉพาะอาจารย์)",
-        "/reminder": "แจ้งเตือนตารางเรียนตามช่วงที่เลือก",
         "/schedule": "แสดงตารางเรียนของนิสิตพร้อมรายละเอียดวิชา",
+        "/set_schedule": "ตั้งค่าการแจ้งเตือนสำหรับวิชา",
+        "/announcement": "แสดงประกาศข้อมูลกิจกรรมหรือชดเชยการสอน",
+        "/set_announcement": "ตั้งการแจ้งเตือนและรับการอัปเดตเมื่อมีประกาศใหม่",
         "/kuprofile": "แสดงข้อมูลโปรไฟล์นิสิต",
         "/kugpax": "แสดงหน่วยกิตกับเกรดเฉลี่ยของนิสิต",
         "/kueducation": "แสดงข้อมูลการศึกษาของนิสิต",
-        "/hello": "ทักทาย Hello World!",
         "/invite": "รับลิงก์เชิญบอท KuBot",
-        "/ping": "ตรวจสอบ ping ของบอท",
-        "/avatar": "ดู Avatar ของผู้ใช้",
         "/profile": "ดูโปรไฟล์ของผู้ใช้",
         "/clear": "ลบข้อความในช่องแชท",
         "/activity": "ดูข้อมูลกิจกรรมของ Ku",
